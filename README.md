@@ -45,18 +45,37 @@ PowerShell scripts: run with `pwsh ./x.ps1` or `powershell -ExecutionPolicy Bypa
 `local-dev/protocol-check.py` exercises the TCP server's wire protocol without
 the GUI. Full runbook and smoke test: [`local-dev/README.md`](local-dev/README.md).
 
-## Standalone package (no Java required)
+## Packaging a release
 
 ```powershell
-./desktop/package.ps1                        # -> desktop/build-local/package/OPLPOPS-Manager/
+./desktop/release.ps1                         # both of the below in one step
 ```
 
-Builds a `jpackage` app-image: a folder with a native `OPLPOPS-Manager.exe` and
-a bundled, `jdeps`-trimmed JRE (`java.base` + `java.desktop` + `java.net.http`,
-~86 MB total) — zip the `OPLPOPS-Manager` folder and hand it to someone with no
-Java installed. `-ApiBaseUrl`/`-Backend` bake in a different default backend for
-the recipient. An actual installer (`--type exe`/`msi`) additionally needs the
-[WiX Toolset](https://wixtoolset.org/) — not required for the app-image above.
+Windows users get a standalone `.exe`, no Java required; Mac and Linux users
+get a plain jar and use their own Java install:
+
+```powershell
+./desktop/package.ps1     # -> desktop/build-local/release/windows/OPLPOPS-Manager/OPLPOPS-Manager.exe
+./desktop/bundle-jar.ps1  # -> desktop/build-local/release/jar/
+```
+
+`package.ps1` builds a `jpackage` app-image: a folder with a native
+`OPLPOPS-Manager.exe` and a bundled, `jdeps`-trimmed JRE (`java.base` +
+`java.desktop` + `java.net.http`, ~86 MB total) — zip the `OPLPOPS-Manager`
+folder and hand it to a Windows user with no Java installed. jpackage doesn't
+cross-compile, so this only ever produces a Windows artifact (a macOS `.app`/
+Linux AppImage would need building on those platforms). An actual installer
+(`--type exe`/`msi`) additionally needs the [WiX Toolset](https://wixtoolset.org/)
+— not required for the app-image above.
+
+`bundle-jar.ps1` builds a plain-jar bundle instead: the jar next to `lib/`,
+`hdd/` and `POPSTARTER/`, plus a `run.sh`/`run.cmd`. No bundled JRE — the
+recipient needs their own Java 11+ on PATH — but it's the same bundle for
+every OS (the native tool binaries and 7-Zip bindings it ships already cover
+Windows/macOS/Linux), so it only needs building once, here.
+
+Both scripts take `-ApiBaseUrl`/`-Backend`/`-Server`/`-Port` to bake in a
+different default backend for the recipient.
 
 ## Local data corpora (not in git)
 

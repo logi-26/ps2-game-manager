@@ -3,6 +3,11 @@
     a folder with a native .exe launcher and a bundled, trimmed JRE. End users
     don't need Java installed at all.
 
+    Windows-only output: jpackage never cross-compiles - run on Windows, it can
+    only produce a Windows app-image, never a macOS .app or Linux AppImage. Mac
+    and Linux users are served by bundle-jar.ps1 instead (plain jar, their own
+    Java). See release.ps1 to build both distributables in one step.
+
     Requires a JDK with jpackage on PATH (tested with Temurin 25). Building an
     actual installer (--type exe / msi) additionally needs the WiX Toolset
     (https://wixtoolset.org/) - not required for the app-image this script builds.
@@ -14,7 +19,7 @@
         pwsh ./package.ps1 -Icon path\to\icon.ico
         pwsh ./package.ps1 -Fresh                           # re-stage lib/ hdd/ POPSTARTER/ first
 
-    Output: build-local/package/OPLPOPS-Manager/OPLPOPS-Manager.exe
+    Output: build-local/release/windows/OPLPOPS-Manager/OPLPOPS-Manager.exe
     (zip the OPLPOPS-Manager folder to hand it to someone else)
 #>
 param(
@@ -33,7 +38,7 @@ $ErrorActionPreference = 'Stop'
 $root       = $PSScriptRoot
 $buildLocal = Join-Path $root 'build-local'
 $runDir     = Join-Path $buildLocal 'run'
-$packageDir = Join-Path $buildLocal 'package'
+$packageDir = Join-Path $buildLocal 'release\windows'
 
 # 1. Compile + jar + stage the app image's contents (jar + lib/ + hdd/ + POPSTARTER/
 #    all as siblings, matching what PopsGameManager.getCurrentDirectory() expects).
@@ -90,3 +95,4 @@ if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 $exe = Join-Path $packageDir 'OPLPOPS-Manager\OPLPOPS-Manager.exe'
 Write-Host "==> Packaged: $exe"
 Write-Host "    No separate Java install needed. Zip the OPLPOPS-Manager folder to share it."
+Write-Host "    (Mac/Linux users: see bundle-jar.ps1 instead - jpackage doesn't cross-compile.)"
