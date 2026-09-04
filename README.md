@@ -81,5 +81,6 @@ against committing them):
 ## Attribution
 
 Third-party components bundled under `desktop/lib/`: Apache Commons Net 3.5,
-sevenzipjbinding. Bundled tools (cue2pops, hdl_dump, genvmc) credited in
-`desktop/`'s generated README. Licensed under GPL-3.0 (see `LICENSE`).
+sevenzipjbinding, [FlatLaf](https://www.formdev.com/flatlaf/) 3.7.2 (Apache-2.0)
+— the app's look and feel. Bundled tools (cue2pops, hdl_dump, genvmc) credited
+in `desktop/`'s generated README. Licensed under GPL-3.0 (see `LICENSE`).

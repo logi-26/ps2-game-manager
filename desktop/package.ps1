@@ -50,6 +50,7 @@ $cp = @(
     (Join-Path $runDir 'lib\commons-net-3.5.jar')
     (Join-Path $runDir 'lib\sevenzipjbinding.jar')
     (Join-Path $runDir 'lib\sevenzipjbinding-AllPlatforms.jar')
+    (Join-Path $runDir 'lib\flatlaf-3.7.2.jar')
 ) -join ';'
 
 Write-Host "==> Computing required JDK modules with jdeps"
