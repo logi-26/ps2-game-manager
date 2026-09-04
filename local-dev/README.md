@@ -4,13 +4,13 @@ Two backends the desktop app (`desktop/`) can run against:
 
 | Component | Talks to | Transport | Status |
 |---|---|---|---|
-| `desktop` `MyTCPClient` | `server` | raw TCP, port 6789 | original; being retired |
-| `desktop` `MyApiClient` | `api` | HTTP, `/v1` | replacement — feature-complete, not yet the default |
+| `desktop` `MyApiClient` | `api` | HTTP, `/v1` | **default** |
+| `desktop` `MyTCPClient` | `server` | raw TCP, port 6789 | legacy — kept as a `-Backend tcp` fallback |
 | `desktop` `MyFTPClient` | a real PS2 console running OPL | FTP, port 21 | unrelated to either — leave as-is |
 
 Both implement `BackendClient`; `PopsGameManager.newBackendClient()` picks one via
-`-Doplpops.backend=tcp|api` (default **`tcp`** until the API backend has had a
-real click-through — see [`docs/plan.html`](../docs/plan.html) stage 11).
+`-Doplpops.backend=api|tcp` (default **`api`** — click-through against the real
+data confirmed working, see [`docs/plan.html`](../docs/plan.html) stage 11).
 
 ---
 
@@ -24,16 +24,36 @@ real click-through — see [`docs/plan.html`](../docs/plan.html) stage 11).
 
 ---
 
-## Option A — TCP server + fixture (Part 1)
+## Option A — HTTP API, real data (default)
+
+Needs `api/`'s venv set up once (see `api/README.md` "Quick start" +
+"Load the legacy data" — `alembic upgrade head` then
+`python -m scripts.import_content --content-dir "../Server Content"`).
 
 ```powershell
-./local-dev/setup-serverdata.ps1        # once — builds server/build-local/serverdata/
-./local-dev/run-server.ps1              # terminal 1 — builds server/, serves on :6789
-./local-dev/run-manager.ps1             # terminal 2 — builds desktop/, launches against it
+./local-dev/run-api.ps1          # terminal 1 — serves :8000
+./local-dev/run-manager.ps1      # terminal 2 — desktop app, real data
+```
+
+`http://127.0.0.1:8000/docs` for the interactive API reference while it runs.
+
+This is real, complete data (14,354 games at last import) — no fixture step.
+Set the OPL folder to `program_test_folder/` and click through as normal. The
+API is read-only (user uploads and bad-file reports were removed as a
+feature), so there's nothing to review afterwards.
+
+---
+
+## Option B — TCP server + fixture (legacy fallback)
+
+```powershell
+./local-dev/setup-serverdata.ps1          # once — builds server/build-local/serverdata/
+./local-dev/run-server.ps1                # terminal 1 — builds server/, serves on :6789
+./local-dev/run-manager.ps1 -Backend tcp  # terminal 2 — builds desktop/, launches against it
 ```
 
 Fixture has two sample games (`SLUS_207.68` God of War / NTSCU,
-`SCES_509.24` Gran Turismo 4 / PAL). `run-manager.ps1 -Server <ip> -Port <n>`
+`SCES_509.24` Gran Turismo 4 / PAL). `run-manager.ps1 -Backend tcp -Server <ip> -Port <n>`
 to point elsewhere.
 
 ### Using the real `Server Content` corpus with the TCP server instead
@@ -46,7 +66,7 @@ Copy-Item ./server/build-local/TCPServer.jar "../Server Content/"
 pushd "../Server Content"; java -jar TCPServer.jar; popd
 ```
 
-### Smoke test
+### TCP smoke test
 
 1. Start the server. Expect: `Running OPLPOPS TCP LIVE Server ... Port: 6789`.
 2. `python ./local-dev/protocol-check.py` — expect `ART (hit) -> ~5–6 KB` (a
@@ -60,24 +80,6 @@ pushd "../Server Content"; java -jar TCPServer.jar; popd
    `Log/error_log.txt` should **not** appear.
 
 ---
-
-## Option B — HTTP API, real data (Part 2)
-
-Needs `api/`'s venv set up once (see `api/README.md` "Quick start" +
-"Load the legacy data" — `alembic upgrade head` then
-`python -m scripts.import_content --content-dir "../Server Content"`).
-
-```powershell
-./local-dev/run-api.ps1                              # terminal 1 — serves :8000
-./local-dev/run-manager.ps1 -Backend api              # terminal 2 — desktop app, real data
-```
-
-`http://127.0.0.1:8000/docs` for the interactive API reference while it runs.
-
-This is real, complete data (14,354 games at last import) — no fixture step.
-Set the OPL folder to `program_test_folder/` and click through as normal. The
-API is read-only (user uploads and bad-file reports were removed as a
-feature), so there's nothing to review afterwards.
 
 ### Why the app is never run from the project folder
 
@@ -102,9 +104,12 @@ launches from there; all that churn stays inside `build-local/` (gitignored).
 
 **Part 2** — the API backend:
 - `BackendClient` interface; `MyTCPClient` implements it unchanged;
-  `MyApiClient` is the new HTTP implementation (`java.net.http.HttpClient`,
+  `MyApiClient` is the HTTP implementation (`java.net.http.HttpClient`,
   no new dependency — see `MiniJson` for why). All 21 call sites go through
-  `PopsGameManager.newBackendClient()`.
+  `PopsGameManager.newBackendClient()`, whose default flipped from `tcp` to
+  `api` once the click-through passed.
+- User uploads and bad-file reports removed as a feature, desktop and API
+  side both (see `docs/plan.html` stage 11) — the API is read-only.
 - `MyAPIClient.java` (the old empty stub) deleted.
 
 ---
@@ -112,8 +117,10 @@ launches from there; all that churn stays inside `build-local/` (gitignored).
 ## Known rough edges (noted, not fixed)
 
 - Swing on JDK 25 / Win10 looks dated; HiDPI scaling may be off. Not blocking.
-- `sevenzipjbinding` native load can fail on modern Windows → archive
-  extraction features break, app still starts.
+- `sevenzipjbinding` native load can fail on modern Windows → PS2 game-ID
+  detection breaks silently. Usually caused by another OPLPOPS instance (old
+  or new) holding the native library's temp folder locked — don't run two at
+  once; clearing `%LOCALAPPDATA%\Temp\SevenZipJBinding-*` also helps.
 - TCP protocol only: the upload header's 2-digit length prefix means headers
   <10 or >99 chars are already malformed. Not applicable to the API backend.
 - `server/` has no path sanitisation, auth, or connection limits — fine for

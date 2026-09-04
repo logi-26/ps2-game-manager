@@ -183,11 +183,11 @@ public class PopsGameManager {
         if (TestMode){return 9876;} else {return 6789;}
     }
 
-    // Which backend a fresh BackendClient talks to: "tcp" (MyTCPClient, default) or "api" (MyApiClient)
-    // Override with -Doplpops.backend=api (or the OPLPOPS_BACKEND env var)
+    // Which backend a fresh BackendClient talks to: "api" (MyApiClient, default) or "tcp" (MyTCPClient)
+    // Override with -Doplpops.backend=tcp (or the OPLPOPS_BACKEND env var) to fall back to the old server
     public static String getBackendMode(){
         String override = System.getProperty("oplpops.backend", System.getenv("OPLPOPS_BACKEND"));
-        return (override != null && !override.trim().isEmpty()) ? override.trim().toLowerCase() : "tcp";
+        return (override != null && !override.trim().isEmpty()) ? override.trim().toLowerCase() : "api";
     }
 
     // Base URL of the HTTP API (only used when getBackendMode() is "api")

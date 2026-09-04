@@ -4,10 +4,10 @@
 
     Usage:
         pwsh ./build.ps1                              # compile + jar into build-local/
-        pwsh ./build.ps1 -Run                         # build, then launch against the TCP server (127.0.0.1:6789)
-        pwsh ./build.ps1 -Run -Server 10.0.0.5 -Port 6789 -Debug
-        pwsh ./build.ps1 -Run -Backend api             # launch against the HTTP API instead (127.0.0.1:8000/v1)
-        pwsh ./build.ps1 -Run -Backend api -ApiBaseUrl http://10.0.0.5:8000/v1
+        pwsh ./build.ps1 -Run                         # build, then launch against the HTTP API (127.0.0.1:8000/v1)
+        pwsh ./build.ps1 -Run -ApiBaseUrl http://10.0.0.5:8000/v1
+        pwsh ./build.ps1 -Run -Backend tcp             # fall back to the old TCP server (127.0.0.1:6789)
+        pwsh ./build.ps1 -Run -Backend tcp -Server 10.0.0.5 -Port 6789 -Debug
         pwsh ./build.ps1 -Run -Fresh                  # re-copy lib/ hdd/ POPSTARTER/ into the run dir
 
     IMPORTANT: on launch the app rewrites sibling files next to its jar
@@ -21,7 +21,7 @@ param(
     [switch]$Debug,
     [switch]$Fresh,
     [ValidateSet('tcp', 'api')]
-    [string]$Backend = 'tcp',
+    [string]$Backend = 'api',
     [string]$Server = '127.0.0.1',
     [int]$Port = 6789,
     [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1'
