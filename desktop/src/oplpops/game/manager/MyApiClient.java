@@ -19,10 +19,10 @@ import java.util.concurrent.Executors;
 import javax.swing.JOptionPane;
 
 /**
- * Talks to the HTTP API ({@code api/}) instead of the raw-TCP server. See
- * {@link BackendClient} for the contract and {@link MyTCPClient} for the
- * client this replaces - method-for-method, same local file layout, same
- * caller-visible behaviour, different wire format.
+ * Talks to the HTTP API ({@code api/}). See {@link BackendClient} for the
+ * contract; the raw-TCP server it replaced is gone (retired once the API
+ * backend had had enough real-world runway) but this kept the same local
+ * file layout and caller-visible behaviour, just a different wire format.
  */
 public class MyApiClient implements BackendClient {
 

@@ -77,8 +77,8 @@ public class GameVMCScreen extends javax.swing.JDialog {
         
         // Download the cheat file list from the server
         serverVMCList = new ArrayList<>();
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
-        tcpClient.getListFromServer("VMC", PopsGameManager.getCurrentConsole());
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        apiClient.getListFromServer("VMC", PopsGameManager.getCurrentConsole());
 
         File vmcListFile = new File(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "lists" + File.separator + PopsGameManager.getCurrentConsole() + "_ServerVMCList.dat");
         
@@ -182,8 +182,8 @@ public class GameVMCScreen extends javax.swing.JDialog {
     
     
     private void downloadVMCFile(){
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
-        tcpClient.getVMCFromServer(PopsGameManager.determineGameRegion(jTextFieldGameIDDisplay.getText().substring(0, 4)), jListVMCList.getSelectedValue(), jTextFieldGameTitleDisplay.getText().trim(), jTextFieldGameIDDisplay.getText());
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        apiClient.getVMCFromServer(PopsGameManager.determineGameRegion(jTextFieldGameIDDisplay.getText().substring(0, 4)), jListVMCList.getSelectedValue(), jTextFieldGameTitleDisplay.getText().trim(), jTextFieldGameIDDisplay.getText());
     }
     
     

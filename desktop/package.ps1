@@ -13,9 +13,8 @@
     (https://wixtoolset.org/) - not required for the app-image this script builds.
 
     Usage:
-        pwsh ./package.ps1                                  # app-image, defaults (api backend, 127.0.0.1:8000/v1)
+        pwsh ./package.ps1                                  # app-image, defaults (127.0.0.1:8000/v1)
         pwsh ./package.ps1 -ApiBaseUrl http://10.0.0.5:8000/v1
-        pwsh ./package.ps1 -Backend tcp -Server 10.0.0.5 -Port 6789
         pwsh ./package.ps1 -Icon path\to\icon.ico
         pwsh ./package.ps1 -Fresh                           # re-stage lib/ hdd/ POPSTARTER/ first
 
@@ -25,10 +24,6 @@
 param(
     [string]$AppVersion = '0.6.1',
     [string]$Vendor = 'Logi26',
-    [ValidateSet('tcp', 'api')]
-    [string]$Backend = 'api',
-    [string]$Server = '127.0.0.1',
-    [int]$Port = 6789,
     [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1',
     [string]$Icon,
     [switch]$Fresh
@@ -81,10 +76,7 @@ $jpackageArgs = @(
     '--main-class', 'oplpops.game.manager.Main'
     '--add-modules', $modules
     '--dest', $packageDir
-    '--java-options', "-Doplpops.backend=$Backend"
     '--java-options', "-Doplpops.api.baseurl=$ApiBaseUrl"
-    '--java-options', "-Doplpops.server.address=$Server"
-    '--java-options', "-Doplpops.server.port=$Port"
 )
 if ($Icon) { $jpackageArgs += @('--icon', $Icon) }
 

@@ -12,19 +12,14 @@
     need building separately per platform.
 
     Usage:
-        pwsh ./bundle-jar.ps1                          # defaults (api backend, 127.0.0.1:8000/v1)
+        pwsh ./bundle-jar.ps1                          # defaults (127.0.0.1:8000/v1)
         pwsh ./bundle-jar.ps1 -ApiBaseUrl http://10.0.0.5:8000/v1
-        pwsh ./bundle-jar.ps1 -Backend tcp -Server 10.0.0.5 -Port 6789
         pwsh ./bundle-jar.ps1 -Fresh                   # re-stage lib/ hdd/ POPSTARTER/ first
 
     Output: build-local/release/jar/  (zip it and hand it out)
 #>
 param(
     [string]$AppVersion = '0.6.1',
-    [ValidateSet('tcp', 'api')]
-    [string]$Backend = 'api',
-    [string]$Server = '127.0.0.1',
-    [int]$Port = 6789,
     [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1',
     [switch]$Fresh
 )
@@ -58,14 +53,11 @@ Copy-Item (Join-Path $runDir 'OPLPOPS-Manager-local.jar') (Join-Path $bundleDir 
 #    rewrites those two exact filenames on every startup with a bare
 #    `java -jar <jar>`, no backend flags, so anything baked in there only
 #    survives the first launch. run.sh/run.cmd are left alone by the app and
-#    set the backend on every launch via the env vars PopsGameManager also
-#    checks (see getBackendMode() etc.) - equivalent to package.ps1's
+#    set the API base URL on every launch via the env var PopsGameManager
+#    also checks (see getApiBaseUrl()) - equivalent to package.ps1's
 #    --java-options, just via env instead of a native launcher config.
 $envLines = @(
-    "OPLPOPS_BACKEND=$Backend"
     "OPLPOPS_API_BASEURL=$ApiBaseUrl"
-    "OPLPOPS_SERVER_ADDRESS=$Server"
-    "OPLPOPS_SERVER_PORT=$Port"
 )
 
 $sh = "#!/bin/sh`n" +

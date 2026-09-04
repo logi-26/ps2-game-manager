@@ -1,7 +1,6 @@
 # ---------------------------------------------------------------------------
 # ps2-game-manager - monorepo ignore rules
-#   desktop/  Java Swing app        server/  Java TCP server
-#   api/      (Part 2) Python       importer/ (Part 2) Python
+#   desktop/  Java Swing app        api/  Python HTTP API + database
 # ---------------------------------------------------------------------------
 
 # --- Java / NetBeans build output ---

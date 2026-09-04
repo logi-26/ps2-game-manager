@@ -86,8 +86,8 @@ public class GameImageScreenPS1 extends javax.swing.JDialog implements ImageSele
         
         String coverPath = coverType;
         
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
-        tcpClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber-1, false);
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber-1, false);
 
         File image; 
         if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverType + ".png");}
@@ -106,12 +106,12 @@ public class GameImageScreenPS1 extends javax.swing.JDialog implements ImageSele
         String[] splitName = gameList.get(currentListIndex).getGameID().split("_");
         int numberOfFiles = 0;
 
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
-        numberOfFiles = tcpClient.getImagesAvailableOnServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, false);
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        numberOfFiles = apiClient.getImagesAvailableOnServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, false);
         
         if (numberOfFiles > 0){
 
-            tcpClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber, false);
+            apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber, false);
 
             File image; 
             if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverPath + ".png");}

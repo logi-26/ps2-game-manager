@@ -200,7 +200,7 @@ def import_covers(db: Session, root: Path, only_console: str | None, limit: int 
 
 
 def import_vmcs(db: Session, root: Path, only_console: str | None) -> None:
-    # PS1 memory cards are .VMC, PS2 ones are .bin (see MyTCPClient.shareVMCWithServer)
+    # PS1 memory cards are .VMC, PS2 ones are .bin
     vmc_files = sorted(root.glob("MemoryCards/PS1/*/*.VMC")) + sorted(
         root.glob("MemoryCards/PS2/*/*.bin")
     )

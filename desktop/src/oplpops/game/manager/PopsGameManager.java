@@ -40,7 +40,6 @@ public class PopsGameManager {
     private static final String[] ALL_PREVIOUS_VERSIONS = {"0.0","0.1","0.2","0.3","0.4","0.5","0.6"};
     
     private static boolean DebugMode = false;
-    private static boolean TestMode = false;
     private static String userOperatingSystem;
     private static String userOperatingSystemVersion;
     private static String userOSArchitecture;
@@ -90,7 +89,6 @@ public class PopsGameManager {
     public static void addListener(MyListener listener) {LISTENERS.add(listener);}                                          // Adds callback LISTENERS to the list
     
     public static void setDebugMode(boolean debugMode) {DebugMode = debugMode;}                                             // Set debug mode on or off (if debug on, most of the exception messages will be printed)
-    public static void setTestMode(boolean testMode) {TestMode = testMode;}                                                 // Set test mode on or off (if test mode is on, the application will use the test server)
     public static void setCurrentConsole(String console){currentConsole = console;}                                         // This sets the current console and saves it to the settings.xml file
     public static void setFisrtLaunch(boolean first) {firstLaunch = first;}                                                 // This sets the first launch boolean value
     public static void setPS2IP(String ipAddress) {ps2IPAddress = ipAddress;}                                               // Sets the PS2 IP address  
@@ -165,43 +163,18 @@ public class PopsGameManager {
     }
     
     
-    // This returns the server address
-    // Override at launch with -Doplpops.server.address=127.0.0.1 (or the OPLPOPS_SERVER_ADDRESS env var)
-    public static String getServerAddress(){
-        String override = System.getProperty("oplpops.server.address", System.getenv("OPLPOPS_SERVER_ADDRESS"));
-        if (override != null && !override.trim().isEmpty()) {return override.trim();}
-        if (TestMode){return "192.168.0.60";} else {return "192.168.0.60";}
-    }
-
-    // This returns the server port number
-    // Override at launch with -Doplpops.server.port=6789 (or the OPLPOPS_SERVER_PORT env var)
-    public static int getServerPort(){
-        String override = System.getProperty("oplpops.server.port", System.getenv("OPLPOPS_SERVER_PORT"));
-        if (override != null && !override.trim().isEmpty()) {
-            try {return Integer.parseInt(override.trim());} catch (NumberFormatException ignored) {}
-        }
-        if (TestMode){return 9876;} else {return 6789;}
-    }
-
-    // Which backend a fresh BackendClient talks to: "api" (MyApiClient, default) or "tcp" (MyTCPClient)
-    // Override with -Doplpops.backend=tcp (or the OPLPOPS_BACKEND env var) to fall back to the old server
-    public static String getBackendMode(){
-        String override = System.getProperty("oplpops.backend", System.getenv("OPLPOPS_BACKEND"));
-        return (override != null && !override.trim().isEmpty()) ? override.trim().toLowerCase() : "api";
-    }
-
-    // Base URL of the HTTP API (only used when getBackendMode() is "api")
+    // Base URL of the HTTP API.
     // Override with -Doplpops.api.baseurl=http://host:8000/v1 (or the OPLPOPS_API_BASEURL env var)
     public static String getApiBaseUrl(){
         String override = System.getProperty("oplpops.api.baseurl", System.getenv("OPLPOPS_API_BASEURL"));
         return (override != null && !override.trim().isEmpty()) ? override.trim() : "http://127.0.0.1:8000/v1";
     }
 
-    // Creates a fresh backend client of whichever kind getBackendMode() selects.
-    // Every screen should get its client through here rather than constructing
-    // MyTCPClient/MyApiClient directly - this is the one place the switch happens.
+    // Creates a fresh backend client. Every screen should get its client
+    // through here rather than constructing MyApiClient directly - this is
+    // the one place that would need to change if another backend ever showed up.
     public static BackendClient newBackendClient(){
-        return "api".equals(getBackendMode()) ? new MyApiClient() : new MyTCPClient();
+        return new MyApiClient();
     }
     
     // This loads the settings from the settings.xml file
@@ -553,13 +526,13 @@ public class PopsGameManager {
 
                 // If the MD5 does not match the version on the server, this downloads the latest version
                 if (!currentCue2PopsMD5.equals(cue2popsMD5)){
-                    BackendClient tcpClient = newBackendClient();
+                    BackendClient apiClient = newBackendClient();
                     
                     // Create the temporary cue2pops backup folder
                     new File(currentCue2PopsFile.getParent() + File.separator + "backup").mkdir();
                     
                     // Get the latest version of cue2pops
-                    tcpClient.getCue2PopsFromServer(currentCue2PopsFile.getParent() + File.separator + "backup" + File.separator + currentCue2PopsFile.getName(), cue2popsMD5); 
+                    apiClient.getCue2PopsFromServer(currentCue2PopsFile.getParent() + File.separator + "backup" + File.separator + currentCue2PopsFile.getName(), cue2popsMD5); 
                 }
             }  
         }
@@ -574,13 +547,13 @@ public class PopsGameManager {
             
                 // If the MD5 does not match the version on the server, this downloads the latest version
                 if (!currentCue2PopsMD5.equals(cue2popsMD5)){
-                    BackendClient tcpClient = newBackendClient();
+                    BackendClient apiClient = newBackendClient();
                     
                     // Create the temporary cue2pops backup folder
                     new File(currentCue2PopsFile.getParent() + File.separator + "backup").mkdir();
 
                     // Get the latest version of cue2pops
-                    tcpClient.getCue2PopsFromServer(currentCue2PopsFile.getParent() + File.separator + "backup" + File.separator + currentCue2PopsFile.getName(), cue2popsMD5);
+                    apiClient.getCue2PopsFromServer(currentCue2PopsFile.getParent() + File.separator + "backup" + File.separator + currentCue2PopsFile.getName(), cue2popsMD5);
                 }
             }
             */

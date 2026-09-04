@@ -4,16 +4,16 @@ package oplpops.game.manager;
  * Everything the desktop app needs from a shared-content backend: art,
  * configs, cheats, VMCs, and app/tool updates.
  *
- * Two implementations exist side by side during the migration:
- * {@link MyTCPClient} (the original raw-TCP file server) and
- * {@link MyApiClient} (the HTTP API + database). Pick one with
- * {@link PopsGameManager#newBackendClient()}, which reads the
- * {@code oplpops.backend} setting ("tcp" or "api"). Every call site takes
- * this interface, never a concrete client, so the switch is one place.
+ * {@link MyApiClient} (the HTTP API + database) is the only implementation.
+ * It replaced the original raw-TCP file server (formerly MyTCPClient,
+ * removed once the API backend had had enough real-world runway). Every
+ * call site takes this interface, never the concrete client, so a future
+ * backend would still only need changing in one place -
+ * {@link PopsGameManager#newBackendClient()}.
  *
  * User uploads and bad-file reports were removed as a feature (no
  * shareImageWithServer/shareConfigWithServer/shareVMCWithServer/submitReport
- * here); see MyApiClient/MyTCPClient for what that used to look like.
+ * here); see MyApiClient's history for what that used to look like.
  */
 public interface BackendClient {
 

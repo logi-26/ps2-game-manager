@@ -2511,8 +2511,8 @@ public class GameConfigScreen extends javax.swing.JDialog {
         
         // Send the UDP request for the specific image file
         String[] splitName = gameList.get(currentListIndex).getGameID().split("_");
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
-        tcpClient.getConfigFromServer(PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),false);
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        apiClient.getConfigFromServer(PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),false);
 
         if (PopsGameManager.getCurrentConsole().equals("PS1")) {initialiseGUI(currentListIndex,configManager.gameConfigExists(GameListManager.getGamePS1(currentListIndex).getGameID(),GameListManager.getGamePS1(currentListIndex).getGameName()));}
         else if (PopsGameManager.getCurrentConsole().equals("PS2")) {initialiseGUI(currentListIndex,configManager.gameConfigExists(GameListManager.getGamePS2(currentListIndex).getGameID(),GameListManager.getGamePS1(currentListIndex).getGameName()));} 

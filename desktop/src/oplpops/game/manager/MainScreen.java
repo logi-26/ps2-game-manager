@@ -1001,10 +1001,10 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     // This checks to see if there is an update available on the server and if there is an update, the user has the option to download it
     private void checkForUpdate(){
 
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
+        BackendClient apiClient = PopsGameManager.newBackendClient();
         
         // Send a message to the server asking for the latest version number
-        String serverResponse = tcpClient.sendMessageToServer("VERSION");
+        String serverResponse = apiClient.sendMessageToServer("VERSION");
         
         if (serverResponse != null){
             
@@ -1027,7 +1027,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                     }
                     else if (!PopsGameManager.getApplicationVersionNumber().equals("NO_RESPONSE")){
                         int dialogResult = JOptionPane.showConfirmDialog (null, "There is an update available for this software!  \n\nCurrent Version : " + PopsGameManager.getApplicationVersionNumber() + "  -  (" + PopsGameManager.getApplicationReleaseDate() + ")  \nLatest Version   : " + newVersionNumber +  "  -  (" + newBuildDate + ")  \n\nDo you want to download the update?"," Update Available",JOptionPane.YES_NO_OPTION);
-                        if(dialogResult == JOptionPane.YES_OPTION){tcpClient.getJarFileFromServer(newVersionNumber);} 
+                        if(dialogResult == JOptionPane.YES_OPTION){apiClient.getJarFileFromServer(newVersionNumber);} 
                     }
                 }
             }

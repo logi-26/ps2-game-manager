@@ -1,6 +1,7 @@
 # api/ — HTTP API + database
 
-Database-backed replacement for the raw-TCP `server/`. FastAPI + SQLAlchemy 2.0 +
+Database-backed replacement for the original raw-TCP file server (retired).
+FastAPI + SQLAlchemy 2.0 +
 Alembic. Runs on **SQLite + local filesystem** out of the box; a single env var
 switches it to Postgres. Read-only: it serves the imported catalogue, nothing
 writes to it at runtime (user uploads and bad-file reports were removed as a

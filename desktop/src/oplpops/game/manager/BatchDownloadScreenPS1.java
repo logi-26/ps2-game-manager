@@ -133,9 +133,9 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
         processedGameList = new ArrayList<>();
         
         // First check to see if the server is responding to prevent wasting time sending many un-answered requests
-        BackendClient tcpClient = PopsGameManager.newBackendClient();
+        BackendClient apiClient = PopsGameManager.newBackendClient();
 
-        if (tcpClient.sendMessageToServer("RESPOND").equals("RESPONSE")){
+        if (apiClient.sendMessageToServer("RESPOND").equals("RESPONSE")){
             
             // First determine the total number of files to be downloaded (For the progress bar)
             totalFilesToDownload = 0;
@@ -302,16 +302,16 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
                 // Send the UDP request for the specific image file
                 String[] splitName = gameID.split("_");
 
-                BackendClient tcpClient = PopsGameManager.newBackendClient();
+                BackendClient apiClient = PopsGameManager.newBackendClient();
                 switch (fileType) {
                     case "CONFIG":
-                        tcpClient.getConfigFromServer(PopsGameManager.determineGameRegion(splitName[0]), gameID, gameName, true); 
+                        apiClient.getConfigFromServer(PopsGameManager.determineGameRegion(splitName[0]), gameID, gameName, true); 
                         break;
                     case "_SCR2":
-                        tcpClient.getImageFromServer(selectedGame, PopsGameManager.determineGameRegion(splitName[0]), gameID, currentGameName, fileType, fileType, 1, true);
+                        apiClient.getImageFromServer(selectedGame, PopsGameManager.determineGameRegion(splitName[0]), gameID, currentGameName, fileType, fileType, 1, true);
                         break;
                     default:
-                        tcpClient.getImageFromServer(selectedGame, PopsGameManager.determineGameRegion(splitName[0]), gameID, currentGameName, fileType, fileType, 0, true);
+                        apiClient.getImageFromServer(selectedGame, PopsGameManager.determineGameRegion(splitName[0]), gameID, currentGameName, fileType, fileType, 0, true);
                         break;
                 }
                 

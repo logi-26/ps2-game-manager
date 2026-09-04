@@ -2,7 +2,7 @@
 
 Game manager for Open PS2 Loader (OPL) and POPSTARTER — a cross-platform desktop
 app for managing PlayStation 1 / PlayStation 2 game, art, config, cheat and save
-files, plus the backend that serves shared art/config data.
+files, plus the API that serves shared art/config data.
 
 This is the consolidated repo. It supersedes the three earlier repos
 `oplpops-manager`, `oplpops-server`, `oplpops-api` (kept archived for history).
@@ -12,19 +12,16 @@ This is the consolidated repo. It supersedes the three earlier repos
 | Path | What |
 |---|---|
 | `desktop/` | Java 8 Swing desktop app (`oplpops.game.manager`). Build with `desktop/build.ps1`. |
-| `api/` | HTTP API + database (FastAPI + SQLAlchemy + Alembic) — the default backend. SQLite + local blobs by default; Postgres via one env var. See [`api/README.md`](api/README.md). |
-| `server/` | Raw-TCP file server (`tcpserver`), port 6789. Build with `server/build.ps1`. **Legacy** — kept as a fallback (`-Backend tcp`) until it's retired. |
-| `local-dev/` | Scripts + fixture generator to run desktop ↔ backend on localhost. |
+| `api/` | HTTP API + database (FastAPI + SQLAlchemy + Alembic) — the backend. SQLite + local blobs by default; Postgres via one env var. See [`api/README.md`](api/README.md). |
+| `local-dev/` | Scripts to run desktop ↔ API on localhost. |
 | `docs/plan.html` | The rebuild + overhaul plan (open in a browser; progress is checkable). |
 | `compose.yaml` | Optional Postgres + MinIO for running `api/` on non-default infra. |
 
 `desktop/src/.../BackendClient.java` is the shared interface; `MyApiClient` (on
-`java.net.http.HttpClient`) is the default implementation, `MyTCPClient` (the
-original) is still there as a fallback.
-`PopsGameManager.newBackendClient()` picks one — `api` unless overridden with
-`-Doplpops.backend=tcp -Doplpops.server.address=... -Doplpops.server.port=...`.
-Still to come: retiring `server/`/`MyTCPClient` once the API backend has had
-enough real-world runway.
+`java.net.http.HttpClient`) is the only implementation. The original raw-TCP
+file server (`server/`, `MyTCPClient`) has been retired — it had enough
+real-world runway on the API backend and was removed rather than kept as a
+fallback.
 
 ## Build & run locally
 
@@ -32,18 +29,12 @@ Needs a JDK on `PATH` (`javac` + `jar`; tested with Temurin 25 — bytecode targ
 PowerShell scripts: run with `pwsh ./x.ps1` or `powershell -ExecutionPolicy Bypass -File x.ps1`.
 
 ```powershell
-# default: HTTP API + the real imported data (after api/'s one-time setup, see api/README.md)
+# after api/'s one-time setup, see api/README.md
 ./local-dev/run-api.ps1          # terminal 1 — serves :8000
 ./local-dev/run-manager.ps1      # terminal 2 — builds + launches the app
-
-# fallback: the old TCP server + a placeholder fixture
-./local-dev/setup-serverdata.ps1        # once
-./local-dev/run-server.ps1              # terminal 1 — builds + serves on :6789
-./local-dev/run-manager.ps1 -Backend tcp  # terminal 2
 ```
 
-`local-dev/protocol-check.py` exercises the TCP server's wire protocol without
-the GUI. Full runbook and smoke test: [`local-dev/README.md`](local-dev/README.md).
+Full runbook and smoke test: [`local-dev/README.md`](local-dev/README.md).
 
 ## Packaging a release
 
@@ -74,8 +65,8 @@ recipient needs their own Java 11+ on PATH — but it's the same bundle for
 every OS (the native tool binaries and 7-Zip bindings it ships already cover
 Windows/macOS/Linux), so it only needs building once, here.
 
-Both scripts take `-ApiBaseUrl`/`-Backend`/`-Server`/`-Port` to bake in a
-different default backend for the recipient.
+Both scripts take `-ApiBaseUrl` to bake in a different default API for the
+recipient.
 
 ## Local data corpora (not in git)
 
