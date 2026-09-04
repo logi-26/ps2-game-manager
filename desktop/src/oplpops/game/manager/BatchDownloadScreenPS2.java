@@ -4,14 +4,8 @@ import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
@@ -103,24 +97,24 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
 
     // This counts the number of files
     private void detectMissingFiles(){
-        
+
         gameList.stream().map((game) -> {
-            if (!artList.contains(game.getGameID() + "_COV.jpg") && !artList.contains(game.getGameID() + "_COV.png")){missingFrontCovers++;}
+            if (GameArtFileManager.isMissing(artList, game, "_COV")) {missingFrontCovers++;}
             return game;
         }).map((game) -> {
-            if (!artList.contains(game.getGameID() + "_COV2.jpg") && !artList.contains(game.getGameID() + "_COV2.png")){missingRearCovers++;}
+            if (GameArtFileManager.isMissing(artList, game, "_COV2")) {missingRearCovers++;}
             return game;
         }).map((game) -> {
-            if (!artList.contains(game.getGameID() + "_ICO.jpg") && !artList.contains(game.getGameID() + "_ICO.png")){missingDiscImages++;}
+            if (GameArtFileManager.isMissing(artList, game, "_ICO")) {missingDiscImages++;}
             return game;
         }).map((game) -> {
-            if (!artList.contains(game.getGameID() + "_SCR.jpg") && !artList.contains(game.getGameID() + "_SCR.png")){missingScreenshots++;}
+            if (GameArtFileManager.isMissing(artList, game, "_SCR")) {missingScreenshots++;}
             return game;
         }).map((game) -> {
-            if (!artList.contains(game.getGameID() + "_SCR2.jpg") && !artList.contains(game.getGameID() + "_SCR2.png")){missingScreenshots++;}
+            if (GameArtFileManager.isMissing(artList, game, "_SCR2")) {missingScreenshots++;}
             return game;
         }).map((game) -> {
-            if (!artList.contains(game.getGameID() + "_BG.jpg") && !artList.contains(game.getGameID() + "_BG.png")){missingBackgrounds++;}
+            if (GameArtFileManager.isMissing(artList, game, "_BG")) {missingBackgrounds++;}
             return game;
         }).filter((game) -> (!configList.contains(game.getGameID() + ".cfg"))).forEach((_item) -> {
             missingConfigss++;
@@ -153,14 +147,14 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
             DOWNLOAD_STATUS_BAR.setMaximum(totalFilesToDownload);
 
             // Downloads the missing files using the background worker thread (So the progress bar can be updated)
-            if (jCheckBoxFrontCover.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (!artList.contains(gameList.get(i).getGameID() + "_COV.jpg") && !artList.contains(gameList.get(i).getGameID() + "_COV.png")) new BackgroundWorker(gameList.get(i).getGameID(), "_COV").execute();}
-            if (jCheckBoxRearCover.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (!artList.contains(gameList.get(i).getGameID() + "_COV2.jpg") && !artList.contains(gameList.get(i).getGameID() + "_COV2.png")) new BackgroundWorker(gameList.get(i).getGameID(), "_COV2").execute();}
-            if (jCheckBoxDiscImage.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (!artList.contains(gameList.get(i).getGameID() + "_ICO.jpg") && !artList.contains(gameList.get(i).getGameID() + "_ICO.png")) new BackgroundWorker(gameList.get(i).getGameID(), "_ICO").execute();}
+            if (jCheckBoxFrontCover.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_COV")) new BackgroundWorker(gameList.get(i).getGameID(), "_COV").execute();}
+            if (jCheckBoxRearCover.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_COV2")) new BackgroundWorker(gameList.get(i).getGameID(), "_COV2").execute();}
+            if (jCheckBoxDiscImage.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_ICO")) new BackgroundWorker(gameList.get(i).getGameID(), "_ICO").execute();}
             if (jCheckBoxScreenshot.isSelected()) {
-                for (int i = 0; i < gameList.size(); i++) {if (!artList.contains(gameList.get(i).getGameID() + "_SCR.jpg") && !artList.contains(gameList.get(i).getGameID() + "_SCR.png")) new BackgroundWorker(gameList.get(i).getGameID(), "_SCR").execute();}
-                for (int i = 0; i < gameList.size(); i++) {if (!artList.contains(gameList.get(i).getGameID() + "_SCR2.jpg") && !artList.contains(gameList.get(i).getGameID() + "_SCR2.png")) new BackgroundWorker(gameList.get(i).getGameID(), "_SCR2").execute();}
+                for (int i = 0; i < gameList.size(); i++) {if (GameArtFileManager.isMissing(artList, gameList.get(i), "_SCR")) new BackgroundWorker(gameList.get(i).getGameID(), "_SCR").execute();}
+                for (int i = 0; i < gameList.size(); i++) {if (GameArtFileManager.isMissing(artList, gameList.get(i), "_SCR2")) new BackgroundWorker(gameList.get(i).getGameID(), "_SCR2").execute();}
             }
-            if (jCheckBoxBackground.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (!artList.contains(gameList.get(i).getGameID() + "_BG.jpg") && !artList.contains(gameList.get(i).getGameID() + "_BG.png")) new BackgroundWorker(gameList.get(i).getGameID(), "_BG").execute();}
+            if (jCheckBoxBackground.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_BG")) new BackgroundWorker(gameList.get(i).getGameID(), "_BG").execute();}
             if (jCheckBoxConfigFile.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (!configList.contains(gameList.get(i).getGameID() + ".cfg")) new BackgroundWorker(gameList.get(i).getGameID(), "CONFIG").execute();}
         }
         else {JOptionPane.showMessageDialog(null,"The server is not responding at the moment!"," Server Connection Error!",JOptionPane.WARNING_MESSAGE);} 
@@ -168,97 +162,52 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
     
     
     // This displays the game images in the GUI
-    private void displayGameImages(String gameID, String fileType){
+    private void displayGameImages(Game game, String fileType){
 
         // Front cover
         if (fileType.equals("_COV")){
-            File frontCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_COV" + ".jpg");
-            if(frontCover.exists() && !frontCover.isDirectory()) {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(frontCover.toString()).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
-            else {
-                frontCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_COV" + ".png");
-                if(frontCover.exists() && !frontCover.isDirectory()) {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(frontCover.toString()).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
-                else {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS2_COVER_PATH).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));} 
-            } 
+            File frontCover = GameArtFileManager.resolve(game, "_COV");
+            if (frontCover != null) {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(frontCover.toString()).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
+            else {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS2_COVER_PATH).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
         }
-       
+
         // Rear cover
         if (fileType.equals("_COV2")){
-            File rearCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_COV2" + ".jpg");
-            if(rearCover.exists() && !rearCover.isDirectory()) {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(rearCover.toString()).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
-            else {
-                rearCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_COV2" + ".png");
-                if(rearCover.exists() && !rearCover.isDirectory()) {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(rearCover.toString()).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
-                else {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS2_COVER_PATH).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
-            }   
+            File rearCover = GameArtFileManager.resolve(game, "_COV2");
+            if (rearCover != null) {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(rearCover.toString()).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
+            else {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS2_COVER_PATH).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
         }
-        
+
         // Background image
         if (fileType.equals("_BG")){
-            File backgroundImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_BG" + ".jpg");
-            if(backgroundImage.exists() && !backgroundImage.isDirectory()) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(backgroundImage.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
-            else {
-                backgroundImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_BG" + ".png");
-                if(backgroundImage.exists() && !backgroundImage.isDirectory()) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(backgroundImage.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
-                else {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_BACKGROUND_PATH).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));} 
-            }   
+            File backgroundImage = GameArtFileManager.resolve(game, "_BG");
+            if (backgroundImage != null) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(backgroundImage.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
+            else {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_BACKGROUND_PATH).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
         }
 
         // Disc image
         if (fileType.equals("_ICO")){
-            File discImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_ICO" + ".jpg");
-            if(discImage.exists() && !discImage.isDirectory()) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(discImage.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
-            else {
-                discImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_ICO" + ".png");
-                if(discImage.exists() && !discImage.isDirectory()) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(discImage.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
-                else {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_DISC_PATH).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));} 
-            }  
+            File discImage = GameArtFileManager.resolve(game, "_ICO");
+            if (discImage != null) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(discImage.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
+            else {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_DISC_PATH).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
         }
 
         // Screenshot 1 image
         if (fileType.equals("_SCR")){
-            File screenshot1Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_SCR" + ".jpg");
-            if(screenshot1Image.exists() && !screenshot1Image.isDirectory()) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(screenshot1Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
-            else {
-                screenshot1Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_SCR" + ".png");
-                if(screenshot1Image.exists() && !screenshot1Image.isDirectory()) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(screenshot1Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
-                else {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));} 
-            }  
+            File screenshot1Image = GameArtFileManager.resolve(game, "_SCR");
+            if (screenshot1Image != null) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(screenshot1Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
+            else {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
         }
-        
+
         // Screenshot 2 image
         if (fileType.equals("_SCR2")){
-            File screenshot2Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_SCR2" + ".jpg");
-            if(screenshot2Image.exists() && !screenshot2Image.isDirectory()) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
-            else {
-                screenshot2Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + "_SCR2" + ".png");
-                if(screenshot2Image.exists() && !screenshot2Image.isDirectory()) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
-                else {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));} 
-            }  
+            File screenshot2Image = GameArtFileManager.resolve(game, "_SCR2");
+            if (screenshot2Image != null) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
+            else {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
         }
     }
-    
-    
-    // This checks the titles of the games in the config files with the users game names
-    // This is required because the user may name the game file slightly differently
-    private void renameConfigGameTitles(){
-        
-        try(Stream<Path> paths = Files.walk(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator))) {
-            paths.forEach(filePath -> {
-                if (Files.isRegularFile(filePath)) {
-                    
-                    gameList.stream().filter((ps2Game) -> (ps2Game.getGameID().equals(filePath.getFileName().toString().substring(0, filePath.getFileName().toString().length()-4)))).forEachOrdered((ps2Game) -> {
-                        try {
-                            List<String> fileContent = new ArrayList<>(Files.readAllLines(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + ps2Game.getGameID() + ".cfg"), StandardCharsets.UTF_8));
-                            if (fileContent.get(1).substring(0, 5).equals("Title")) {fileContent.set(1, "Title=" + ps2Game.getGameName());}
-                            Files.write(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + ps2Game.getGameID() + ".cfg"), fileContent, StandardCharsets.UTF_8);
-                        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                    });
-                }
-            });
-        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} 
-    }
 
-    
+
     // Background worker thread: this downloads the file from the server and updates the progress bar in the GUI
     public class BackgroundWorker extends SwingWorker<Object, File> {
         private final String gameID;
@@ -313,13 +262,14 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
                 // Display the game name for the current file being downloaded and add it to the list
                 // (marshalled onto the EDT - Swing components must not be touched from doInBackground())
                 String finalGameName = gameName;
+                Game finalSelectedGame = selectedGame;
                 SwingUtilities.invokeLater(() -> {
                     if (finalGameName != null) {
                         jTextFieldGameName.setText(" " + finalGameName + " : " + gameID);
                         if (!processedGameList.contains(finalGameName)) {processedGameList.add(finalGameName);}
                         createList(processedGameList.toArray(new String[0]));
                     }
-                    displayGameImages(gameID, fileType);
+                    displayGameImages(finalSelectedGame, fileType);
                 });
             }
 
@@ -336,7 +286,7 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
             threadCount +=1;
             if (threadCount == totalFilesToDownload) {
                 DOWNLOAD_STATUS_BAR.setValue(totalFilesToDownload);
-                renameConfigGameTitles();
+                GameConfigFileManager.renameConfigTitlesToMatch(gameList);
             }
         }
     }

@@ -7,8 +7,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class GameConfigFileManager {
     
@@ -169,5 +175,28 @@ public class GameConfigFileManager {
         Collections.sort(storedList);  
         
         return newList.equals(storedList);
-    }  
+    }
+
+
+    // Checks the titles inside each game's config file against the current game list and rewrites
+    // them to match where they differ (the user may have named the game file slightly differently).
+    // Shared by BatchDownloadScreenPS1/PS2 after a batch download finishes - identical for both consoles,
+    // since it only touches the CFG files' own Title= line, not the console-specific ART naming.
+    static void renameConfigTitlesToMatch(List<Game> gameList){
+
+        try (Stream<Path> paths = Files.walk(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator))) {
+            paths.forEach(filePath -> {
+                if (Files.isRegularFile(filePath)) {
+
+                    gameList.stream().filter((game) -> (game.getGameID().equals(filePath.getFileName().toString().substring(0, filePath.getFileName().toString().length()-4)))).forEachOrdered((game) -> {
+                        try {
+                            List<String> fileContent = new ArrayList<>(Files.readAllLines(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + game.getGameID() + ".cfg"), StandardCharsets.UTF_8));
+                            if (fileContent.get(1).substring(0, 5).equals("Title")) {fileContent.set(1, "Title=" + game.getGameName());}
+                            Files.write(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + game.getGameID() + ".cfg"), fileContent, StandardCharsets.UTF_8);
+                        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    });
+                }
+            });
+        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+    }
 }
