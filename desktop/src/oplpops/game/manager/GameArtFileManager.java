@@ -45,4 +45,12 @@ final class GameArtFileManager {
         if (file.exists() && !file.isDirectory()) {return file;}
         return null;
     }
+
+    // Deletes both the .jpg and .png variant of a game's art file, if present.
+    static void deleteAll(Game game, String suffix) {
+        File file = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + baseName(game, suffix) + ".jpg");
+        if (file.exists() && !file.isDirectory()) {file.delete();}
+        file = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + baseName(game, suffix) + ".png");
+        if (file.exists() && !file.isDirectory()) {file.delete();}
+    }
 }

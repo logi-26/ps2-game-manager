@@ -89,9 +89,10 @@ public class GameImageScreenPS1 extends javax.swing.JDialog implements ImageSele
         BackendClient apiClient = PopsGameManager.newBackendClient();
         apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber-1, false);
 
-        File image; 
-        if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverType + ".png");}
-        else {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverType + ".jpg");}
+        String base = GameArtFileManager.baseName(gameList.get(currentListIndex), coverType);
+        File image;
+        if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".png");}
+        else {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".jpg");}
 
         if(image.exists() && !image.isDirectory()) {if (imageSelectorScreen != null){
             imageSelectorScreen.updateImage(image);}
@@ -113,9 +114,10 @@ public class GameImageScreenPS1 extends javax.swing.JDialog implements ImageSele
 
             apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber, false);
 
-            File image; 
-            if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverPath + ".png");}
-            else {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverPath + ".jpg");}
+            String base = GameArtFileManager.baseName(gameList.get(currentListIndex), coverPath);
+            File image;
+            if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".png");}
+            else {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".jpg");}
 
             if (coverPath.equals("_COV")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_COV", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
             if (coverPath.equals("_COV2")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_COV2", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
@@ -196,74 +198,44 @@ public class GameImageScreenPS1 extends javax.swing.JDialog implements ImageSele
 
     // This displays the game images in the GUI
     private void displayGameImages(){
-        
+
+        Game game = gameList.get(currentListIndex);
+
         // Front cover
-        File frontCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_COV" + ".jpg");
-        if(frontCover.exists() && !frontCover.isDirectory()) {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(frontCover.toString()).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
-        else {
-            frontCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_COV" + ".png");
-            if(frontCover.exists() && !frontCover.isDirectory()) {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(frontCover.toString()).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
-            else {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS1_COVER_PATH).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));} 
-        } 
+        File frontCover = GameArtFileManager.resolve(game, "_COV");
+        if (frontCover != null) {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(frontCover.toString()).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
+        else {jLabelGameFrontCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS1_COVER_PATH).getImage().getScaledInstance(jLabelGameFrontCover.getWidth(), jLabelGameFrontCover.getHeight(), Image.SCALE_DEFAULT)));}
 
         // Rear cover
-        File rearCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_COV2" + ".jpg");
-        if(rearCover.exists() && !rearCover.isDirectory()) {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(rearCover.toString()).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
-        else {
-            rearCover = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_COV2" + ".png");
-            if(rearCover.exists() && !rearCover.isDirectory()) {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(rearCover.toString()).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
-            else {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS1_COVER_PATH).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT))); }
-        }   
+        File rearCover = GameArtFileManager.resolve(game, "_COV2");
+        if (rearCover != null) {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(rearCover.toString()).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
+        else {jLabelGameRearCover.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_PS1_COVER_PATH).getImage().getScaledInstance(jLabelGameRearCover.getWidth(), jLabelGameRearCover.getHeight(), Image.SCALE_DEFAULT)));}
 
         // Background image
-        File backgroundImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_BG" + ".jpg");
-        if(backgroundImage.exists() && !backgroundImage.isDirectory()) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(backgroundImage.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
-        else {
-            backgroundImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_BG" + ".png");
-            if(backgroundImage.exists() && !backgroundImage.isDirectory()) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(backgroundImage.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
-            else {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_BACKGROUND_PATH).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
-        }   
+        File backgroundImage = GameArtFileManager.resolve(game, "_BG");
+        if (backgroundImage != null) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(backgroundImage.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
+        else {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_BACKGROUND_PATH).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
 
         // Disc image
-        File discImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_ICO" + ".jpg");
-        if(discImage.exists() && !discImage.isDirectory()) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(discImage.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
-        else {
-            discImage = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_ICO" + ".png");
-            if(discImage.exists() && !discImage.isDirectory()) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(discImage.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
-            else {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_DISC_PATH).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
-        }  
-        
+        File discImage = GameArtFileManager.resolve(game, "_ICO");
+        if (discImage != null) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(discImage.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
+        else {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_DISC_PATH).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
+
         // Screenshot 1 image
-        File screenshot1Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_SCR" + ".jpg");
-        if(screenshot1Image.exists() && !screenshot1Image.isDirectory()) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(screenshot1Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
-        else {
-            screenshot1Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_SCR" + ".png");
-            if(screenshot1Image.exists() && !screenshot1Image.isDirectory()) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(screenshot1Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
-            else {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));} 
-        }  
-        
+        File screenshot1Image = GameArtFileManager.resolve(game, "_SCR");
+        if (screenshot1Image != null) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(screenshot1Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
+        else {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
+
         // Screenshot 2 image
-        File screenshot2Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_SCR2" + ".jpg");
-        if(screenshot2Image.exists() && !screenshot2Image.isDirectory()) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
-        else {
-            screenshot2Image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + "_SCR2" + ".png");
-            if(screenshot2Image.exists() && !screenshot2Image.isDirectory()) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
-            else {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));} 
-        }  
+        File screenshot2Image = GameArtFileManager.resolve(game, "_SCR2");
+        if (screenshot2Image != null) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
+        else {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
     }
-    
+
 
     // This deletes an image file
     private void deleteImage(String coverType){
-
-        // Delete the file if it is a jpg 
-        File imageFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverType + ".jpg");
-        if(imageFile.exists() && !imageFile.isDirectory()) {imageFile.delete();}
-        
-        // Delete the file if it is a png 
-        imageFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameList.get(currentListIndex).getGameName() + "-" + gameList.get(currentListIndex).getGameID() + ".ELF" + coverType + ".png");
-        if(imageFile.exists() && !imageFile.isDirectory()) {imageFile.delete();}
-
+        GameArtFileManager.deleteAll(gameList.get(currentListIndex), coverType);
         displayGameImages();
     }
     
