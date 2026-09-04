@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import (
-    Boolean,
     DateTime,
     ForeignKey,
     Integer,
@@ -145,12 +144,3 @@ class ToolRelease(Base, TimestampMixin):
     bytes: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
-class FileReport(Base, TimestampMixin):
-    __tablename__ = "file_report"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    game_id: Mapped[str | None] = mapped_column(ForeignKey("game.id", ondelete="SET NULL"))
-    file_type: Mapped[str] = mapped_column(String(16), nullable=False)  # COV, CFG, CHT, VMC, ...
-    reason: Mapped[str] = mapped_column(Text, nullable=False)
-    reporter: Mapped[str | None] = mapped_column(String(64))
-    resolved: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)

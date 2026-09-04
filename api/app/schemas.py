@@ -89,13 +89,6 @@ class ToolReleaseOut(ORMModel):
     bytes: int
 
 
-class ReportIn(BaseModel):
-    game_id: str | None = None
-    file_type: str
-    reason: str
-    reporter: str | None = None
-
-
 class Page(BaseModel, Generic[T]):
     items: list[T]
     total: int

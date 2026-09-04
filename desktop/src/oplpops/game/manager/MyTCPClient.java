@@ -1,14 +1,12 @@
 package oplpops.game.manager;
 
-import java.awt.image.BufferedImage;
-import java.io.*; 
+import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 /** The original raw-TCP backend client. Being replaced by {@link MyApiClient} - see {@link BackendClient}. */
@@ -22,130 +20,6 @@ public class MyTCPClient implements BackendClient {
 
 
     public MyTCPClient() {}
-
-    // Reports a bad/missing file to the server (moved here, verbatim, from the old inline call in FileReportScreen)
-    @Override
-    public void submitReport(String fileName, String console, String fileType, String gameRegion, String errorDescription){
-        sendMessageToServer("REPORT," + fileName + "," + console + "," + fileType + "," + gameRegion + "," + errorDescription + "," + PopsGameManager.getMacAddress() + "," + PopsGameManager.getApplicationVersionNumber());
-    }
-
-    // This shares an image file with the server
-    public void shareImageWithServer(String console, String gameRegion, String gameID, String coverType, String imagePath) throws IOException{
-
-        Socket serverSocket = getServerSocket();
-        
-        if (serverSocket != null){      
-            OutputStream outputStream = createOutputStream(serverSocket); 
-            
-            if (outputStream != null){
-                String outMessage = "UPLOAD_ART," + console + "," + gameRegion + "," + coverType + "," + gameID + "," + PopsGameManager.getMacAddress() + "," + PopsGameManager.getApplicationVersionNumber() + "," + PopsGameManager.getOSType() + "_" + PopsGameManager.getOSArchitecture() + "," + "0";
-                DataOutputStream dataOutStream = new DataOutputStream(outputStream);
-
-                int messageLength = outMessage.length() + 3;
-                String finalMessage = messageLength + "," + outMessage;
-                byte[] bufferedMessage = finalMessage.getBytes();
-
-                // Load the selected image into a buffer
-                File selectedFile = new File(imagePath);
-                if(selectedFile.exists() && !selectedFile.isDirectory()) {
-
-                    // Read the image file into the imageBuffer
-                    BufferedImage bufferedImage = ImageIO.read(new File(imagePath));
-                    ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-                    ImageIO.write(bufferedImage, "jpg", byteOutStream);
-                    byteOutStream.flush();
-                    byte[] imageBuffer = byteOutStream.toByteArray();
-
-                    // Create a new buffer and place the message string and the buffered image into it
-                    byte[] fullMessage = new byte[bufferedMessage.length + imageBuffer.length];
-                    System.arraycopy(bufferedMessage, 0, fullMessage, 0, bufferedMessage.length);
-                    System.arraycopy(imageBuffer, 0, fullMessage, bufferedMessage.length, imageBuffer.length);
-
-                    try {
-                        dataOutStream.writeInt(fullMessage.length);
-                        if (fullMessage.length > 0) try {dataOutStream.write(fullMessage, 0, fullMessage.length);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                    } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                }
-            }
-        }
-    }
-    
-    
-    // This shares a config file with the server
-    public void shareConfigWithServer(String console, String gameRegion, String gameID, String configPath) throws IOException{
-
-        Socket serverSocket = getServerSocket();
-        
-        if (serverSocket != null){      
-            OutputStream outputStream = createOutputStream(serverSocket); 
-            
-            if (outputStream != null){
-                String outMessage = "UPLOAD_CFG," + console + "," + gameRegion + "," + gameID + "," + PopsGameManager.getMacAddress() + "," + PopsGameManager.getApplicationVersionNumber() + "," + PopsGameManager.getOSType() + "_" + PopsGameManager.getOSArchitecture() + "," + "0";
-                DataOutputStream dataOutStream = new DataOutputStream(outputStream);
-
-                int messageLength = outMessage.length() + 3;
-                String finalMessage = messageLength + "," + outMessage;
-                byte[] bufferedMessage = finalMessage.getBytes();
-
-                // Load the selected config file into a buffer
-                File selectedFile = new File(configPath);
-                if(selectedFile.exists() && !selectedFile.isDirectory()) {
-                    
-                    // Load the config file into a buffer
-                    byte[] configFileBuffer = Files.readAllBytes(Paths.get(selectedFile.getAbsolutePath()));
-                    
-                    // Create a new buffer and place the message string and the buffered config file into it
-                    byte[] fullMessage = new byte[bufferedMessage.length + configFileBuffer.length];
-                    System.arraycopy(bufferedMessage, 0, fullMessage, 0, bufferedMessage.length);
-                    System.arraycopy(configFileBuffer, 0, fullMessage, bufferedMessage.length, configFileBuffer.length);
-
-                    try {
-                        dataOutStream.writeInt(fullMessage.length);
-                        if (fullMessage.length > 0) try {dataOutStream.write(fullMessage, 0, fullMessage.length);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                    } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                }
-            }
-        }
-    }
-    
-    
-    // This shares a vmc file with the server
-    public void shareVMCWithServer(String console, String gameRegion, String gameID, String vmcPath, String vmcDescription) throws IOException{
-        
-        Socket serverSocket = getServerSocket();
-        
-        if (serverSocket != null){      
-            OutputStream outputStream = createOutputStream(serverSocket); 
-            
-            if (outputStream != null){
-                String outMessage = "UPLOAD_VMC," + console + "," + gameRegion + "," + gameID + "," + vmcDescription + "," + PopsGameManager.getMacAddress() + "," + PopsGameManager.getApplicationVersionNumber() + "," + PopsGameManager.getOSType() + "_" + PopsGameManager.getOSArchitecture() + "," + "0";
-                DataOutputStream dataOutStream = new DataOutputStream(outputStream);
-
-                int messageLength = outMessage.length() + 3;
-                String finalMessage = messageLength + "," + outMessage;
-                byte[] bufferedMessage = finalMessage.getBytes();
-
-                // Load the selected VMC file into a buffer
-                File selectedFile = new File(vmcPath);
-                if(selectedFile.exists() && !selectedFile.isDirectory()) {
-                    
-                    // Load the VMC file into a buffer
-                    byte[] vmcFileBuffer = Files.readAllBytes(Paths.get(selectedFile.getAbsolutePath()));
-                    
-                    // Create a new buffer and place the message string and the buffered VMC file into it
-                    byte[] fullMessage = new byte[bufferedMessage.length + vmcFileBuffer.length];
-                    System.arraycopy(bufferedMessage, 0, fullMessage, 0, bufferedMessage.length);
-                    System.arraycopy(vmcFileBuffer, 0, fullMessage, bufferedMessage.length, vmcFileBuffer.length);
-
-                    try {
-                        dataOutStream.writeInt(fullMessage.length);
-                        if (fullMessage.length > 0) try {dataOutStream.write(fullMessage, 0, fullMessage.length);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                    } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                }
-            }
-        }
-    }
-    
 
     // This gets the latest update from the server
     public void getJarFileFromServer(String newVersionNumber){

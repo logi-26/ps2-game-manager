@@ -1,10 +1,8 @@
 package oplpops.game.manager;
 
-import java.io.IOException;
-
 /**
  * Everything the desktop app needs from a shared-content backend: art,
- * configs, cheats, VMCs, app/tool updates and bad-file reports.
+ * configs, cheats, VMCs, and app/tool updates.
  *
  * Two implementations exist side by side during the migration:
  * {@link MyTCPClient} (the original raw-TCP file server) and
@@ -12,13 +10,12 @@ import java.io.IOException;
  * {@link PopsGameManager#newBackendClient()}, which reads the
  * {@code oplpops.backend} setting ("tcp" or "api"). Every call site takes
  * this interface, never a concrete client, so the switch is one place.
+ *
+ * User uploads and bad-file reports were removed as a feature (no
+ * shareImageWithServer/shareConfigWithServer/shareVMCWithServer/submitReport
+ * here); see MyApiClient/MyTCPClient for what that used to look like.
  */
 public interface BackendClient {
-
-    // ---- sharing (upload) -------------------------------------------------
-    void shareImageWithServer(String console, String gameRegion, String gameID, String coverType, String imagePath) throws IOException;
-    void shareConfigWithServer(String console, String gameRegion, String gameID, String configPath) throws IOException;
-    void shareVMCWithServer(String console, String gameRegion, String gameID, String vmcPath, String vmcDescription) throws IOException;
 
     // ---- app / tool updates -------------------------------------------------
     void getJarFileFromServer(String newVersionNumber);
@@ -37,7 +34,4 @@ public interface BackendClient {
     // ---- misc -------------------------------------------------
     /** "RESPOND" -&gt; "RESPONSE"/"NO_RESPONSE"; "VERSION" -&gt; "&lt;version&gt;,&lt;date&gt;"/"NO_RESPONSE". */
     String sendMessageToServer(String serverMessage);
-
-    /** Reports a bad/missing file for a game so it can be reviewed. */
-    void submitReport(String fileName, String console, String fileType, String gameRegion, String errorDescription);
 }

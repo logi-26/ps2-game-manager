@@ -107,6 +107,10 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jCheckBoxMenuPS1Compatability.setSelected(PopsGameManager.getGameCompatabilityPS1());
         jCheckBoxMenuItemPS2ULCFG.setSelected(PopsGameManager.getSplitGameDisplayPS2());
         jMenuItemReportCompatability.setVisible(false);
+        // User uploads and bad-file reports are no longer offered
+        jMenuItemBatchFileShare.setVisible(false);
+        jMenuItemReportFile.setVisible(false);
+        jMenuItemShareVMC.setVisible(false);
         initialiseGUI(0);
     }
     
@@ -2419,9 +2423,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuBatchPS1ElfActionPerformed
 
     private void jMenuItemBatchFileShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBatchFileShareActionPerformed
-        BatchFileShareScreen batchArtShareScreen = new BatchFileShareScreen(this, true);
-        batchArtShareScreen.setLocationRelativeTo(this);
-        batchArtShareScreen.setVisible(true);    
+        // Feature removed: sharing files to the server is no longer offered (menu item hidden in the constructor)
     }//GEN-LAST:event_jMenuItemBatchFileShareActionPerformed
 
     private void jMenuItemPS1EmulatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPS1EmulatorActionPerformed
@@ -2431,9 +2433,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemPS1EmulatorActionPerformed
 
     private void jMenuItemReportFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemReportFileActionPerformed
-        FileReportScreen reportScreen = new FileReportScreen(this, true, jListGameList.getSelectedIndex(), null);
-        reportScreen.setLocationRelativeTo(this);
-        reportScreen.setVisible(true);     
+        // Feature removed: reporting bad files is no longer offered (menu item hidden in the constructor)
     }//GEN-LAST:event_jMenuItemReportFileActionPerformed
 
     private void jMenuItemMD5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemMD5ActionPerformed
@@ -2584,9 +2584,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemRefreshGameListActionPerformed
 
     private void jMenuItemShareVMCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemShareVMCActionPerformed
-        ShareVMCScreen shareVMCScreen = new ShareVMCScreen(this, true, jListGameList.getSelectedIndex());
-        shareVMCScreen.setLocationRelativeTo(this);
-        shareVMCScreen.setVisible(true);
+        // Feature removed: sharing VMC files is no longer offered (menu item hidden in the constructor)
     }//GEN-LAST:event_jMenuItemShareVMCActionPerformed
 
     private void jMenuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAboutActionPerformed

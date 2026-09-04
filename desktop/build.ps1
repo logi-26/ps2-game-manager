@@ -24,8 +24,7 @@ param(
     [string]$Backend = 'tcp',
     [string]$Server = '127.0.0.1',
     [int]$Port = 6789,
-    [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1',
-    [string]$ApiKey
+    [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -102,7 +101,6 @@ if ($Run) {
         "-Doplpops.server.port=$Port"
         "-Doplpops.api.baseurl=$ApiBaseUrl"
     )
-    if ($ApiKey) { $jvmArgs += "-Doplpops.api.key=$ApiKey" }
     $jvmArgs += @('-jar', (Join-Path $runDir 'OPLPOPS-Manager-local.jar'))
     if ($Debug) { $jvmArgs += '-DEBUG' }   # consumed by Main.main(args)
 

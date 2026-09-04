@@ -73,13 +73,11 @@ Needs `api/`'s venv set up once (see `api/README.md` "Quick start" +
 ```
 
 `http://127.0.0.1:8000/docs` for the interactive API reference while it runs.
-`run-manager.ps1 -Backend api -ApiKey <key>` if the API has
-`OPLAPI_WRITE_API_KEY` set.
 
 This is real, complete data (14,354 games at last import) — no fixture step.
-Set the OPL folder to `program_test_folder/` and click through as normal;
-uploads/reports land as `pending` and won't be visible until reviewed (there's
-no moderation UI yet — query `api/var/dev.db` directly, or the API's `/docs`).
+Set the OPL folder to `program_test_folder/` and click through as normal. The
+API is read-only (user uploads and bad-file reports were removed as a
+feature), so there's nothing to review afterwards.
 
 ### Why the app is never run from the project folder
 

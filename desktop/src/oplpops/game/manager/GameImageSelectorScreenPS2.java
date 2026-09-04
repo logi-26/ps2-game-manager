@@ -39,6 +39,7 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
         initComponents();
         overideClose();
         initialiseGUI();
+        jButtonReportFile.setVisible(false); // feature removed: reporting bad files is no longer offered
     }
 
     
@@ -273,9 +274,7 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
     }//GEN-LAST:event_jButtonPreviousGameActionPerformed
 
     private void jButtonReportFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonReportFileActionPerformed
-        FileReportScreen reportScreen = new FileReportScreen(parent, true, currentListIndex, imageType);
-        reportScreen.setLocationRelativeTo(this);
-        reportScreen.setVisible(true); 
+        // Feature removed: reporting bad files is no longer offered (button hidden in the constructor)
     }//GEN-LAST:event_jButtonReportFileActionPerformed
     // </editor-fold>
    

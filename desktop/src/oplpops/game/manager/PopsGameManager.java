@@ -197,12 +197,6 @@ public class PopsGameManager {
         return (override != null && !override.trim().isEmpty()) ? override.trim() : "http://127.0.0.1:8000/v1";
     }
 
-    // API key sent as X-API-Key on write requests, if the API has one configured
-    // Set with -Doplpops.api.key=... (or the OPLPOPS_API_KEY env var)
-    public static String getApiWriteKey(){
-        return System.getProperty("oplpops.api.key", System.getenv("OPLPOPS_API_KEY"));
-    }
-
     // Creates a fresh backend client of whichever kind getBackendMode() selects.
     // Every screen should get its client through here rather than constructing
     // MyTCPClient/MyApiClient directly - this is the one place the switch happens.

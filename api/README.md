@@ -2,7 +2,9 @@
 
 Database-backed replacement for the raw-TCP `server/`. FastAPI + SQLAlchemy 2.0 +
 Alembic. Runs on **SQLite + local filesystem** out of the box; a single env var
-switches it to Postgres.
+switches it to Postgres. Read-only: it serves the imported catalogue, nothing
+writes to it at runtime (user uploads and bad-file reports were removed as a
+feature).
 
 ## Quick start
 
@@ -59,13 +61,13 @@ python -m alembic upgrade head
 |---|---|---|
 | `OPLAPI_DATABASE_URL` | `sqlite:///api/var/dev.db` | any SQLAlchemy URL |
 | `OPLAPI_BLOB_ROOT` | `api/var/blobs` | blob storage root |
-| `OPLAPI_WRITE_API_KEY` | *(unset)* | when set, `POST` routes require `X-API-Key` |
-| `OPLAPI_MAX_UPLOAD_BYTES` | `33554432` | per-upload cap |
 | `OPLAPI_GITHUB_REPO` | `logi-26/ps2-game-manager` | where app releases are read from |
 | `OPLAPI_GITHUB_TOKEN` | *(unset)* | raises the GitHub API rate limit from 60/hr to 5000/hr |
 | `OPLAPI_GITHUB_CACHE_SECONDS` | `300` | how long a release lookup is cached |
 
 ## Endpoints (v1)
+
+All read-only.
 
 | Old TCP command | Endpoint |
 |---|---|
@@ -75,11 +77,10 @@ python -m alembic upgrade head
 | `CONFIG` / `CONFIG_LIST` | `GET /v1/games/{id}/config` · `GET /v1/configs` |
 | `CHEAT` / `CHEAT_LIST` | `GET /v1/games/{id}/cheats` · `GET /v1/cheats` |
 | `VMC` / `VMC_LIST` | `GET /v1/games/{id}/vmc[/{vmc_id}]` · `GET /v1/vmc` |
-| `UPLOAD_ART/CFG/VMC` | `POST /v1/games/{id}/artwork` · `.../config` · `.../vmc` (→ `pending`) |
 | `VERSION` / `UPDATE` | `GET /v1/app/latest` · `GET /v1/app/releases/{v}/download` (both read GitHub Releases live) |
 | `CUE2POPS` | `GET /v1/tools/cue2pops?os=windows` |
-| `REPORT` | `POST /v1/reports` |
 | `RESPOND` | `GET /v1/health` |
+| `UPLOAD_ART/CFG/VMC`, `REPORT` | removed — no longer offered |
 
 Full interactive reference at `/docs` when the server is running.
 
@@ -94,8 +95,8 @@ api/
     models.py        SQLAlchemy models (the schema)
     schemas.py       pydantic response models
     blobstore.py     content-addressed filesystem blob store
-    deps.py          write-key gate, pagination
-    routers/         health, games, artwork, files, releases, uploads, reports
+    deps.py          pagination helper
+    routers/         health, games, artwork, files, releases
   alembic/           migrations
   scripts/
     import_content.py  legacy "Server Content" -> DB + blobs

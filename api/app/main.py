@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from . import __version__
-from .routers import artwork, files, games, health, releases, reports, uploads
+from .routers import artwork, files, games, health, releases
 
 app = FastAPI(
     title="PS2 Game Manager API",
@@ -11,7 +11,8 @@ app = FastAPI(
     summary="Database-backed replacement for the OPLPOPS raw-TCP file server.",
 )
 
-for module in (health, games, artwork, files, releases, uploads, reports):
+# Read-only: user uploads and bad-file reports were removed as a feature.
+for module in (health, games, artwork, files, releases):
     app.include_router(module.router, prefix="/v1")
 
 

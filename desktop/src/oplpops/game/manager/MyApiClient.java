@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublisher;
-import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,69 +49,6 @@ public class MyApiClient implements BackendClient {
     private static final Duration DOWNLOAD_TIMEOUT = Duration.ofSeconds(60);
 
     public MyApiClient() {}
-
-    // =====================================================================
-    // Sharing (upload)
-    // =====================================================================
-
-    @Override
-    public void shareImageWithServer(String console, String gameRegion, String gameID, String coverType, String imagePath) throws IOException {
-        File file = new File(imagePath);
-        if (!file.exists() || file.isDirectory()) return;
-
-        String kind = coverType.startsWith("_") ? coverType.substring(1) : coverType;
-        kind = kind.toUpperCase();
-        int variant = 0;
-        if (kind.equals("SCR2")) { kind = "SCR"; variant = 1; }
-
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        Map<String, String> fields = new LinkedHashMap<>();
-        fields.put("kind", kind);
-        fields.put("variant", Integer.toString(variant));
-        fields.put("submitted_by", PopsGameManager.getMacAddress());
-
-        try {
-            postMultipart("/games/" + gameID + "/artwork", fields, "file", file.getName(), bytes, DEFAULT_TIMEOUT);
-        } catch (IOException | InterruptedException ex) {
-            PopsGameManager.displayErrorMessageDebug(ex.toString());
-        }
-    }
-
-    @Override
-    public void shareConfigWithServer(String console, String gameRegion, String gameID, String configPath) throws IOException {
-        File file = new File(configPath);
-        if (!file.exists() || file.isDirectory()) return;
-
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        Map<String, String> fields = new LinkedHashMap<>();
-        fields.put("submitted_by", PopsGameManager.getMacAddress());
-
-        try {
-            postMultipart("/games/" + gameID + "/config", fields, "file", file.getName(), bytes, DEFAULT_TIMEOUT);
-        } catch (IOException | InterruptedException ex) {
-            PopsGameManager.displayErrorMessageDebug(ex.toString());
-        }
-    }
-
-    @Override
-    public void shareVMCWithServer(String console, String gameRegion, String gameID, String vmcPath, String vmcDescription) throws IOException {
-        File file = new File(vmcPath);
-        if (!file.exists() || file.isDirectory()) return;
-
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        Map<String, String> fields = new LinkedHashMap<>();
-        // labels are unique per (game, source) - suffix with the sender's MAC so two
-        // different contributors sharing the same game don't collide on upload
-        fields.put("label", gameID + "_" + PopsGameManager.getMacAddress());
-        if (vmcDescription != null) fields.put("description", vmcDescription);
-        fields.put("submitted_by", PopsGameManager.getMacAddress());
-
-        try {
-            postMultipart("/games/" + gameID + "/vmc", fields, "file", file.getName(), bytes, DEFAULT_TIMEOUT);
-        } catch (IOException | InterruptedException ex) {
-            PopsGameManager.displayErrorMessageDebug(ex.toString());
-        }
-    }
 
     // =====================================================================
     // App / tool updates
@@ -397,39 +331,11 @@ public class MyApiClient implements BackendClient {
         }
     }
 
-    @Override
-    public void submitReport(String fileName, String console, String fileType, String gameRegion, String errorDescription) {
-        String json = "{"
-                + "\"game_id\":" + jsonString(fileName) + ","
-                + "\"file_type\":" + jsonString(fileType) + ","
-                + "\"reason\":" + jsonString("[" + console + "/" + gameRegion + "] " + errorDescription) + ","
-                + "\"reporter\":" + jsonString(PopsGameManager.getMacAddress())
-                + "}";
-        try {
-            HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl() + "/reports"))
-                    .timeout(DEFAULT_TIMEOUT)
-                    .header("Content-Type", "application/json")
-                    .POST(BodyPublishers.ofString(json, StandardCharsets.UTF_8));
-            addApiKey(builder);
-            HttpResponse<String> resp = HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() / 100 != 2) {
-                PopsGameManager.displayErrorMessageDebug("submitReport failed: HTTP " + resp.statusCode() + " " + resp.body());
-            }
-        } catch (IOException | InterruptedException ex) {
-            PopsGameManager.displayErrorMessageDebug(ex.toString());
-        }
-    }
-
     // =====================================================================
     // HTTP plumbing
     // =====================================================================
 
     private static String baseUrl() { return PopsGameManager.getApiBaseUrl(); }
-
-    private static void addApiKey(HttpRequest.Builder builder) {
-        String key = PopsGameManager.getApiWriteKey();
-        if (key != null && !key.trim().isEmpty()) builder.header("X-API-Key", key.trim());
-    }
 
     private HttpResponse<byte[]> get(String pathAndQuery, HttpResponse.BodyHandler<byte[]> handler, Duration timeout) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl() + pathAndQuery))
@@ -460,51 +366,4 @@ public class MyApiClient implements BackendClient {
         return (parsed instanceof List) ? (List<Object>) parsed : new ArrayList<>();
     }
 
-    private void postMultipart(String path, Map<String, String> fields, String fileFieldName, String fileName, byte[] fileBytes, Duration timeout) throws IOException, InterruptedException {
-        String boundary = "----oplpops-" + System.nanoTime();
-        BodyPublisher body = multipartBody(boundary, fields, fileFieldName, fileName, fileBytes);
-
-        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl() + path))
-                .timeout(timeout)
-                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .POST(body);
-        addApiKey(builder);
-        HttpResponse<String> resp = HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() / 100 != 2) {
-            PopsGameManager.displayErrorMessageDebug("upload to " + path + " failed: HTTP " + resp.statusCode() + " " + resp.body());
-        }
-    }
-
-    private static BodyPublisher multipartBody(String boundary, Map<String, String> fields, String fileFieldName, String fileName, byte[] fileBytes) throws IOException {
-        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-        String crlf = "\r\n";
-        for (Map.Entry<String, String> field : fields.entrySet()) {
-            out.write(("--" + boundary + crlf).getBytes(StandardCharsets.UTF_8));
-            out.write(("Content-Disposition: form-data; name=\"" + field.getKey() + "\"" + crlf + crlf).getBytes(StandardCharsets.UTF_8));
-            out.write((field.getValue() + crlf).getBytes(StandardCharsets.UTF_8));
-        }
-        out.write(("--" + boundary + crlf).getBytes(StandardCharsets.UTF_8));
-        out.write(("Content-Disposition: form-data; name=\"" + fileFieldName + "\"; filename=\"" + fileName + "\"" + crlf).getBytes(StandardCharsets.UTF_8));
-        out.write(("Content-Type: application/octet-stream" + crlf + crlf).getBytes(StandardCharsets.UTF_8));
-        out.write(fileBytes);
-        out.write(crlf.getBytes(StandardCharsets.UTF_8));
-        out.write(("--" + boundary + "--" + crlf).getBytes(StandardCharsets.UTF_8));
-        return BodyPublishers.ofByteArray(out.toByteArray());
-    }
-
-    private static String jsonString(String s) {
-        if (s == null) return "null";
-        StringBuilder sb = new StringBuilder("\"");
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '"': sb.append("\\\""); break;
-                case '\\': sb.append("\\\\"); break;
-                case '\n': sb.append("\\n"); break;
-                case '\r': sb.append("\\r"); break;
-                default: sb.append(c);
-            }
-        }
-        return sb.append('"').toString();
-    }
 }

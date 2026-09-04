@@ -18,9 +18,6 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{API_DIR / 'var' / 'dev.db'}"
     blob_root: Path = API_DIR / "var" / "blobs"
 
-    # when set, write endpoints require this value in an X-API-Key header
-    write_api_key: str | None = None
-
     page_size_default: int = 100
     page_size_max: int = 1000
 
@@ -30,9 +27,6 @@ class Settings(BaseSettings):
     github_repo: str = "logi-26/ps2-game-manager"
     github_token: str | None = None
     github_cache_seconds: int = 300
-
-    # cap on inbound uploads (bytes)
-    max_upload_bytes: int = 32 * 1024 * 1024
 
 
 @lru_cache
