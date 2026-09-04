@@ -1,5 +1,6 @@
 package oplpops.game.manager;
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Desktop;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -68,6 +69,7 @@ public class PopsGameManager {
     
     private static boolean gameCompatabilityPS1 = true;
     private static boolean splitGameDisplayPS2 = true;
+    private static boolean darkMode = false;
     
     private static String gameIDPositionPS1 = "end";
     private static String gameIDPositionPS2 = "start";
@@ -107,6 +109,7 @@ public class PopsGameManager {
     public static void setGameListRetrievedPS2(boolean listRetrieved) {gameListRetrievedPS2 = listRetrieved;}
     public static void setGameCompatabilityPS1(boolean gameCompatability) {gameCompatabilityPS1 = gameCompatability;}
     public static void setSplitGameDisplayPS2(boolean splitGameDisplay) {splitGameDisplayPS2 = splitGameDisplay;}
+    public static void setDarkMode(boolean enabled) {darkMode = enabled;}
     public static void setGameIDPositionPS1(String position) {gameIDPositionPS1 = position;}  
     public static void setGameIDPositionPS2(String position) {gameIDPositionPS2 = position;}
     
@@ -135,6 +138,7 @@ public class PopsGameManager {
     public static Boolean getGameListRetrievedPS2() {return gameListRetrievedPS2;}
     public static Boolean getGameCompatabilityPS1() {return gameCompatabilityPS1;}
     public static Boolean getSplitGameDisplayPS2() {return splitGameDisplayPS2;}
+    public static Boolean getDarkMode() {return darkMode;}
     public static String getGameIDPositionPS1() {return gameIDPositionPS1;}
     public static String getGameIDPositionPS2() {return gameIDPositionPS2;}
     
@@ -634,6 +638,11 @@ public class PopsGameManager {
             PopsGameManager.deletePreviousAppVersion();
             PopsGameManager.checkCue2Pops();
             PopsGameManager.loadSettings();
+
+            // Main.java already set the light theme as a safe default before any settings
+            // could be known; switch to dark here, now that the persisted preference is
+            // loaded, but still before MainScreen (the first Swing component) is created.
+            if (PopsGameManager.getDarkMode()) {FlatDarkLaf.setup();}
 
             if (PopsGameManager.isOPLFolderSet()) {
                 try {

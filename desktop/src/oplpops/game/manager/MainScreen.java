@@ -103,9 +103,11 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     public MainScreen() {
         configManager =  new GameConfigFileManager();
         initComponents();
+        applyThemeColors();
         PopsGameManager.addListener(this);
         jCheckBoxMenuPS1Compatability.setSelected(PopsGameManager.getGameCompatabilityPS1());
         jCheckBoxMenuItemPS2ULCFG.setSelected(PopsGameManager.getSplitGameDisplayPS2());
+        jCheckBoxMenuDarkMode.setSelected(PopsGameManager.getDarkMode());
         jMenuItemReportCompatability.setVisible(false);
         initialiseGUI(0);
     }
@@ -161,9 +163,9 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
                     Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-                    Color colourRed = new Color(190,35,25);
-                    Color colourGreen = new Color(55,170,20);
-                    Color colourOrange = new Color(218,145,30);
+                    Color colourRed = AppTheme.statusRed();
+                    Color colourGreen = AppTheme.statusGreen();
+                    Color colourOrange = AppTheme.statusOrange();
                     
                     if (PopsGameManager.getCurrentConsole().equals("PS1")){
 
@@ -1327,6 +1329,27 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }
     
 
+    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jTextFieldGameTitleDisplay.setBackground(AppTheme.controlBackground());
+        jTextFieldGameIDDisplay.setBackground(AppTheme.controlBackground());
+        jTextFieldGameSizeDisplay.setBackground(AppTheme.controlBackground());
+        jTextFieldGameNumberDisplay.setBackground(AppTheme.controlBackground());
+        jLabelGameFrontCover.setBackground(AppTheme.imagePreviewBackground());
+        jTextFieldGameGenre.setBackground(AppTheme.controlBackground());
+        jTextFieldGameDeveloper.setBackground(AppTheme.controlBackground());
+        jTextFieldGameReleaseDate.setBackground(AppTheme.controlBackground());
+        jTextFieldGamePlayerNumber.setBackground(AppTheme.controlBackground());
+        jTextFieldGameDeviceCompatibility.setBackground(AppTheme.controlBackground());
+        jTextFieldGameVMC0.setBackground(AppTheme.controlBackground());
+        jTextFieldGameVMC1.setBackground(AppTheme.controlBackground());
+        jTextFieldPS1GameCount.setBackground(AppTheme.controlBackground());
+        jTextFieldPS2GameCount.setBackground(AppTheme.controlBackground());
+    }
+
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -1377,6 +1400,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jMenuSettings = new javax.swing.JMenu();
         jCheckBoxMenuPS1Compatability = new javax.swing.JCheckBoxMenuItem();
         jCheckBoxMenuItemPS2ULCFG = new javax.swing.JCheckBoxMenuItem();
+        jCheckBoxMenuDarkMode = new javax.swing.JCheckBoxMenuItem();
         jMenuGameIDPositionPS1 = new javax.swing.JMenu();
         jRadioButtonMenuItemGameIDPositionBeginningPS1 = new javax.swing.JRadioButtonMenuItem();
         jRadioButtonMenuItemGameIDPositionEndPS1 = new javax.swing.JRadioButtonMenuItem();
@@ -1443,21 +1467,17 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jLabelGameSize.setToolTipText("");
 
         jTextFieldGameTitleDisplay.setEditable(false);
-        jTextFieldGameTitleDisplay.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameTitleDisplay.setPreferredSize(new java.awt.Dimension(402, 20));
 
         jTextFieldGameIDDisplay.setEditable(false);
-        jTextFieldGameIDDisplay.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameIDDisplay.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameIDDisplay.setPreferredSize(new java.awt.Dimension(104, 20));
 
         jTextFieldGameSizeDisplay.setEditable(false);
-        jTextFieldGameSizeDisplay.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameSizeDisplay.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameSizeDisplay.setPreferredSize(new java.awt.Dimension(80, 20));
 
         jTextFieldGameNumberDisplay.setEditable(false);
-        jTextFieldGameNumberDisplay.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameNumberDisplay.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameNumberDisplay.setPreferredSize(new java.awt.Dimension(109, 20));
 
@@ -1507,7 +1527,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jPanelGameCover.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(""), "Front Cover"));
         jPanelGameCover.setPreferredSize(new java.awt.Dimension(243, 341));
 
-        jLabelGameFrontCover.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameFrontCover.setToolTipText("");
         jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jLabelGameFrontCover.setPreferredSize(new java.awt.Dimension(207, 295));
@@ -1657,37 +1676,30 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jLabel7.setToolTipText("");
 
         jTextFieldGameGenre.setEditable(false);
-        jTextFieldGameGenre.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameGenre.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameGenre.setPreferredSize(new java.awt.Dimension(209, 20));
 
         jTextFieldGameDeveloper.setEditable(false);
-        jTextFieldGameDeveloper.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameDeveloper.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameDeveloper.setPreferredSize(new java.awt.Dimension(209, 20));
 
         jTextFieldGameReleaseDate.setEditable(false);
-        jTextFieldGameReleaseDate.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameReleaseDate.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameReleaseDate.setPreferredSize(new java.awt.Dimension(209, 20));
 
         jTextFieldGamePlayerNumber.setEditable(false);
-        jTextFieldGamePlayerNumber.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGamePlayerNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGamePlayerNumber.setPreferredSize(new java.awt.Dimension(209, 20));
 
         jTextFieldGameDeviceCompatibility.setEditable(false);
-        jTextFieldGameDeviceCompatibility.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameDeviceCompatibility.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameDeviceCompatibility.setPreferredSize(new java.awt.Dimension(209, 20));
 
         jTextFieldGameVMC0.setEditable(false);
-        jTextFieldGameVMC0.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameVMC0.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameVMC0.setPreferredSize(new java.awt.Dimension(209, 20));
 
         jTextFieldGameVMC1.setEditable(false);
-        jTextFieldGameVMC1.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameVMC1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameVMC1.setPreferredSize(new java.awt.Dimension(209, 20));
 
@@ -1767,12 +1779,10 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jLabel9.setToolTipText("");
 
         jTextFieldPS1GameCount.setEditable(false);
-        jTextFieldPS1GameCount.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldPS1GameCount.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldPS1GameCount.setPreferredSize(new java.awt.Dimension(211, 20));
 
         jTextFieldPS2GameCount.setEditable(false);
-        jTextFieldPS2GameCount.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldPS2GameCount.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldPS2GameCount.setPreferredSize(new java.awt.Dimension(211, 20));
 
@@ -1852,6 +1862,16 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
             }
         });
         jMenuSettings.add(jCheckBoxMenuItemPS2ULCFG);
+
+        jCheckBoxMenuDarkMode.setSelected(false);
+        jCheckBoxMenuDarkMode.setText("Dark Mode");
+        jCheckBoxMenuDarkMode.setToolTipText("Takes effect the next time the app is started");
+        jCheckBoxMenuDarkMode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxMenuDarkModeActionPerformed(evt);
+            }
+        });
+        jMenuSettings.add(jCheckBoxMenuDarkMode);
 
         jMenuGameIDPositionPS1.setText("PS1 Game ID Position");
 
@@ -2641,9 +2661,15 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
     private void jCheckBoxMenuItemPS2ULCFGActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuItemPS2ULCFGActionPerformed
         initialiseGUI(jListGameList.getSelectedIndex());
-        
+
         try {XMLFileManager.writeSettingsXML();} catch (TransformerException | ParserConfigurationException ex) {PopsGameManager.displayErrorMessageDebug("Error saving the settings!\n\n" + ex.toString());}
     }//GEN-LAST:event_jCheckBoxMenuItemPS2ULCFGActionPerformed
+
+    private void jCheckBoxMenuDarkModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuDarkModeActionPerformed
+        PopsGameManager.setDarkMode(jCheckBoxMenuDarkMode.isSelected());
+        try {XMLFileManager.writeSettingsXML();} catch (TransformerException | ParserConfigurationException ex) {PopsGameManager.displayErrorMessageDebug("Error saving the settings!\n\n" + ex.toString());}
+        JOptionPane.showMessageDialog(null, "Restart the app for the new theme to take effect."," Restart Required",JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jCheckBoxMenuDarkModeActionPerformed
 
     private void jRadioButtonMenuItemGameIDPositionBeginningPS1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItemGameIDPositionBeginningPS1ActionPerformed
         if (jRadioButtonMenuItemGameIDPositionBeginningPS1.isSelected()) {
@@ -2684,6 +2710,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private javax.swing.JButton jButtonEditCheat;
     private javax.swing.JButton jButtonGameArt;
     private javax.swing.JButton jButtonVMC;
+    private javax.swing.JCheckBoxMenuItem jCheckBoxMenuDarkMode;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItemPS2ULCFG;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuPS1Compatability;
     private javax.swing.JLabel jLabel1;

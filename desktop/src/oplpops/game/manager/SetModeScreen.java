@@ -50,7 +50,7 @@ public class SetModeScreen extends javax.swing.JDialog {
         jButtonSaveMode.setMargin(new Insets(0,0,0,0));
         jButtonCancel.setMargin(new Insets(0,0,0,0));
         
-        Color colourGray = new Color(240, 240, 240, 255);
+        Color colourGray = AppTheme.disabledControlBackground();
         
         switch (currentlySelectedMode) {
             case "SMB":

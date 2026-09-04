@@ -1,6 +1,5 @@
 package oplpops.game.manager;
 
-import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -393,22 +392,22 @@ public class GameCheatScreen extends javax.swing.JDialog {
                 
                 // Define a colour attribute (Blue) - IGR code title
                 SimpleAttributeSet colourBlue = new SimpleAttributeSet();
-                StyleConstants.setForeground(colourBlue, new Color(38,120,190));
+                StyleConstants.setForeground(colourBlue, AppTheme.statusBlue());
                 StyleConstants.setBold(colourBlue, true);
-                
+
                 // Define a colour attribute (Orange) - Cheat code title
                 SimpleAttributeSet colourOrange = new SimpleAttributeSet();
-                StyleConstants.setForeground(colourOrange, new Color(226,149,15));
+                StyleConstants.setForeground(colourOrange, AppTheme.statusOrangeAlt());
                 StyleConstants.setBold(colourOrange, true);
 
                 // Define a colour attribute (Green) - Widescreen code title
                 SimpleAttributeSet colourGreen = new SimpleAttributeSet();
-                StyleConstants.setForeground(colourGreen, new Color(55,170,20));
+                StyleConstants.setForeground(colourGreen, AppTheme.statusGreen());
                 StyleConstants.setBold(colourGreen, true);
-                
+
                 // Define a colour attribute (Red) - Enable code title
                 SimpleAttributeSet colourRed = new SimpleAttributeSet();
-                StyleConstants.setForeground(colourRed, new Color(190,35,25));
+                StyleConstants.setForeground(colourRed, AppTheme.statusRed());
                 StyleConstants.setBold(colourRed, true);
                 
                 // This removes the PS2 cheat key (not much use in displaying the cheat key)
@@ -474,7 +473,7 @@ public class GameCheatScreen extends javax.swing.JDialog {
                 
                 // Define a colour attribute (Blue)
                 SimpleAttributeSet colourBlue = new SimpleAttributeSet();
-                StyleConstants.setForeground(colourBlue, new Color(38,120,190));
+                StyleConstants.setForeground(colourBlue, AppTheme.statusBlue());
                 StyleConstants.setBold(colourBlue, true);
                 
                 try {

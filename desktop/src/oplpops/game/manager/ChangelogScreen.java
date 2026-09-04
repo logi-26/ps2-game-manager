@@ -1,6 +1,5 @@
 package oplpops.game.manager;
 
-import java.awt.Color;
 import java.util.Date;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -29,8 +28,7 @@ public class ChangelogScreen extends javax.swing.JDialog {
         StyleConstants.setFontFamily(title, "Ubuntu");
         StyleConstants.setFontSize(title, 12);
         StyleConstants.setItalic(title, true);
-        Color colour = new Color(218,145,30);
-        StyleConstants.setForeground(title, colour);
+        StyleConstants.setForeground(title, AppTheme.statusOrange());
         
         // Normal text styling
         SimpleAttributeSet normal = new SimpleAttributeSet();

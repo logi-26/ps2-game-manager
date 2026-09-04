@@ -116,7 +116,12 @@ public class XMLFileManager {
         Element ulGamePS2 = doc.createElement("splitgamesps2");
         ulGamePS2.appendChild(doc.createTextNode(PopsGameManager.getSplitGameDisplayPS2().toString()));
         rootElement.appendChild(ulGamePS2);
-        
+
+        // Dark mode
+        Element darkMode = doc.createElement("darkmode");
+        darkMode.appendChild(doc.createTextNode(PopsGameManager.getDarkMode().toString()));
+        rootElement.appendChild(darkMode);
+
         // Write the contents to the xml file
         try {
             Transformer tr = TransformerFactory.newInstance().newTransformer();
@@ -195,6 +200,13 @@ public class XMLFileManager {
                                     // PS2 Split game highlight
                                     if (eElement.getElementsByTagName("splitgamesps2").item(0).getTextContent().equals("false")) {PopsGameManager.setSplitGameDisplayPS2(false);}
                                     else if (eElement.getElementsByTagName("splitgamesps2").item(0).getTextContent().equals("true")) {PopsGameManager.setSplitGameDisplayPS2(true);}
+
+                                    // Dark mode (optional - missing from settings files written before this was added, defaults to light)
+                                    Node darkModeNode = eElement.getElementsByTagName("darkmode").item(0);
+                                    if (darkModeNode != null) {
+                                        if (darkModeNode.getTextContent().equals("false")) {PopsGameManager.setDarkMode(false);}
+                                        else if (darkModeNode.getTextContent().equals("true")) {PopsGameManager.setDarkMode(true);}
+                                    }
                                 }
                                 catch(NullPointerException ex){
                                     JOptionPane.showMessageDialog(null, "The oplpops-settings file appears to have been modified or moved!\n\nYou will need to set the Mode again.", " Error Loading Settings!", JOptionPane.ERROR_MESSAGE);

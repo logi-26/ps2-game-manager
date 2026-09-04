@@ -27,6 +27,7 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         super(parent, modal);
         this.parent = parent;
         initComponents();
+        applyThemeColors();
         overideClose();
     }
     
@@ -241,6 +242,19 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
     }
     
 
+    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jLabelGameFrontCover.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameRearCover.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameDiscImage.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameScreenshot1.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameScreenshot2.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameBackgroundImage.setBackground(AppTheme.imagePreviewBackground());
+    }
+
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -287,7 +301,6 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         jPanelGameFrontCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Font Cover"));
         jPanelGameFrontCover.setPreferredSize(new java.awt.Dimension(192, 290));
 
-        jLabelGameFrontCover.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameFrontCover.setToolTipText("");
         jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -364,7 +377,6 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         jPanelGameRearCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Rear Cover"));
         jPanelGameRearCover.setPreferredSize(new java.awt.Dimension(192, 290));
 
-        jLabelGameRearCover.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameRearCover.setToolTipText("");
         jLabelGameRearCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -471,7 +483,6 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
 
         jPanelGameDiscImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Disc Image"));
 
-        jLabelGameDiscImage.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameDiscImage.setToolTipText("");
         jLabelGameDiscImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -536,11 +547,9 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
 
         jPanelGameScreenshots.setBorder(javax.swing.BorderFactory.createTitledBorder("Screenshots"));
 
-        jLabelGameScreenshot1.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameScreenshot1.setToolTipText("");
         jLabelGameScreenshot1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        jLabelGameScreenshot2.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameScreenshot2.setToolTipText("");
         jLabelGameScreenshot2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -649,7 +658,6 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
 
         jPanelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Background Image"));
 
-        jLabelGameBackgroundImage.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameBackgroundImage.setToolTipText("");
         jLabelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jLabelGameBackgroundImage.setPreferredSize(new java.awt.Dimension(375, 2));

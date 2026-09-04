@@ -23,6 +23,7 @@ public class HashCheckerScreen extends javax.swing.JDialog {
         super(parent, modal);
         this.selectedGameFile = selectedGameFile;
         initComponents();
+        applyThemeColors();
         initialiseGUI();
         overideClose();
     }
@@ -114,6 +115,16 @@ public class HashCheckerScreen extends javax.swing.JDialog {
     }
     
 
+    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jTextFieldGameName.setBackground(AppTheme.controlBackground());
+        jTextFieldGameID.setBackground(AppTheme.controlBackground());
+        jTextFieldMD5.setBackground(AppTheme.controlBackground());
+    }
+
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -139,11 +150,9 @@ public class HashCheckerScreen extends javax.swing.JDialog {
         });
 
         jTextFieldGameName.setEditable(false);
-        jTextFieldGameName.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameName.setText("Game Name");
 
         jTextFieldGameID.setEditable(false);
-        jTextFieldGameID.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameID.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameID.setText("SLES_123.45");
 
@@ -176,7 +185,6 @@ public class HashCheckerScreen extends javax.swing.JDialog {
         jPanelProgress.setBorder(javax.swing.BorderFactory.createTitledBorder("Progress"));
 
         jTextFieldMD5.setEditable(false);
-        jTextFieldMD5.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldMD5.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldMD5.setPreferredSize(new java.awt.Dimension(59, 25));
         jTextFieldMD5.setRequestFocusEnabled(false);

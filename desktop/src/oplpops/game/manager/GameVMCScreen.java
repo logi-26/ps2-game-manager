@@ -27,6 +27,7 @@ public class GameVMCScreen extends javax.swing.JDialog {
     public GameVMCScreen(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        applyThemeColors();
         overideClose();
     }
     
@@ -263,7 +264,16 @@ public class GameVMCScreen extends javax.swing.JDialog {
     }
     
     
-    //@SuppressWarnings("unchecked")
+    //    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jTextFieldGameTitleDisplay.setBackground(AppTheme.controlBackground());
+        jTextFieldGameIDDisplay.setBackground(AppTheme.controlBackground());
+    }
+
+
+@SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -373,12 +383,10 @@ public class GameVMCScreen extends javax.swing.JDialog {
         jLabelGameID.setToolTipText("");
 
         jTextFieldGameTitleDisplay.setEditable(false);
-        jTextFieldGameTitleDisplay.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameTitleDisplay.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jTextFieldGameTitleDisplay.setPreferredSize(new java.awt.Dimension(402, 20));
 
         jTextFieldGameIDDisplay.setEditable(false);
-        jTextFieldGameIDDisplay.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameIDDisplay.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jTextFieldGameIDDisplay.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameIDDisplay.setPreferredSize(new java.awt.Dimension(104, 20));

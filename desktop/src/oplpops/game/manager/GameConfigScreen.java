@@ -90,6 +90,7 @@ public class GameConfigScreen extends javax.swing.JDialog {
     public GameConfigScreen(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();   
+        applyThemeColors();
         configManager =  new GameConfigFileManager();
         overideClose();
     }
@@ -1646,6 +1647,16 @@ public class GameConfigScreen extends javax.swing.JDialog {
     // </editor-fold>
     
 
+    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jTextFieldGameTitle.setBackground(AppTheme.controlBackground());
+        jTextFieldGameID.setBackground(AppTheme.controlBackground());
+        jTextFieldGameNumber.setBackground(AppTheme.controlBackground());
+    }
+
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -1825,12 +1836,10 @@ public class GameConfigScreen extends javax.swing.JDialog {
         );
 
         jTextFieldGameTitle.setEditable(false);
-        jTextFieldGameTitle.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameTitle.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jTextFieldGameTitle.setPreferredSize(new java.awt.Dimension(656, 25));
 
         jTextFieldGameID.setEditable(false);
-        jTextFieldGameID.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameID.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jTextFieldGameID.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameID.setPreferredSize(new java.awt.Dimension(160, 25));
@@ -2364,7 +2373,6 @@ public class GameConfigScreen extends javax.swing.JDialog {
         });
 
         jTextFieldGameNumber.setEditable(false);
-        jTextFieldGameNumber.setBackground(new java.awt.Color(255, 255, 255));
         jTextFieldGameNumber.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jTextFieldGameNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldGameNumber.setText("[1/12]");

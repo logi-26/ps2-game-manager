@@ -37,6 +37,7 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
         this.gameID = gameID;
         this.currentListIndex = currentListIndex;
         initComponents();
+        applyThemeColors();
         overideClose();
         initialiseGUI();
     }
@@ -128,6 +129,14 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
     
     
     
+    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jLabelGameImage.setBackground(AppTheme.imagePreviewBackground());
+    }
+
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -143,7 +152,6 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
 
         jPanelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
-        jLabelGameImage.setBackground(new java.awt.Color(153, 153, 153));
         jLabelGameImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabelGameImage.setToolTipText("");
         jLabelGameImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
