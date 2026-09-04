@@ -9,6 +9,7 @@
         pwsh ./build.ps1 -Run -Backend tcp             # fall back to the old TCP server (127.0.0.1:6789)
         pwsh ./build.ps1 -Run -Backend tcp -Server 10.0.0.5 -Port 6789 -Debug
         pwsh ./build.ps1 -Run -Fresh                  # re-copy lib/ hdd/ POPSTARTER/ into the run dir
+        pwsh ./build.ps1 -Stage                       # assemble build-local/run/ without launching (package.ps1 uses this)
 
     IMPORTANT: on launch the app rewrites sibling files next to its jar
     (start-oplpops.*, READ ME.txt, settings.xml/oplpops-settings, lib/data/data_3, ...).
@@ -18,6 +19,7 @@
 #>
 param(
     [switch]$Run,
+    [switch]$Stage,
     [switch]$Debug,
     [switch]$Fresh,
     [ValidateSet('tcp', 'api')]
@@ -77,7 +79,7 @@ try {
 
 Write-Host "==> Built $jarPath"
 
-if ($Run) {
+if ($Run -or $Stage) {
     New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 
     # data dirs the app READS relative to its jar; copy the whole tree once
@@ -94,7 +96,10 @@ if ($Run) {
     Copy-Item (Join-Path $libDir 'sevenzipjbinding.jar')            (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'sevenzipjbinding-AllPlatforms.jar') (Join-Path $runDir 'lib') -Force
     Copy-Item $jarPath (Join-Path $runDir 'OPLPOPS-Manager-local.jar') -Force
+    Write-Host "==> Staged $runDir"
+}
 
+if ($Run) {
     $jvmArgs = @(
         "-Doplpops.backend=$Backend"
         "-Doplpops.server.address=$Server"

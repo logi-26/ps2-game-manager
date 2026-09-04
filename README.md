@@ -45,6 +45,19 @@ PowerShell scripts: run with `pwsh ./x.ps1` or `powershell -ExecutionPolicy Bypa
 `local-dev/protocol-check.py` exercises the TCP server's wire protocol without
 the GUI. Full runbook and smoke test: [`local-dev/README.md`](local-dev/README.md).
 
+## Standalone package (no Java required)
+
+```powershell
+./desktop/package.ps1                        # -> desktop/build-local/package/OPLPOPS-Manager/
+```
+
+Builds a `jpackage` app-image: a folder with a native `OPLPOPS-Manager.exe` and
+a bundled, `jdeps`-trimmed JRE (`java.base` + `java.desktop` + `java.net.http`,
+~86 MB total) — zip the `OPLPOPS-Manager` folder and hand it to someone with no
+Java installed. `-ApiBaseUrl`/`-Backend` bake in a different default backend for
+the recipient. An actual installer (`--type exe`/`msi`) additionally needs the
+[WiX Toolset](https://wixtoolset.org/) — not required for the app-image above.
+
 ## Local data corpora (not in git)
 
 Two large data sets live **next to** this repo, not inside it (`.gitignore` guards
