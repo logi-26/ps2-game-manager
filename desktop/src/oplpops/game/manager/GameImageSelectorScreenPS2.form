@@ -66,8 +66,6 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jButtonBackgroundImageAuto" min="-2" pref="30" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
-                          <Component id="jButtonReportFile" min="-2" pref="90" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="jButtonPreviousGame" min="-2" pref="30" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -91,7 +89,6 @@
                           <Component id="jButtonBackgroundImageAuto" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
                           <Component id="jButtonNextGame" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="jButtonReportFile" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                       <Component id="jTextFieldImageNumber" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                       <Component id="jButtonPreviousGame" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                   </Group>
@@ -152,14 +149,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonPreviousGameActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="jButtonReportFile">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Report"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonReportFileActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="jTextFieldImageNumber">

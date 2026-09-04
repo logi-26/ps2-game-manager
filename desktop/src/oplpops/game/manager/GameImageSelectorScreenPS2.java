@@ -39,7 +39,6 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
         initComponents();
         overideClose();
         initialiseGUI();
-        jButtonReportFile.setVisible(false); // feature removed: reporting bad files is no longer offered
     }
 
     
@@ -137,7 +136,6 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
         jButtonBackgroundImageAuto = new javax.swing.JButton();
         jButtonNextGame = new javax.swing.JButton();
         jButtonPreviousGame = new javax.swing.JButton();
-        jButtonReportFile = new javax.swing.JButton();
         jTextFieldImageNumber = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -178,13 +176,6 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
             }
         });
 
-        jButtonReportFile.setText("Report");
-        jButtonReportFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonReportFileActionPerformed(evt);
-            }
-        });
-
         jTextFieldImageNumber.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jTextFieldImageNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jTextFieldImageNumber.setText("1/1");
@@ -202,8 +193,6 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
                         .addComponent(jButtonBackgroundImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(60, 60, 60)
-                        .addComponent(jButtonReportFile, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -222,7 +211,6 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
                     .addGroup(jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jButtonBackgroundImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jButtonNextGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButtonReportFile, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jTextFieldImageNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -272,18 +260,13 @@ public class GameImageSelectorScreenPS2 extends javax.swing.JDialog {
             imageChangedListener.imageChanged(imageType, currentImageNumber);
         }
     }//GEN-LAST:event_jButtonPreviousGameActionPerformed
-
-    private void jButtonReportFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonReportFileActionPerformed
-        // Feature removed: reporting bad files is no longer offered (button hidden in the constructor)
-    }//GEN-LAST:event_jButtonReportFileActionPerformed
     // </editor-fold>
-   
-    // <editor-fold defaultstate="collapsed" desc="Generated Variables">   
+
+    // <editor-fold defaultstate="collapsed" desc="Generated Variables">
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonBackgroundImageAuto;
     private javax.swing.JButton jButtonNextGame;
     private javax.swing.JButton jButtonPreviousGame;
-    private javax.swing.JButton jButtonReportFile;
     private javax.swing.JLabel jLabelGameImage;
     javax.swing.JPanel jPanelGameBackgroundImage;
     private javax.swing.JTextField jTextFieldImageNumber;

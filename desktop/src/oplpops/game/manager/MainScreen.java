@@ -107,10 +107,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jCheckBoxMenuPS1Compatability.setSelected(PopsGameManager.getGameCompatabilityPS1());
         jCheckBoxMenuItemPS2ULCFG.setSelected(PopsGameManager.getSplitGameDisplayPS2());
         jMenuItemReportCompatability.setVisible(false);
-        // User uploads and bad-file reports are no longer offered
-        jMenuItemBatchFileShare.setVisible(false);
-        jMenuItemReportFile.setVisible(false);
-        jMenuItemShareVMC.setVisible(false);
         initialiseGUI(0);
     }
     
@@ -1400,8 +1396,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jMenuItemPS1Emulator = new javax.swing.JMenuItem();
         jMenuItemPS2Emulator = new javax.swing.JMenuItem();
         jMenuItemMD5 = new javax.swing.JMenuItem();
-        jMenuItemShareVMC = new javax.swing.JMenuItem();
-        jMenuItemReportFile = new javax.swing.JMenuItem();
         jMenuItemReportCompatability = new javax.swing.JMenuItem();
         jMenuItemRefreshGameList = new javax.swing.JMenuItem();
         jMenuItemCheckUpdate = new javax.swing.JMenuItem();
@@ -1409,7 +1403,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jMenuItemBatchAddPS1Game = new javax.swing.JMenuItem();
         jMenuItemBatchAddPS2Game = new javax.swing.JMenuItem();
         jMenuBatchDownload = new javax.swing.JMenuItem();
-        jMenuItemBatchFileShare = new javax.swing.JMenuItem();
         jMenuItemCheckGameNames = new javax.swing.JMenuItem();
         jMenuBatchPS1Elf = new javax.swing.JMenuItem();
         jMenuItemGenerateSpine = new javax.swing.JMenuItem();
@@ -2005,25 +1998,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuTools.add(jMenuItemMD5);
 
-        jMenuItemShareVMC.setText("Share VMC Files");
-        jMenuItemShareVMC.setToolTipText("");
-        jMenuItemShareVMC.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItemShareVMCActionPerformed(evt);
-            }
-        });
-        jMenuTools.add(jMenuItemShareVMC);
-
-        jMenuItemReportFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItemReportFile.setText("Report a File");
-        jMenuItemReportFile.setToolTipText("");
-        jMenuItemReportFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItemReportFileActionPerformed(evt);
-            }
-        });
-        jMenuTools.add(jMenuItemReportFile);
-
         jMenuItemReportCompatability.setText("PS1 Compatability Report");
         jMenuItemReportCompatability.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2078,15 +2052,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
             }
         });
         jMenuBatchTools.add(jMenuBatchDownload);
-
-        jMenuItemBatchFileShare.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItemBatchFileShare.setText("Share Files");
-        jMenuItemBatchFileShare.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItemBatchFileShareActionPerformed(evt);
-            }
-        });
-        jMenuBatchTools.add(jMenuItemBatchFileShare);
 
         jMenuItemCheckGameNames.setText("Check Long Game Names");
         jMenuItemCheckGameNames.addActionListener(new java.awt.event.ActionListener() {
@@ -2422,19 +2387,11 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         generateNewElfFiles();
     }//GEN-LAST:event_jMenuBatchPS1ElfActionPerformed
 
-    private void jMenuItemBatchFileShareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBatchFileShareActionPerformed
-        // Feature removed: sharing files to the server is no longer offered (menu item hidden in the constructor)
-    }//GEN-LAST:event_jMenuItemBatchFileShareActionPerformed
-
     private void jMenuItemPS1EmulatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPS1EmulatorActionPerformed
         emulatorSettingsScreen = new EmulatorSettingsScreen(this, true, "PS1");
         emulatorSettingsScreen.setLocationRelativeTo(this);
-        emulatorSettingsScreen.setVisible(true);    
+        emulatorSettingsScreen.setVisible(true);
     }//GEN-LAST:event_jMenuItemPS1EmulatorActionPerformed
-
-    private void jMenuItemReportFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemReportFileActionPerformed
-        // Feature removed: reporting bad files is no longer offered (menu item hidden in the constructor)
-    }//GEN-LAST:event_jMenuItemReportFileActionPerformed
 
     private void jMenuItemMD5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemMD5ActionPerformed
 
@@ -2582,10 +2539,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
             } 
         } 
     }//GEN-LAST:event_jMenuItemRefreshGameListActionPerformed
-
-    private void jMenuItemShareVMCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemShareVMCActionPerformed
-        // Feature removed: sharing VMC files is no longer offered (menu item hidden in the constructor)
-    }//GEN-LAST:event_jMenuItemShareVMCActionPerformed
 
     private void jMenuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAboutActionPerformed
         AboutScreen aboutScreen = new AboutScreen(this, true, PopsGameManager.getFormTitle(), PopsGameManager.getApplicationReleaseDate());
@@ -2766,7 +2719,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private javax.swing.JMenuItem jMenuItemAddPS2Game;
     private javax.swing.JMenuItem jMenuItemBatchAddPS1Game;
     private javax.swing.JMenuItem jMenuItemBatchAddPS2Game;
-    private javax.swing.JMenuItem jMenuItemBatchFileShare;
     private javax.swing.JMenuItem jMenuItemChangeLog;
     private javax.swing.JMenuItem jMenuItemChangeMode;
     private javax.swing.JMenuItem jMenuItemCheckGameNames;
@@ -2791,8 +2743,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private javax.swing.JMenuItem jMenuItemPS2Emulator;
     private javax.swing.JMenuItem jMenuItemRefreshGameList;
     private javax.swing.JMenuItem jMenuItemReportCompatability;
-    private javax.swing.JMenuItem jMenuItemReportFile;
-    private javax.swing.JMenuItem jMenuItemShareVMC;
     private javax.swing.JMenuItem jMenuItemSplitPS2Game;
     private javax.swing.JMenuItem jMenuItemTransferFilesToConsole;
     private javax.swing.JMenu jMenuModeSelect;
