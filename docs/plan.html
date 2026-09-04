@@ -1,0 +1,637 @@
+<title>OPLPOPS Rebuild Plan</title>
+<meta name="description" content="Checklist for reviving the PS2 game-library manager and replacing its TCP file server with a database and API.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&display=swap">
+<style>
+  :root{
+    --ground:#eceef2; --surface:#ffffff; --surface-2:#e4e7ee;
+    --ink:#1b2331; --muted:#586376; --faint:#8a94a5;
+    --line:#d2d8e1; --line-strong:#b9c1cd;
+    --accent:#a9691f; --accent-ink:#8a561a;
+    --done:#3d8b60; --active:#a9691f; --blocked:#b3564f;
+    --code-bg:#e7eaf0; --code-ink:#26303f;
+    --shadow:0 1px 2px rgba(20,28,44,.05),0 8px 24px -12px rgba(20,28,44,.14);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0d131e; --surface:#141c2a; --surface-2:#1b2534;
+      --ink:#dee4ee; --muted:#93a0b3; --faint:#6b7789;
+      --line:#26313f; --line-strong:#33404f;
+      --accent:#e0a45a; --accent-ink:#efc088;
+      --done:#57b183; --active:#e0a45a; --blocked:#dd8078;
+      --code-bg:#101a27; --code-ink:#cdd6e2;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -14px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0d131e; --surface:#141c2a; --surface-2:#1b2534;
+    --ink:#dee4ee; --muted:#93a0b3; --faint:#6b7789;
+    --line:#26313f; --line-strong:#33404f;
+    --accent:#e0a45a; --accent-ink:#efc088;
+    --done:#57b183; --active:#e0a45a; --blocked:#dd8078;
+    --code-bg:#101a27; --code-ink:#cdd6e2;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -14px rgba(0,0,0,.55);
+  }
+  :root[data-theme="light"]{
+    --ground:#eceef2; --surface:#ffffff; --surface-2:#e4e7ee;
+    --ink:#1b2331; --muted:#586376; --faint:#8a94a5;
+    --line:#d2d8e1; --line-strong:#b9c1cd;
+    --accent:#a9691f; --accent-ink:#8a561a;
+    --done:#3d8b60; --active:#a9691f; --blocked:#b3564f;
+    --code-bg:#e7eaf0; --code-ink:#26303f;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-weight:400; line-height:1.6; letter-spacing:.005em;
+    font-feature-settings:"kern";
+  }
+  .wrap{max-width:47rem;margin:0 auto;padding:0 1.5rem}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  .eyebrow{
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    font-size:.72rem; font-weight:500; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--accent-ink); margin:0 0 .5rem;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eyebrow{color:var(--accent)}}
+  :root[data-theme="dark"] .eyebrow{color:var(--accent)}
+
+  /* ---- masthead ---- */
+  .masthead{
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,var(--surface),var(--ground));
+    padding:2.6rem 0 1.6rem;
+  }
+  .masthead h1{
+    font-size:clamp(1.9rem,5vw,2.7rem); line-height:1.08; font-weight:700;
+    letter-spacing:-.02em; margin:0; text-wrap:balance;
+  }
+  .lede{
+    color:var(--muted); font-size:1.02rem; margin:.7rem 0 0; max-width:38rem;
+    text-wrap:pretty;
+  }
+  .meter{margin-top:1.5rem}
+  .meter-track{
+    height:.5rem; border-radius:99px; background:var(--surface-2);
+    border:1px solid var(--line); overflow:hidden;
+  }
+  .meter-fill{
+    height:100%; width:0; border-radius:99px;
+    background:var(--accent); transition:width .5s cubic-bezier(.4,0,.2,1);
+  }
+  .meter-label{
+    font-size:.82rem; color:var(--muted); margin:.55rem 0 0;
+    font-variant-numeric:tabular-nums;
+  }
+  .meter-label .mono{color:var(--ink);font-weight:500}
+  .linkbtn{
+    font:inherit; font-size:.82rem; color:var(--accent-ink); background:none;
+    border:0; border-bottom:1px dotted currentColor; padding:0 0 1px; cursor:pointer;
+  }
+  .linkbtn:hover{color:var(--ink)}
+
+  main{padding:2.4rem 0 3rem}
+  section{margin:0 0 2.8rem}
+  h2{
+    font-size:1.4rem; font-weight:600; letter-spacing:-.015em; margin:0 0 .5rem;
+    text-wrap:balance;
+  }
+  h3{font-size:1.02rem;font-weight:600;margin:0}
+  p{margin:.65rem 0}
+  a{color:var(--accent-ink)}
+  strong{font-weight:600}
+  code{
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:.86em; background:var(--code-bg); color:var(--code-ink);
+    padding:.1em .38em; border-radius:4px;
+  }
+  pre{
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:.82rem; line-height:1.7; background:var(--code-bg); color:var(--code-ink);
+    padding:1rem 1.1rem; border-radius:10px; border:1px solid var(--line);
+    overflow-x:auto; margin:1rem 0;
+  }
+  pre code{background:none;padding:0;font-size:1em}
+
+  /* ---- facts list ---- */
+  .facts{
+    margin:1.1rem 0 0; display:grid; grid-template-columns:auto 1fr;
+    gap:.1rem 1.4rem; font-size:.9rem;
+  }
+  .facts dt{
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace; font-size:.76rem;
+    text-transform:uppercase; letter-spacing:.09em; color:var(--faint);
+    padding:.42rem 0; border-top:1px solid var(--line); align-self:start;
+  }
+  .facts dd{
+    margin:0; padding:.42rem 0; border-top:1px solid var(--line); color:var(--muted);
+  }
+  .facts dd strong{color:var(--ink);font-weight:500}
+
+  /* ---- phase ---- */
+  .phase-tag{
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 .3rem;
+    display:inline-flex; align-items:center; gap:.55rem;
+  }
+  .phase-tag::before{content:"";width:1.6rem;height:2px;background:var(--accent)}
+  .phase>h2{font-size:1.65rem;margin-bottom:.4rem}
+  .phase-intro{color:var(--muted);max-width:38rem}
+
+  /* ---- stage ---- */
+  .stage{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:1.15rem 1.25rem 1.15rem; margin:1rem 0; box-shadow:var(--shadow);
+  }
+  .stage-head{
+    display:flex; align-items:center; gap:.75rem; margin-bottom:.2rem;
+  }
+  .stage-no{
+    flex:none; width:1.7rem; height:1.7rem; border-radius:7px;
+    display:grid; place-items:center;
+    font-family:"IBM Plex Mono",monospace; font-size:.9rem; font-weight:600;
+    background:var(--surface-2); color:var(--muted); border:1px solid var(--line);
+  }
+  .stage-head h3{flex:1;letter-spacing:-.01em}
+  .stage-frac{
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--faint);
+    font-variant-numeric:tabular-nums; letter-spacing:.02em;
+  }
+  .stage.is-done .stage-no{background:var(--done);color:#fff;border-color:transparent}
+  .stage.is-done .stage-frac{color:var(--done)}
+  .stage-bar{
+    height:3px; border-radius:99px; background:var(--surface-2); overflow:hidden;
+    margin:.55rem 0 .9rem;
+  }
+  .stage-bar>i{
+    display:block; height:100%; width:0; background:var(--active);
+    transition:width .45s cubic-bezier(.4,0,.2,1);
+  }
+  .stage.is-done .stage-bar>i{background:var(--done)}
+
+  ul.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.15rem}
+  ul.steps li{margin:0}
+  ul.steps label{
+    display:grid; grid-template-columns:1.1rem 1fr; gap:.7rem; align-items:start;
+    padding:.42rem .3rem .42rem .1rem; border-radius:7px; cursor:pointer;
+    font-size:.92rem; color:var(--ink);
+  }
+  ul.steps label:hover{background:var(--surface-2)}
+  ul.steps input{
+    appearance:none; -webkit-appearance:none; margin:.2rem 0 0; width:1.1rem; height:1.1rem;
+    border:1.5px solid var(--line-strong); border-radius:5px; background:var(--surface);
+    display:grid; place-content:center; cursor:pointer; flex:none;
+  }
+  ul.steps input::after{
+    content:""; width:.58rem; height:.58rem; border-radius:2px;
+    transform:scale(0); transition:transform .15s ease; background:var(--done);
+  }
+  ul.steps input:checked{border-color:var(--done)}
+  ul.steps input:checked::after{transform:scale(1)}
+  ul.steps input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  ul.steps label:has(input:checked) .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-strong)}
+  .txt small{
+    display:block; color:var(--faint); font-size:.82rem; text-decoration:none;
+    margin-top:.12rem; line-height:1.5;
+  }
+  label:has(input:checked) .txt small{color:var(--faint)}
+
+  .tag{
+    font-family:"IBM Plex Mono",monospace; font-size:.66rem; font-weight:600;
+    letter-spacing:.06em; text-transform:uppercase; padding:.12em .5em; border-radius:4px;
+    vertical-align:.12em; margin-left:.4rem; white-space:nowrap;
+  }
+  .tag.decide{background:color-mix(in srgb,var(--active) 16%,transparent);color:var(--accent-ink)}
+  .tag.opt{background:var(--surface-2);color:var(--faint)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tag.decide{color:var(--active)}}
+  :root[data-theme="dark"] .tag.decide{color:var(--active)}
+
+  /* ---- callout ---- */
+  .note{
+    border-left:3px solid var(--accent); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:.85rem 1.1rem; margin:1.1rem 0;
+    font-size:.9rem; color:var(--muted);
+  }
+  .note strong{color:var(--ink)}
+
+  /* ---- tables ---- */
+  .tbl-wrap{overflow-x:auto;margin:1.1rem 0;border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:34rem}
+  th,td{text-align:left;padding:.62rem .85rem;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{
+    font-family:"IBM Plex Mono",monospace; font-size:.72rem; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--faint); background:var(--surface-2); font-weight:600;
+  }
+  tbody tr:last-child td{border-bottom:0}
+  td.mono,th.mono{font-family:"IBM Plex Mono",monospace;font-size:.82rem;white-space:nowrap}
+  td .old{color:var(--faint);text-decoration:line-through;text-decoration-color:var(--line-strong)}
+
+  footer{
+    border-top:1px solid var(--line); padding:1.6rem 0 2.4rem; color:var(--faint);
+    font-size:.82rem;
+  }
+  footer .mono{color:var(--muted)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important}
+  }
+  @media (max-width:34rem){
+    .facts{grid-template-columns:1fr;gap:0}
+    .facts dt{border-top:1px solid var(--line);padding-bottom:0}
+    .facts dd{border-top:0;padding-top:.15rem}
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">OPLPOPS &middot; PS2 game-library manager</p>
+    <h1>Rebuild Plan</h1>
+    <p class="lede">
+      Get the Swing desktop app and its file server building and talking again on
+      localhost, then retire the raw-TCP backend for a database and an HTTP API.
+    </p>
+    <div class="meter" role="group" aria-label="Overall progress">
+      <div class="meter-track"><div class="meter-fill" id="globalFill"></div></div>
+      <p class="meter-label">
+        <span class="mono" id="globalCount">0 / 0</span> steps done
+        &middot; <span id="globalPct">0%</span>
+        &middot; <button type="button" class="linkbtn" id="resetBtn">reset progress</button>
+      </p>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section>
+    <h2>Where it stands</h2>
+    <p>
+      Part&nbsp;1 is built and verified end to end. The server compiles from source on
+      the installed JDK, boots, and answers all of its protocol commands; the desktop
+      app compiles (48 sources &rarr; 298 classes), launches against a local server, and
+      keeps its file churn out of the repo. What remains in Part&nbsp;1 is an
+      interactive click-through and a couple of decisions.
+    </p>
+    <dl class="facts">
+      <dt>Toolchain</dt>
+      <dd><strong>Temurin JDK 25.0.1</strong> only &mdash; no 8/11, no Ant, no NetBeans. Builds target <code>--release 11</code>. Python 3.11 (has Pillow) + 3.14.</dd>
+      <dt>Repo</dt>
+      <dd>Consolidated into <code>github.com/logi-26/ps2-game-manager</code> with <code>desktop/</code> + <code>server/</code> dirs. The three old repos (<code>oplpops-*</code>) are kept for history.</dd>
+      <dt>Backend</dt>
+      <dd><code>oplpops-server</code> &mdash; raw TCP on <strong>6789</strong>, length-prefixed binary protocol, serves static files from folders beside its own jar. <code>oplpops-api</code> is an abandoned stub.</dd>
+      <dt>Not in scope</dt>
+      <dd><code>MyFTPClient</code> talks to a real PS2 console over FTP &mdash; unchanged. <code>MyAPIClient</code> is empty &mdash; it gets filled in during Part&nbsp;2.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <p class="eyebrow">Decision</p>
+    <h2>One fresh repo, not three</h2>
+    <p>
+      The overhaul&rsquo;s core change &mdash; swapping the TCP protocol for the HTTP API
+      &mdash; touches the API and its one client together, so they belong in one commit
+      history. The current repos hold almost no history worth preserving, and the
+      rename is a clean cut-over point. Archive the three GitHub repos read-only and
+      link them from the new README; keep the old server in-tree as reference until
+      it&rsquo;s retired.
+    </p>
+    <pre><code>ps2-game-manager/
+  desktop/            Java Swing app          (was oplpops-manager/src)   DONE
+    build.ps1  src/  lib/  nbproject/
+  server/             raw-TCP file server     (was oplpops-server/src)    DONE
+    build.ps1  src/
+  local-dev/          fixtures + run scripts                              DONE
+  docs/plan.html      this document                                      DONE
+  api/                FastAPI service         (Part 2, not yet present)
+  importer/           one-off data migration  (Part 2, not yet present)
+  compose.yaml        postgres + minio + api  (Part 2)
+
+next to the repo, not in it (large binaries, .gitignored):
+  ../program_test_folder/   real OPL test drive (~31 GB of game images)
+  ../Server Content/        the old server's file corpus &rarr; source for the DB</code></pre>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="phase" id="part1">
+    <p class="phase-tag">Part 1</p>
+    <h2>Revive it locally</h2>
+    <p class="phase-intro">
+      Desktop app &harr; file server, entirely on <code>127.0.0.1</code>, built from
+      source. Steps already finished are ticked.
+    </p>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">1</span>
+        <h3>Toolchain &amp; source fixes</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p1-jdk" data-default-done><span class="txt">Confirm <code>javac</code> / <code>jar</code> on PATH; accept <code>--release 11</code> as the build target<small>JDK 25 dropped <code>--release 8</code>. Prebuilt jars still run on 25.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-jcheckbox" data-default-done><span class="txt">Repackage <code>JCheckBoxList</code> out of <code>javax.swing</code> into <code>oplpops.game.manager</code><small>Only hard compile error &mdash; user classes can&rsquo;t join a JDK module&rsquo;s package. Its one importer, <code>TestScreen</code> (dead code), updated.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-serveropt" data-default-done><span class="txt">Make server address/port configurable in <code>PopsGameManager</code><small>Honours <code>-Doplpops.server.address</code> / <code>-Doplpops.server.port</code> (and matching env vars), falling back to the old hardcoded values.</small></span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">2</span>
+        <h3>Build from source</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p1-buildserver" data-default-done><span class="txt"><code>oplpops-server/build.ps1</code> &mdash; compiles the two classes, jars to <code>build-local/</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-buildmanager" data-default-done><span class="txt"><code>oplpops-manager/build.ps1</code> &mdash; compiles 48 sources, copies <code>.png</code>/<code>.txt</code> resources, jars with a <code>Class-Path</code> manifest for the two <code>lib/</code> jars</span></label></li>
+        <li><label><input type="checkbox" data-k="p1-gitignore" data-default-done><span class="txt">Add <code>.gitignore</code> (<code>build-local/</code>, <code>*-local.jar</code>) to both projects</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">3</span>
+        <h3>Local data fixture</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p1-fixture" data-default-done><span class="txt"><code>local-dev/setup-serverdata.ps1</code> &mdash; builds the folder tree with placeholder art + cfg/cht for two games<small><code>SLUS_207.68</code> (NTSCU, God of War) and <code>SCES_509.24</code> (PAL, Gran Turismo 4). Regions are <code>NTSCU&nbsp;/&nbsp;PAL&nbsp;/&nbsp;NTSCJ</code>.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-realsnap"><span class="txt">Swap in a real data snapshot from the live server <span class="tag opt">optional</span><small>Mirror <code>Covers/ Lists/ Configs/ Cheats/ MemoryCards/ Application/</code> into <code>serverdata/</code>, same layout.</small></span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">4</span>
+        <h3>Wire the client to localhost</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p1-runscripts" data-default-done><span class="txt"><code>run-server.ps1</code> / <code>run-manager.ps1</code> &mdash; build + launch, app pointed at <code>127.0.0.1:6789</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-isolate" data-default-done><span class="txt">Launch the app from an isolated <code>build-local/run/</code>, never from <code>src/</code><small>On start the app rewrites sibling files (<code>start-oplpops.*</code>, <code>READ&nbsp;ME.txt</code>, <code>settings.xml</code>, <code>lib/data/data_3</code>&hellip;). The run dir keeps that churn out of the repo.</small></span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">5</span>
+        <h3>Smoke test</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p1-protocheck" data-default-done><span class="txt"><code>local-dev/protocol-check.py</code> &mdash; all 8 commands pass<small><code>ART</code>&nbsp;&rarr;&nbsp;5722-byte JPEG, miss&nbsp;&rarr;&nbsp;<code>NO_IMAGE</code>, <code>ART_NUM</code>&nbsp;&rarr;&nbsp;<code>1</code>, <code>CONFIG</code>/<code>CHEAT</code>&nbsp;&rarr;&nbsp;file text, <code>VERSION</code>&nbsp;&rarr;&nbsp;<code>0.5,05 April 2017</code>, <code>RESPOND</code>&nbsp;&rarr;&nbsp;<code>RESPONSE</code>.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-guiboot" data-default-done><span class="txt">GUI launches against the local server with no <code>settings.xml</code> parse error</span></label></li>
+        <li><label><input type="checkbox" data-k="p1-artround"><span class="txt">Click-through: set OPL folder, load the sample list, pull cover art for <code>SLUS_207.68</code><small>Confirm the file lands in the OPL <code>ART/</code> folder and <code>serverdata/Log/traffic_log.txt</code> grows.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-upload"><span class="txt">Upload round-trip: share one cover (<code>UPLOAD_ART</code>) &rarr; check <code>serverdata/Uploads/</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-commit"><span class="txt">Decide: keep &amp; commit the three source edits <span class="tag decide">decide</span><small>They&rsquo;re the minimum to build/run on a modern JDK. Recommend committing.</small></span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="phase" id="part2">
+    <p class="phase-tag">Part 2</p>
+    <h2>Replace the backend</h2>
+    <p class="phase-intro">
+      A metadata database plus a versioned HTTP API. The Swing UI doesn&rsquo;t change;
+      one network class does. <code>MyFTPClient</code> stays untouched throughout.
+    </p>
+    <div class="note">
+      <strong>Target shape.</strong> Desktop app &rarr; <code>BackendClient</code> (HTTPS/JSON)
+      &rarr; REST API &rarr; Postgres for metadata + a content-addressed blob store
+      (filesystem now, S3/MinIO later). The old TCP server runs read-only until cutover finishes.
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">6</span>
+        <h3>New repo &amp; scaffolding</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-repo" data-default-done><span class="txt">Repo <code>logi-26/ps2-game-manager</code> with <code>desktop/</code> + <code>server/</code> + <code>local-dev/</code> + <code>docs/</code>; both <code>build.ps1</code> scripts working in the new layout</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-hygiene" data-default-done><span class="txt">Left NetBeans <code>build/</code>+<code>dist/</code>, the 17&nbsp;MB <code>libraries/</code> bundle, crash logs, empty <code>settings.xml</code> out of the copy; monorepo <code>.gitignore</code> in place</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-archive"><span class="txt">Archive the three old GitHub repos read-only</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-compose"><span class="txt"><code>compose.yaml</code>: <code>api</code> + <code>postgres</code> + <code>minio</code>, all local</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">7</span>
+        <h3>Data model (Postgres)</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-schema"><span class="txt">Alembic migration for the core tables<small><code>game</code>, <code>artwork</code>, <code>config_file</code>, <code>cheat_file</code>, <code>vmc_file</code>, <code>app_release</code>, <code>tool_release</code>, <code>file_report</code>. Blobs are content-addressed on disk; rows hold metadata + path + <code>sha256</code> + <code>status</code> (approved/pending/rejected) + <code>source</code> (official/user_upload).</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-seedgames"><span class="txt">Seed <code>game</code> rows from the region-code logic already in <code>Game.java</code> / the FTP client</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">8</span>
+        <h3>API service (FastAPI)</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-apiscaffold"><span class="txt">FastAPI + SQLAlchemy + Uvicorn skeleton, <code>/v1</code> prefix, <code>GET /v1/health</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-apiread"><span class="txt">Read endpoints: artwork (with <code>ETag</code> / <code>If-None-Match</code>), configs, cheats, VMC, lists (paged)</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-apiwrite"><span class="txt">Write endpoints: multipart uploads &rarr; rows with <code>status=pending</code>; <code>POST /v1/reports</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-apimeta"><span class="txt">App + tool release endpoints (replace <code>VERSION</code> / <code>UPDATE</code> / <code>CUE2POPS</code>)</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-apiauth"><span class="txt">API key / token on upload + report routes; gzip; real status codes (<code>404</code>, not <code>"NO_IMAGE"</code>)</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">9</span>
+        <h3>Client refactor</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-iface"><span class="txt">Extract a <code>BackendClient</code> interface; <code>MyTCPClient</code> implements it as-is</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-apiclient"><span class="txt">Implement <code>MyApiClient</code> with the built-in <code>java.net.http.HttpClient</code> &mdash; no new dependency<small>Same method signatures, return types and local-file side effects as <code>MyTCPClient</code> so the 13 calling screens don&rsquo;t change.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-flag"><span class="txt">Config flag selects TCP vs HTTP; base URL + creds in <code>settings.xml</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-statushandling"><span class="txt">Replace the &ldquo;response &gt; 20 bytes = a file&rdquo; heuristic with HTTP status handling</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">10</span>
+        <h3>Data migration</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-snapshot"><span class="txt">Take a full snapshot of the live server&rsquo;s file tree (<code>READ&nbsp;ME.txt</code> claims ~86k files)</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-importer"><span class="txt"><code>importer/</code> &mdash; walk the tree, parse <code>gameId/region/coverType/index</code> from paths (same rules as <code>downloadArt</code>), hash, insert rows, copy blobs into the store, mark <code>source=official, status=approved</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-verify"><span class="txt">Verify row counts against <code>READ&nbsp;ME.txt</code> totals per console / file type</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">11</span>
+        <h3>Cutover, screen by screen</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-smoke-api"><span class="txt">Flip the flag in a dev build; rerun the Part&nbsp;1 smoke test against the API</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-port-art"><span class="txt">Port art screens &rarr; delete their <code>MyTCPClient</code> paths once verified</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-port-cfg"><span class="txt">Port configs &rarr; cheats &rarr; VMC</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-port-upload"><span class="txt">Port uploads, then updates / tools, then reports</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-moderation"><span class="txt">Minimal moderation view for <code>status=pending</code> uploads</span></label></li>
+      </ul>
+    </div>
+
+    <div class="stage" data-stage>
+      <div class="stage-head">
+        <span class="stage-no">12</span>
+        <h3>Retire, harden, package</h3>
+        <span class="stage-frac" data-frac>0/0</span>
+      </div>
+      <div class="stage-bar"><i></i></div>
+      <ul class="steps">
+        <li><label><input type="checkbox" data-k="p2-retire"><span class="txt">Delete <code>MyTCPClient</code>; move <code>legacy/tcp-server/</code> to an archive tag</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-harden"><span class="txt">Rate limiting, request-size caps, path-safety on the API; S3/MinIO blob backend</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-package"><span class="txt"><code>jpackage</code> the desktop app with a bundled JRE so end users don&rsquo;t need Java <span class="tag opt">optional</span></span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ REFERENCE ============ -->
+  <section id="ref">
+    <p class="eyebrow">Reference</p>
+    <h2>Protocol &rarr; endpoint map</h2>
+    <p>How each current TCP command lands in the new API.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>TCP command</th><th>New endpoint</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">ART</td><td class="mono">GET /v1/games/{id}/artwork/{coverType}/{index}</td></tr>
+          <tr><td class="mono">ART_NUM</td><td class="mono">GET /v1/games/{id}/artwork/{coverType}</td></tr>
+          <tr><td class="mono">ART_LIST</td><td class="mono">GET /v1/artwork?console=PS2 &nbsp;(paged)</td></tr>
+          <tr><td class="mono">CONFIG / CONFIG_LIST</td><td class="mono">GET /v1/games/{id}/config &nbsp;&middot;&nbsp; /v1/configs</td></tr>
+          <tr><td class="mono">CHEAT / CHEAT_LIST</td><td class="mono">GET /v1/games/{id}/cheats &nbsp;&middot;&nbsp; /v1/cheats</td></tr>
+          <tr><td class="mono">VMC / VMC_LIST</td><td class="mono">GET /v1/games/{id}/vmc &nbsp;&middot;&nbsp; /v1/vmc</td></tr>
+          <tr><td class="mono">UPLOAD_ART / _CFG / _VMC</td><td class="mono">POST /v1/games/{id}/artwork &nbsp;(multipart)</td></tr>
+          <tr><td class="mono">VERSION / UPDATE</td><td class="mono">GET /v1/app/latest &nbsp;&middot;&nbsp; /v1/app/releases/{v}/download</td></tr>
+          <tr><td class="mono">CUE2POPS</td><td class="mono">GET /v1/tools/cue2pops?os=&amp;arch=</td></tr>
+          <tr><td class="mono">REPORT</td><td class="mono">POST /v1/reports</td></tr>
+          <tr><td class="mono">RESPOND</td><td class="mono">GET /v1/health</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:2rem">Known rough edges</h2>
+    <p>Carried forward, not yet fixed:</p>
+    <ul class="steps" style="gap:.35rem">
+      <li><span class="txt">Swing on JDK&nbsp;25 / Win10 looks dated; HiDPI scaling may be off. Not blocking.</span></li>
+      <li><span class="txt"><code>sevenzipjbinding</code> native load can fail on modern Windows &rarr; archive extraction breaks, app still starts.</span></li>
+      <li><span class="txt">Upload protocol prefixes the text header with a <strong>2-digit</strong> length &mdash; headers &lt;10 or &gt;99 chars are already malformed.</span></li>
+      <li><span class="txt"><code>oplpops-server</code> has no auth, path sanitisation, or connection limits. Localhost only.</span></li>
+    </ul>
+
+    <h2 style="margin-top:2rem">Added in Part 1</h2>
+    <pre><code>desktop/build.ps1                 server/build.ps1
+local-dev/setup-serverdata.ps1    local-dev/run-server.ps1
+local-dev/run-manager.ps1         local-dev/protocol-check.py
+local-dev/README.md               docs/plan.html   (this file)
+.gitignore  (monorepo)            README.md
+
+edited:  desktop/src/oplpops/game/manager/PopsGameManager.java
+         desktop/src/oplpops/game/manager/TestScreen.java
+moved:   src/javax/swing/JCheckBoxList.java
+      &rarr; src/oplpops/game/manager/JCheckBoxList.java</code></pre>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="mono">OPLPOPS Rebuild Plan</span> &middot; progress is saved in this browser only &middot;
+    generated 2026-09-04
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "oplpops-rebuild-progress-v1";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('ul.steps input[type=checkbox]'));
+
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; }
+    catch(e){ return {}; }
+  }
+  function save(state){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+  }
+
+  var state = load();
+
+  // apply stored state, else the HTML default
+  boxes.forEach(function(cb){
+    var k = cb.getAttribute('data-k');
+    if (Object.prototype.hasOwnProperty.call(state, k)) cb.checked = !!state[k];
+    else cb.checked = cb.hasAttribute('data-default-done');
+  });
+
+  function refresh(){
+    // per-stage
+    document.querySelectorAll('[data-stage]').forEach(function(stage){
+      var cbs = stage.querySelectorAll('input[type=checkbox]');
+      var done = 0;
+      Array.prototype.forEach.call(cbs, function(c){ if (c.checked) done++; });
+      var total = cbs.length;
+      var frac = stage.querySelector('[data-frac]');
+      if (frac) frac.textContent = done + '/' + total;
+      var bar = stage.querySelector('.stage-bar > i');
+      if (bar) bar.style.width = (total ? (done/total*100) : 0) + '%';
+      stage.classList.toggle('is-done', total > 0 && done === total);
+    });
+    // global
+    var counted = boxes.length;
+    var checked = boxes.filter(function(c){ return c.checked; }).length;
+    var pct = counted ? Math.round(checked/counted*100) : 0;
+    document.getElementById('globalFill').style.width = pct + '%';
+    document.getElementById('globalCount').textContent = checked + ' / ' + counted;
+    document.getElementById('globalPct').textContent = pct + '%';
+  }
+
+  boxes.forEach(function(cb){
+    cb.addEventListener('change', function(){
+      state[cb.getAttribute('data-k')] = cb.checked;
+      save(state);
+      refresh();
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    state = {};
+    save(state);
+    boxes.forEach(function(cb){ cb.checked = cb.hasAttribute('data-default-done'); });
+    refresh();
+  });
+
+  refresh();
+})();
+</script>

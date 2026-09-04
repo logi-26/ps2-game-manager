@@ -1,0 +1,24 @@
+# Normalize text line endings in the repo; check out native on Windows.
+* text=auto
+
+*.java   text
+*.py     text
+*.md     text
+*.xml    text
+*.txt    text
+*.form   text
+*.ps1    text eol=crlf
+*.bat    text eol=crlf
+*.sh     text eol=lf
+
+# Binaries - never touch
+*.jar    binary
+*.png    binary
+*.jpg    binary
+*.gif    binary
+*.ico    binary
+*.ELF    binary
+*.exe    binary
+*.dat    binary
+*.bin    binary
+hdl_dump binary
