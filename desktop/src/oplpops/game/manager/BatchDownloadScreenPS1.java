@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 
@@ -315,12 +316,16 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
                 }
                 
                 // Display the game name for the current file being downloaded and add it to the list
-                if (currentGameName != null) {
-                    jTextFieldGameName.setText(" " + currentGameName + " : " + gameID);
-                    if (!processedGameList.contains(currentGameName)) {processedGameList.add(currentGameName);}
-                    createList(processedGameList.toArray(new String[0]));
-                }
-                displayGameImages(gameName, gameID, fileType);
+                // (marshalled onto the EDT - Swing components must not be touched from doInBackground())
+                String finalCurrentGameName = currentGameName;
+                SwingUtilities.invokeLater(() -> {
+                    if (finalCurrentGameName != null) {
+                        jTextFieldGameName.setText(" " + finalCurrentGameName + " : " + gameID);
+                        if (!processedGameList.contains(finalCurrentGameName)) {processedGameList.add(finalCurrentGameName);}
+                        createList(processedGameList.toArray(new String[0]));
+                    }
+                    displayGameImages(gameName, gameID, fileType);
+                });
             }
             return null;
         }
