@@ -1502,7 +1502,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                         .addComponent(jTextFieldGameTitleDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextFieldGameNumberDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(32, 32, 32))
+                .addGap(19, 19, 19))
         );
         jPanelGameInformationLayout.setVerticalGroup(
             jPanelGameInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1518,7 +1518,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                     .addComponent(jTextFieldGameSizeDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabelGameID, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jTextFieldGameIDDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         jLabelGameTitle.getAccessibleContext().setAccessibleName("lblGameTitle");
@@ -1528,7 +1528,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jPanelGameCover.setPreferredSize(new java.awt.Dimension(243, 341));
 
         jLabelGameFrontCover.setToolTipText("");
-        jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(null));
         jLabelGameFrontCover.setPreferredSize(new java.awt.Dimension(207, 295));
 
         javax.swing.GroupLayout jPanelGameCoverLayout = new javax.swing.GroupLayout(jPanelGameCover);
@@ -1538,14 +1538,14 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
             .addGroup(jPanelGameCoverLayout.createSequentialGroup()
                 .addGap(13, 13, 13)
                 .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelGameCoverLayout.setVerticalGroup(
             jPanelGameCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelGameCoverLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         jLabelCurrentConsoleDisplay.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
@@ -1817,7 +1817,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
         jMenuFile.setText("File");
 
-        jMenuItemOpenOPLDirectory.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemOpenOPLDirectory.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItemOpenOPLDirectory.setText("Open OPL Directory");
         jMenuItemOpenOPLDirectory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1863,7 +1863,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuSettings.add(jCheckBoxMenuItemPS2ULCFG);
 
-        jCheckBoxMenuDarkMode.setSelected(false);
         jCheckBoxMenuDarkMode.setText("Dark Mode");
         jCheckBoxMenuDarkMode.setToolTipText("Takes effect the next time the app is started");
         jCheckBoxMenuDarkMode.addActionListener(new java.awt.event.ActionListener() {
@@ -1922,7 +1921,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
         jMenuFile.add(jMenuSettings);
 
-        jMenuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItemExit.setText("Exit");
         jMenuItemExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1936,7 +1935,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         jMenuTools.setText("Tools");
         jMenuTools.setActionCommand("Batch");
 
-        jMenuItemAddPS1Game.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.SHIFT_MASK));
+        jMenuItemAddPS1Game.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.SHIFT_DOWN_MASK));
         jMenuItemAddPS1Game.setText("Add PS1 Game");
         jMenuItemAddPS1Game.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1945,7 +1944,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuTools.add(jMenuItemAddPS1Game);
 
-        jMenuItemAddPS2Game.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.SHIFT_MASK));
+        jMenuItemAddPS2Game.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.SHIFT_DOWN_MASK));
         jMenuItemAddPS2Game.setText("Add PS2 Game");
         jMenuItemAddPS2Game.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2006,7 +2005,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuTools.add(jMenuItemPS2Emulator);
 
-        jMenuItemMD5.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemMD5.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItemMD5.setText("Perform MD5 Hash");
         jMenuItemMD5.setToolTipText("");
         jMenuItemMD5.addActionListener(new java.awt.event.ActionListener() {
@@ -2032,7 +2031,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuTools.add(jMenuItemRefreshGameList);
 
-        jMenuItemCheckUpdate.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemCheckUpdate.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItemCheckUpdate.setText("Check for Updates");
         jMenuItemCheckUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2062,7 +2061,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuBatchTools.add(jMenuItemBatchAddPS2Game);
 
-        jMenuBatchDownload.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuBatchDownload.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuBatchDownload.setText("Batch Download");
         jMenuBatchDownload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2167,7 +2166,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
         jMenuConsole.setText("Console");
 
-        jRadioButtonMenuItemPlaystation1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
+        jRadioButtonMenuItemPlaystation1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jRadioButtonMenuItemPlaystation1.setSelected(true);
         jRadioButtonMenuItemPlaystation1.setText("PlayStation 1");
         jRadioButtonMenuItemPlaystation1.addActionListener(new java.awt.event.ActionListener() {
@@ -2177,7 +2176,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         });
         jMenuConsole.add(jRadioButtonMenuItemPlaystation1);
 
-        jRadioButtonMenuItemPlaystation2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
+        jRadioButtonMenuItemPlaystation2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jRadioButtonMenuItemPlaystation2.setText("PlayStation 2");
         jRadioButtonMenuItemPlaystation2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2190,7 +2189,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
         jMenuModeSelect.setText("Mode");
 
-        jMenuItemChangeMode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemChangeMode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItemChangeMode.setText("Set Mode");
         jMenuItemChangeMode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2245,9 +2244,9 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(jPanelGameDetails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addComponent(jPanelGameInformation, javax.swing.GroupLayout.PREFERRED_SIZE, 549, Short.MAX_VALUE)))
+                            .addComponent(jPanelGameInformation, javax.swing.GroupLayout.PREFERRED_SIZE, 528, Short.MAX_VALUE)))
                     .addComponent(jLabelCurrentConsoleDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 396, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(10, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

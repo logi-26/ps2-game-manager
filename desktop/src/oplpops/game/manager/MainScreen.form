@@ -62,7 +62,6 @@
                 </MenuItem>
                 <MenuItem class="javax.swing.JCheckBoxMenuItem" name="jCheckBoxMenuDarkMode">
                   <Properties>
-                    <Property name="selected" type="boolean" value="false"/>
                     <Property name="text" type="java.lang.String" value="Dark Mode"/>
                     <Property name="toolTipText" type="java.lang.String" value="Takes effect the next time the app is started"/>
                   </Properties>
@@ -508,12 +507,12 @@
                                   <Component id="jPanel2" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="jPanelGameInformation" pref="553" max="32767" attributes="0"/>
+                          <Component id="jPanelGameInformation" pref="528" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="jLabelCurrentConsoleDisplay" min="-2" pref="396" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="10" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -583,7 +582,7 @@
                           <Component id="jTextFieldGameNumberDisplay" min="-2" pref="74" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -603,7 +602,7 @@
                       <Component id="jLabelGameID" alignment="3" min="-2" pref="25" max="-2" attributes="0"/>
                       <Component id="jTextFieldGameIDDisplay" alignment="3" min="-2" pref="25" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="14" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -712,7 +711,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabelGameFrontCover" min="-2" pref="200" max="-2" attributes="0"/>
-                  <EmptySpace pref="15" max="32767" attributes="0"/>
+                  <EmptySpace pref="33" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
