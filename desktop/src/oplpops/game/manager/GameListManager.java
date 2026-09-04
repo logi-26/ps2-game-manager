@@ -168,7 +168,7 @@ public class GameListManager {
 
         // Get the game name without the directory path or file extension and game ID
         String gameName = isoFile.getName();
-        if (gameName.contains(".iso")) {gameName = gameName.replace(".iso", "");}
+        if (gameName.toLowerCase().endsWith(".iso") || gameName.toLowerCase().endsWith(".zso")) {gameName = gameName.substring(0, gameName.length() - 4);}
         if (gameName.contains(gameID + ".")) {gameName = gameName.replace(gameID + ".", "");}
         
         gameListPS2.add(new Game(gameName, gameID, isoFile.toString(), PopsGameManager.bytesToHuman(isoFile.length()), isoFile.length()));
@@ -327,15 +327,20 @@ public class GameListManager {
     }
     
     
-    // This searches the ISO file for the games unique identifier file
+    // This searches the ISO file for the games unique identifier file. .zso is compressed - the
+    // 7-Zip ISO reader below can't parse its content directly - so this reads the ID straight out
+    // of the filename instead (ZSO files are conventionally already named "<id>.<name>.zso").
     public static String getPS2GameIDFromArchive(String archiveFile) throws Exception {
+
+        if (archiveFile.toLowerCase().endsWith(".zso")) {return extractGameIDFromFilename(new File(archiveFile).getName());}
+
         IInArchive archive;
         RandomAccessFile randomAccessFile;
         randomAccessFile = new RandomAccessFile(archiveFile, "r");
         archive = SevenZip.openInArchive(ArchiveFormat.ISO, new RandomAccessFileInStream(randomAccessFile));
 
         String theGameID = null;
-        
+
         for (int i = 0; i <archive.getNumberOfItems(); i++){
             String gameID = archive.getStringProperty(i, PropID.PATH);
             for (String regionCode:REGION_CODES) {if (gameID.contains(regionCode)) {theGameID = gameID;}}
@@ -346,7 +351,21 @@ public class GameListManager {
 
         return theGameID;
     }
-    
+
+
+    // Extracts a PS2 game ID (e.g. SLUS_215.93) directly from a filename, for formats (like .zso)
+    // whose compressed content getPS2GameIDFromArchive() can't read the archive listing from.
+    private static String extractGameIDFromFilename(String filename) {
+        for (String regionCode : REGION_CODES) {
+            int index = filename.indexOf(regionCode);
+            if (index != -1) {
+                java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(java.util.regex.Pattern.quote(regionCode) + "\\d{3}\\.\\d{2}").matcher(filename.substring(index));
+                if (matcher.find()) {return matcher.group();}
+            }
+        }
+        return null;
+    }
+
 
     // This searches the VCD file for the games unique identifier string
     public static String getPS1GameIDFromVCD(File vcdfile) throws Exception {
@@ -1129,10 +1148,13 @@ public class GameListManager {
     }
     
     
-    // This returns an array containing all of the .ISO files in the directory
+    // This returns an array containing all of the .ISO and .ZSO (compressed ISO) files in the directory
     private static File [] getISOFiles() throws IOException {
         File directory = new File(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator);
-        File [] files = directory.listFiles((File dir, String name) -> name.endsWith(".ISO") ||  name.endsWith(".iso"));
+        File [] files = directory.listFiles((File dir, String name) -> {
+            String lower = name.toLowerCase();
+            return lower.endsWith(".iso") || lower.endsWith(".zso");
+        });
 
         return files;
     }

@@ -177,8 +177,9 @@ public class GameLongNameScreen extends javax.swing.JDialog {
             
             boolean success;
             
-            // Rename the ISO file
-            success = selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + longNameList.get(selectedIndex).getGameID() + "." + jTextFieldGameNewTitle.getText() + ".iso"));
+            // Rename the ISO/ZSO file, preserving whichever extension it actually has
+            String extension = selectedGame.getName().substring(selectedGame.getName().length() - 4);
+            success = selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + longNameList.get(selectedIndex).getGameID() + "." + jTextFieldGameNewTitle.getText() + extension));
 
             // Remove the game from the list, update main game list and generate a new conf_elm.cfg file
             if (success){updateGameList("PS2");}

@@ -100,52 +100,61 @@ public class AddGameSMBScreen extends javax.swing.JDialog {
                     }
                     break;
                 case "iso":
+                case "zso":
                     if (playstation ==2){
                         File isoFile = selectedFile;
 
-                        // Try and get the game ID from the ISO
+                        // Try and get the game ID. .zso is compressed, so this reads it straight out of
+                        // the filename instead of the archive content - see getPS2GameIDFromArchive().
                         String gameID = null;
                         try {gameID = GameListManager.getPS2GameIDFromArchive(isoFile.getAbsolutePath());} catch (Exception ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
 
                         // If the game ID was retrieved, copy the file to the OPL directory, otherwise tell the user that the ISO file is not valid
                         if (gameID != null){
-                            
+
                             if (!alreadyInGameListPS2(isoFile)){
-                                
+
                                 if (PopsGameManager.getCurrentMode().equals("SMB")){
                                     String newFileName = AddGameManager.truncate(isoFile.getName(), isoFile.getName().length()-3);
-                                    String newFileFullName = newFileName + "iso";
+                                    String newFileFullName = newFileName + fileExtension.toLowerCase();
                                     new BackgroundWorker(true, isoFile.getAbsolutePath(), PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + newFileFullName, newFileName, false).execute();
                                 }
                                 else if (PopsGameManager.getCurrentMode().equals("HDD_USB")){
-                                    
+
+                                    // .zso is already compressed and doesn't need UL splitting - OPL reads
+                                    // it directly regardless of the uncompressed game's size.
+                                    if (fileExtension.equalsIgnoreCase("zso")) {
+                                        String newFileName = AddGameManager.truncate(isoFile.getName(), isoFile.getName().length()-3);
+                                        String newFileFullName = newFileName + fileExtension.toLowerCase();
+                                        isoFile.renameTo(new File(PopsGameManager.getOPLFolder() + File.separator + newFileFullName));
+                                    }
                                     // If the ISO file is bigger than 4GB it will need to be converted to UL format
-                                    if (isoFile.length() > 4294967296L){
+                                    else if (isoFile.length() > 4294967296L){
                                         PopsGameManager.displayMessageDebug("PS2 ISO File greater than 4GB!");
                                     }
                                     else {
                                         PopsGameManager.displayMessageDebug("PS2 ISO File smaller than 4GB!\nAdding to USB!");
 
                                         String newFileName = AddGameManager.truncate(isoFile.getName(), isoFile.getName().length()-3);
-                                        String newFileFullName = newFileName + "iso";
-                                        
+                                        String newFileFullName = newFileName + fileExtension.toLowerCase();
+
                                         // Copy the file to the USB drive without using the background worker task (much faster but no user feedback)
                                         isoFile.renameTo(new File(PopsGameManager.getOPLFolder() + File.separator + newFileFullName));
-                                        
+
                                         //new BackgroundWorker(true, isoFile.getAbsolutePath(), PopsGameManager.getOPLFolder() + File.separator + newFileFullName, newFileName, false).execute();
                                     }
-                                    
-                                    
-                                    
-                                    
-                                    
+
+
+
+
+
                                 }
-                                
-                                
-                                
-                           
-                            
-                            
+
+
+
+
+
+
                             }
                             else{
                                 JOptionPane.showMessageDialog(null,"This game is already in your game list."," No Games to Add!",JOptionPane.INFORMATION_MESSAGE);
@@ -185,11 +194,14 @@ public class AddGameSMBScreen extends javax.swing.JDialog {
         }
         else if (playstation == 2){
 
-            // Get a list of all the iso files in the directory
+            // Get a list of all the iso/zso files in the directory
             List<File> isoFileList = new ArrayList<>();
             File[] files = selectedFile.listFiles();
-            for (File file : files) {if (file.isFile() && file.getName().toLowerCase().substring(file.getName().length()-3, file.getName().length()).equals("iso")) {
-                if (!alreadyInGameListPS2(file)){isoFileList.add(file);}}
+            for (File file : files) {
+                if (file.isFile()) {
+                    String extension = file.getName().toLowerCase().substring(file.getName().length()-3, file.getName().length());
+                    if ((extension.equals("iso") || extension.equals("zso")) && !alreadyInGameListPS2(file)) {isoFileList.add(file);}
+                }
             }
             
             if (isoFileList.isEmpty()){JOptionPane.showMessageDialog(null,"Could not locate any new games to add."," No Games to Add!",JOptionPane.INFORMATION_MESSAGE);}
@@ -316,9 +328,9 @@ public class AddGameSMBScreen extends javax.swing.JDialog {
                         outPath = PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + newFileFullName;
                     }
                     else {
-                        // File name and path for the .ISO file
+                        // File name and path for the .ISO/.ZSO file (preserve whichever extension it actually has)
                         newFileName = AddGameManager.truncate(selectedFile.getName(), selectedFile.getName().length()-3);
-                        newFileFullName = newFileName + "iso";
+                        newFileFullName = newFileName + selectedFile.getName().substring(selectedFile.getName().length()-3);
                         inPath = AddGameManager.truncate(selectedFile.toString(), selectedFile.toString().length()-newFileFullName.length());
                         inPath += newFileFullName;
                         outPath = PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + newFileFullName;
@@ -451,7 +463,7 @@ public class AddGameSMBScreen extends javax.swing.JDialog {
                             if (!outPath.contains(gameID)){outPath = outPath.substring(0, outPath.length()-4) + "-" + gameID + ".VCD";}
                         }
                         else if (PopsGameManager.getCurrentConsole().equals("PS2")){
-                            if (!outPath.contains(gameID)){outPath = outPath.substring(0, outPath.lastIndexOf(File.separator)+1) + gameID + "." + newFileName + ".iso";}
+                            if (!outPath.contains(gameID)){outPath = outPath.substring(0, outPath.lastIndexOf(File.separator)+1) + gameID + "." + newFileName + new File(inPath).getName().substring(new File(inPath).getName().length()-4);}
                         }
                         
                         File originalPath = new File(inPath);

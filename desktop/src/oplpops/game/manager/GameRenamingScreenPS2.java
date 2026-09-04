@@ -6,20 +6,13 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import net.sf.sevenzipjbinding.ArchiveFormat;
-import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.PropID;
-import net.sf.sevenzipjbinding.SevenZip;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class GameRenamingScreenPS2 extends javax.swing.JDialog {
     
-    private static final String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
     private static List<File> invalidGameListPS2;
     private static List<Game> gameList;
     
@@ -85,7 +78,7 @@ public class GameRenamingScreenPS2 extends javax.swing.JDialog {
             String gameID = null;
 
             // Try and get the game ID from the ISO
-            try {gameID = getPS2GameIDFromArchive(isoFile.getAbsolutePath());} 
+            try {gameID = GameListManager.getPS2GameIDFromArchive(isoFile.getAbsolutePath());} 
             catch (Exception ex) {PopsGameManager.displayErrorMessageDebug("Error reading the PS2 game ID from the ISO file!\n\n" + ex.toString());}
 
             // Split the string to get the game name without the directory path or file extension
@@ -114,7 +107,8 @@ public class GameRenamingScreenPS2 extends javax.swing.JDialog {
                 jTextFieldGameSizeDisplay.setText(gameList.get(jListGameList.getSelectedIndex()).getGameReadableSize());
                 File originalFile = invalidGameListPS2.get(jListGameList.getSelectedIndex());
                 jTextFieldGameOldTitleDisplay.setText(originalFile.getName());
-                jTextFieldGameNewTitleDisplay.setText(gameList.get(jListGameList.getSelectedIndex()).getGameID() + "." + gameList.get(jListGameList.getSelectedIndex()).getGameName() + ".iso");
+                String originalExtension = originalFile.getName().substring(originalFile.getName().length() - 4);
+                jTextFieldGameNewTitleDisplay.setText(gameList.get(jListGameList.getSelectedIndex()).getGameID() + "." + gameList.get(jListGameList.getSelectedIndex()).getGameName() + originalExtension);
             }
         }
     }
@@ -131,26 +125,8 @@ public class GameRenamingScreenPS2 extends javax.swing.JDialog {
     }
     
     
-    // This searches the ISO file for the games unique identifier file
-    private String getPS2GameIDFromArchive(String archiveFile) throws Exception {
-        IInArchive archive;
-        RandomAccessFile randomAccessFile;
-        randomAccessFile = new RandomAccessFile(archiveFile, "r");
-        archive = SevenZip.openInArchive(ArchiveFormat.ISO, new RandomAccessFileInStream(randomAccessFile));
-        
-        String theGameID = null;
-        
-        for (int i = 0; i <archive.getNumberOfItems(); i++){
-            String gameID = archive.getStringProperty(i, PropID.PATH);
-            for (String regionCode:REGION_CODES) {if (gameID.contains(regionCode)) {theGameID = gameID;}}
-        }
-        
-        archive.close();
-        randomAccessFile.close();
-        
-        return theGameID;
-    }
-    
+    // Game-ID detection (including the .zso filename fallback) lives on GameListManager now -
+    // see GameListManager.getPS2GameIDFromArchive(), shared by every PS2 game-scanning path.
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -413,7 +389,7 @@ public class GameRenamingScreenPS2 extends javax.swing.JDialog {
             if (newName.length() > 4) {
                 String fileExtension = newName.substring(newName.length() - 4);
 
-                if (fileExtension.equals(".iso") || fileExtension.equals(".ISO")){
+                if (fileExtension.equalsIgnoreCase(".iso") || fileExtension.equalsIgnoreCase(".zso")){
 
                     File originalFile = invalidGameListPS2.get(jListGameList.getSelectedIndex());
                     String originalPath = originalFile.getAbsolutePath().replace(originalFile.getName(), "");
@@ -449,7 +425,7 @@ public class GameRenamingScreenPS2 extends javax.swing.JDialog {
             
             // Try and get the game ID from the ISO
             String gameID = null;
-            try {gameID = getPS2GameIDFromArchive(isoFile.getAbsolutePath());} catch (Exception ex) {PopsGameManager.displayErrorMessageDebug("Error reading the PS2 game ID from the ISO file!\n\n" + ex.toString());}
+            try {gameID = GameListManager.getPS2GameIDFromArchive(isoFile.getAbsolutePath());} catch (Exception ex) {PopsGameManager.displayErrorMessageDebug("Error reading the PS2 game ID from the ISO file!\n\n" + ex.toString());}
             
             String originalPath = isoFile.getAbsolutePath().replace(isoFile.getName(), "");
             String newPath = originalPath + gameID + "." + isoFile.getName();

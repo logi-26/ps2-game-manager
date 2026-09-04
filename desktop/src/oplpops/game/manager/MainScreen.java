@@ -251,14 +251,11 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                 String exePath = PopsGameManager.getEmulatorPathPS2().substring(0, index);
                 String exeName = PopsGameManager.getEmulatorPathPS2().substring(index +1);
                 
-                String gameID = GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGameID();
-                String gameName = GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGameName();
-
                 File directory = new File(exePath);
 
                 List<String> commands = new ArrayList<>();
                 commands.add(exePath + File.separator + exeName);
-                commands.add(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + gameID + "." + gameName + ".iso");
+                commands.add(GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGamePath());
                 if (PopsGameManager.getEmulatorFullScreenPS2()) {commands.add("--fullscreen");}
                 
                 pb = new ProcessBuilder(commands);
@@ -759,7 +756,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                 }
                 else {
                     chooser.setDialogTitle("Select PS2 Game");
-                    filter = new FileNameExtensionFilter("PS2 GAMES", "ISO");
+                    filter = new FileNameExtensionFilter("PS2 GAMES", "ISO", "ZSO");
                 }
 
                 chooser.setFileFilter(filter);
@@ -1145,8 +1142,9 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                 case "SMB": 
                     dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete - " + selectedGame + " ?"," Delete Game",JOptionPane.YES_NO_OPTION);
                     if(dialogResult == JOptionPane.YES_OPTION){
-                        if (new File(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + selectedGameID + "." + selectedGame + ".iso").exists()){
-                            new File(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + selectedGameID + "." + selectedGame + ".iso").delete();
+                        File selectedGameFile = new File(GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGamePath());
+                        if (selectedGameFile.exists()){
+                            selectedGameFile.delete();
                             // Update game list here!!!
                             GameListManager.createGameListsPS2(false);
                             updateGameList(null, jListGameList.getSelectedIndex()-1);
@@ -2406,15 +2404,14 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
             }  
         }          
         else if (PopsGameManager.getCurrentConsole().equals("PS2")) {
-            String selectedGame = GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGameName();
-            String selectedGameID = GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGameID();
-  
-            if (new File(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + selectedGameID + "." + selectedGame + ".iso").exists()){
-                HashCheckerScreen hashCheckScreen = new HashCheckerScreen(this, true, new File(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + selectedGameID + "." + selectedGame + ".iso"));
+            File selectedGameFile = new File(GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGamePath());
+
+            if (selectedGameFile.exists()){
+                HashCheckerScreen hashCheckScreen = new HashCheckerScreen(this, true, selectedGameFile);
                 hashCheckScreen.setLocationRelativeTo(this);
                 hashCheckScreen.setVisible(true);
             }
-        } 
+        }
     }//GEN-LAST:event_jMenuItemMD5ActionPerformed
 
     private void jMenuItemDeleteAllArtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemDeleteAllArtActionPerformed
