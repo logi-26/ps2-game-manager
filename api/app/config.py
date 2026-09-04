@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     github_token: str | None = None
     github_cache_seconds: int = 300
 
+    # Off by default: a solo desktop client doing a batch-download run can
+    # easily fire several thousand requests in a few minutes (every art kind
+    # for every game), which a naive limit would mistake for abuse. Only turn
+    # this on if the API is reachable beyond localhost, and size it generously
+    # (a few thousand/min) so normal batch operations aren't affected.
+    rate_limit_per_minute: int | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

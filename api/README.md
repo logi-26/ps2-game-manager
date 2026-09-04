@@ -64,6 +64,20 @@ python -m alembic upgrade head
 | `OPLAPI_GITHUB_REPO` | `logi-26/ps2-game-manager` | where app releases are read from |
 | `OPLAPI_GITHUB_TOKEN` | *(unset)* | raises the GitHub API rate limit from 60/hr to 5000/hr |
 | `OPLAPI_GITHUB_CACHE_SECONDS` | `300` | how long a release lookup is cached |
+| `OPLAPI_RATE_LIMIT_PER_MINUTE` | *(unset = off)* | per-client-IP cap; only enable if reachable beyond localhost (size it generously — a batch download can fire thousands of requests in minutes) |
+
+## Hardening
+
+- **Gzip** is always on (`GZipMiddleware`, responses ≥ 500 bytes) — meaningfully
+  shrinks the paginated JSON list endpoints.
+- **Rate limiting** is off by default (see `OPLAPI_RATE_LIMIT_PER_MINUTE` above);
+  a simple in-process fixed-window limiter (`app/ratelimit.py`), no new
+  dependency. Exceeding it gets a `429` with `Retry-After`.
+- **Path safety**: no endpoint builds a filesystem path from request input.
+  Blob paths are always `<sha256>` values computed server-side during import
+  and read back from the DB; `game_id`/`kind`/`variant` path params only ever
+  reach parameterized SQLAlchemy queries. Unlike the old TCP server, there's
+  nothing here for a crafted request to path-traverse.
 
 ## Endpoints (v1)
 

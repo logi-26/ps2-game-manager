@@ -452,7 +452,7 @@ next to the repo, not in it (large binaries, .gitignored):
         <li><label><input type="checkbox" data-k="p2-apiread" data-default-done><span class="txt">Read endpoints: games (search + paged), artwork bytes with <code>ETag</code>/<code>304</code>, per-kind counts, configs, cheats, VMC, bulk lists</span></label></li>
         <li><label><input type="checkbox" data-k="p2-apiwrite" data-default-done><span class="txt"><del>Multipart uploads (artwork / config / VMC) &rarr; <code>status=pending</code>; <code>POST /v1/reports</code></del> &mdash; built, then removed as a feature; API is read-only now (see stage 11)</span></label></li>
         <li><label><input type="checkbox" data-k="p2-apimeta" data-default-done><span class="txt">App updates read live from <strong>GitHub Releases</strong> on this repo (<code>api/app/github.py</code>) &mdash; cutting a release <em>is</em> publishing it, no jar mirrored into the DB<small><code>GET /v1/app/latest</code> finds the newest release with a <code>.jar</code> asset; <code>GET /v1/app/releases/{v}/download</code> redirects straight to the GitHub asset URL. <code>/v1/tools/{name}</code> stays DB+blob-backed (cue2pops etc. aren&rsquo;t releases of this repo).</small></span></label></li>
-        <li><label><input type="checkbox" data-k="p2-apiauth"><span class="txt"><code>X-API-Key</code> gate on writes is in place. Still to do: gzip, rate limiting, CORS for the desktop client</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-apiauth" data-default-done><span class="txt"><del>X-API-Key</del> gate removed along with writes &mdash; the API has no mutating endpoints left, so there's nothing to authenticate. Gzip + rate limiting done under stage&nbsp;12; CORS isn't applicable (the client is a Java <code>HttpClient</code>, not a browser).</span></label></li>
       </ul>
     </div>
 
@@ -515,8 +515,8 @@ next to the repo, not in it (large binaries, .gitignored):
       </div>
       <div class="stage-bar"><i></i></div>
       <ul class="steps">
-        <li><label><input type="checkbox" data-k="p2-retire"><span class="txt">Delete <code>MyTCPClient</code>; move <code>legacy/tcp-server/</code> to an archive tag</span></label></li>
-        <li><label><input type="checkbox" data-k="p2-harden"><span class="txt">Rate limiting, request-size caps, path-safety on the API; S3/MinIO blob backend</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-harden" data-default-done><span class="txt">API hardening<small>Gzip on unconditionally (<code>GZipMiddleware</code>, &ge;500 bytes). Rate limiting off by default, opt in via <code>OPLAPI_RATE_LIMIT_PER_MINUTE</code> &mdash; a naive always-on limit would misread a normal batch-download run (thousands of requests in minutes) as abuse; a simple in-process fixed-window counter (<code>app/ratelimit.py</code>), no new dependency. Path safety already held: no endpoint builds a filesystem path from request input &mdash; blob paths are server-computed <code>sha256</code>, everything else goes through parameterized SQLAlchemy. Not done: S3/MinIO blob backend &mdash; no driver for it yet, filesystem storage is fine at this scale.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-retire"><span class="txt">Delete <code>MyTCPClient</code>; move <code>legacy/tcp-server/</code> to an archive tag <span class="tag decide">holding off</span><small>The <code>api</code> default has had one session of real use. Give it more runway before removing the <code>-Backend tcp</code> fallback for good.</small></span></label></li>
         <li><label><input type="checkbox" data-k="p2-package"><span class="txt"><code>jpackage</code> the desktop app with a bundled JRE so end users don&rsquo;t need Java <span class="tag opt">optional</span></span></label></li>
       </ul>
     </div>
