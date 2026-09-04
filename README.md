@@ -12,12 +12,14 @@ This is the consolidated repo. It supersedes the three earlier repos
 | Path | What |
 |---|---|
 | `desktop/` | Java 8 Swing desktop app (`oplpops.game.manager`). Build with `desktop/build.ps1`. |
-| `server/` | Raw-TCP file server (`tcpserver`), port 6789. Build with `server/build.ps1`. |
+| `server/` | Raw-TCP file server (`tcpserver`), port 6789. Build with `server/build.ps1`. **Being replaced by `api/`.** |
+| `api/` | HTTP API + database (FastAPI + SQLAlchemy + Alembic). SQLite + local blobs by default; Postgres via one env var. See [`api/README.md`](api/README.md). |
 | `local-dev/` | Scripts + fixture generator to run desktop ↔ server on localhost. |
 | `docs/plan.html` | The rebuild + overhaul plan (open in a browser; progress is checkable). |
+| `compose.yaml` | Optional Postgres + MinIO for running `api/` on non-default infra. |
 
-Planned for the overhaul (not yet present): `api/` (HTTP API + database) replacing
-`server/`, and `importer/` to load the existing file corpus into the DB.
+Still to come: pointing the desktop app at `api/` instead of `server/`
+(a `BackendClient` interface + `MyApiClient`), then retiring `server/`.
 
 ## Build & run locally
 

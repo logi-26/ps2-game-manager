@@ -34,6 +34,11 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
+# --- api/ runtime state (dev db + blob store) ---
+api/var/
+*.db
+api/.env
+
 # --- local data corpora (kept outside git - large binaries) ---
 # The desktop OPL test drive and the server's file corpus live next to the
 # repo, not in it. Guard against them being added by accident.
