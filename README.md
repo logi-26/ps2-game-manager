@@ -31,17 +31,18 @@ Needs a JDK on `PATH` (`javac` + `jar`; tested with Temurin 25 — bytecode targ
 PowerShell scripts: run with `pwsh ./x.ps1` or `powershell -ExecutionPolicy Bypass -File x.ps1`.
 
 ```powershell
-./local-dev/setup-serverdata.ps1     # once — builds server/build-local/serverdata/ fixture
+# against the TCP server + a placeholder fixture
+./local-dev/setup-serverdata.ps1     # once
 ./local-dev/run-server.ps1           # terminal 1 — builds + serves on :6789
-./local-dev/run-manager.ps1          # terminal 2 — builds + launches the app at 127.0.0.1:6789
+./local-dev/run-manager.ps1          # terminal 2 — builds + launches the app
+
+# against the HTTP API + the real imported data (after api/'s one-time setup, see api/README.md)
+./local-dev/run-api.ps1                    # terminal 1 — serves :8000
+./local-dev/run-manager.ps1 -Backend api   # terminal 2
 ```
 
-`local-dev/protocol-check.py` exercises the server's wire protocol without the GUI.
-Full runbook and smoke test: [`local-dev/README.md`](local-dev/README.md).
-
-The desktop app targets the server via `-Doplpops.server.address` /
-`-Doplpops.server.port` (or the `OPLPOPS_SERVER_ADDRESS` / `OPLPOPS_SERVER_PORT`
-env vars); the run script sets them.
+`local-dev/protocol-check.py` exercises the TCP server's wire protocol without
+the GUI. Full runbook and smoke test: [`local-dev/README.md`](local-dev/README.md).
 
 ## Local data corpora (not in git)
 

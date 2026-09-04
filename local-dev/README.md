@@ -1,21 +1,16 @@
-# Local dev runbook (Part 1: get it running again)
+# Local dev runbook
 
-Goal: run the **desktop app** (`desktop/`) against the **backend file server**
-(`server/`) entirely on `localhost`, built from source with the JDK you already
-have (Temurin 25 — bytecode is targeted at 11).
+Two backends the desktop app (`desktop/`) can run against:
 
-The `api/` service (database + HTTP API) is Part 2 and doesn't exist yet.
-
----
-
-## What each piece is
-
-| Component | Talks to | Transport | Touched in Part 1 |
+| Component | Talks to | Transport | Status |
 |---|---|---|---|
-| `desktop` `MyTCPClient` | `server` | raw TCP, port 6789 | **yes** — pointed at localhost |
-| `desktop` `MyFTPClient` | a real PS2 console running OPL | FTP, port 21 | no — leave as-is |
-| `desktop` `MyAPIClient` | nothing (empty stub) | — | no — filled in during Part 2 |
-| `server` | the filesystem next to its own jar | — | **yes** — served from a fixture |
+| `desktop` `MyTCPClient` | `server` | raw TCP, port 6789 | original; being retired |
+| `desktop` `MyApiClient` | `api` | HTTP, `/v1` | replacement — feature-complete, not yet the default |
+| `desktop` `MyFTPClient` | a real PS2 console running OPL | FTP, port 21 | unrelated to either — leave as-is |
+
+Both implement `BackendClient`; `PopsGameManager.newBackendClient()` picks one via
+`-Doplpops.backend=tcp|api` (default **`tcp`** until the API backend has had a
+real click-through — see [`docs/plan.html`](../docs/plan.html) stage 11).
 
 ---
 
@@ -24,107 +19,95 @@ The `api/` service (database + HTTP API) is Part 2 and doesn't exist yet.
 - A JDK on `PATH` with `javac` + `jar` (verified: `javac 25.0.1`).
 - PowerShell (Windows). Run scripts with `pwsh ./x.ps1` or
   `powershell -ExecutionPolicy Bypass -File x.ps1`.
-- Python 3.11 with Pillow (only for `setup-serverdata.ps1`'s placeholder art —
-  verified present as `python`).
+- Python 3.11 with Pillow (for `setup-serverdata.ps1`'s placeholder art, and for
+  `api/`'s venv — see `api/README.md`).
 
 ---
 
-## One-time setup
+## Option A — TCP server + fixture (Part 1)
 
 ```powershell
-# from the repo root
-./local-dev/setup-serverdata.ps1        # builds server/build-local/serverdata/
+./local-dev/setup-serverdata.ps1        # once — builds server/build-local/serverdata/
+./local-dev/run-server.ps1              # terminal 1 — builds server/, serves on :6789
+./local-dev/run-manager.ps1             # terminal 2 — builds desktop/, launches against it
 ```
 
-This creates the folder tree the server expects and drops in placeholder art +
-config/cheat files for two sample games:
+Fixture has two sample games (`SLUS_207.68` God of War / NTSCU,
+`SCES_509.24` Gran Turismo 4 / PAL). `run-manager.ps1 -Server <ip> -Port <n>`
+to point elsewhere.
 
-| game id | region | title |
-|---|---|---|
-| `SLUS_207.68` | `NTSCU` | God of War |
-| `SCES_509.24` | `PAL`   | Gran Turismo 4 |
+### Using the real `Server Content` corpus with the TCP server instead
 
-### Using the real `Server Content` corpus instead
-
-The server resolves its data root from **the folder its jar sits in**. To serve
-the real data instead of the fixture, copy the built jar next to the corpus and
-run it there:
+The server resolves its data root from **the folder its jar sits in**:
 
 ```powershell
-./server/build.ps1                                    # just build
+./server/build.ps1
 Copy-Item ./server/build-local/TCPServer.jar "../Server Content/"
 pushd "../Server Content"; java -jar TCPServer.jar; popd
 ```
 
-(`Server Content/` lives next to the repo, not in it.)
+### Smoke test
+
+1. Start the server. Expect: `Running OPLPOPS TCP LIVE Server ... Port: 6789`.
+2. `python ./local-dev/protocol-check.py` — expect `ART (hit) -> ~5–6 KB` (a
+   JPEG), `ART (miss) -> NO_IMAGE`, `ART_NUM -> 1`, `CONFIG`/`CHEAT` -> file
+   text, `VERSION -> 0.5,05 April 2017`, `RESPOND -> RESPONSE`.
+3. Start the GUI. Expect `Detected OS: Windows 10 64bit` with **no**
+   `settings.xml` parse error, then a window.
+4. Set the OPL folder (the `program_test_folder/` drive next to the repo
+   works), pick **PS2**, load a game list, pull cover art — watch
+   `server/build-local/serverdata/Log/traffic_log.txt` fill in.
+   `Log/error_log.txt` should **not** appear.
 
 ---
 
-## Run it (fixture)
+## Option B — HTTP API, real data (Part 2)
 
-Two terminals from the repo root:
+Needs `api/`'s venv set up once (see `api/README.md` "Quick start" +
+"Load the legacy data" — `alembic upgrade head` then
+`python -m scripts.import_content --content-dir "../Server Content"`).
 
 ```powershell
-# terminal 1 — backend
-./local-dev/run-server.ps1
-#   builds server/, copies the jar into serverdata/, starts it on :6789
-
-# terminal 2 — desktop app
-./local-dev/run-manager.ps1
-#   builds desktop/, assembles an isolated desktop/build-local/run/ dir
-#   (jar + copies of lib/ hdd/ POPSTARTER/), launches it with
-#   -Doplpops.server.address=127.0.0.1 -Doplpops.server.port=6789 -DEBUG
+./local-dev/run-api.ps1                              # terminal 1 — serves :8000
+./local-dev/run-manager.ps1 -Backend api              # terminal 2 — desktop app, real data
 ```
 
-`run-manager.ps1 -Server <ip> -Port <n>` to point elsewhere.
-`./desktop/build.ps1 -Run -Fresh` to re-copy the data dirs into `run/`.
+`http://127.0.0.1:8000/docs` for the interactive API reference while it runs.
+`run-manager.ps1 -Backend api -ApiKey <key>` if the API has
+`OPLAPI_WRITE_API_KEY` set.
+
+This is real, complete data (14,354 games at last import) — no fixture step.
+Set the OPL folder to `program_test_folder/` and click through as normal;
+uploads/reports land as `pending` and won't be visible until reviewed (there's
+no moderation UI yet — query `api/var/dev.db` directly, or the API's `/docs`).
 
 ### Why the app is never run from the project folder
 
-On launch the app **rewrites files next to its jar** (`start-oplpops.*`,
+On launch it **rewrites files next to its jar** (`start-oplpops.*`,
 `READ ME.txt`, `settings.xml` / `oplpops-settings`, `lib/data/data_3`,
-`tools/windows/backup/`, …). `build.ps1 -Run` therefore assembles
-`desktop/build-local/run/` and launches from there; all that churn stays inside
-`build-local/` (gitignored).
+`tools/windows/backup/`, …), regardless of which backend it talks to.
+`desktop/build.ps1 -Run` therefore assembles `desktop/build-local/run/` and
+launches from there; all that churn stays inside `build-local/` (gitignored).
+`-Fresh` re-copies `lib/ hdd/ POPSTARTER/` into it.
 
 ---
 
-## Smoke test
+## Source changes carried into this repo
 
-1. Start the server (terminal 1). Expect:
-   `Running OPLPOPS TCP LIVE Server ... Port: 6789`.
-2. Protocol check without the GUI, while the server runs:
-   ```powershell
-   python ./local-dev/protocol-check.py
-   ```
-   Expect `ART (hit) -> ~5–6 KB` (a JPEG), `ART (miss) -> NO_IMAGE`,
-   `ART_NUM -> 1`, `CONFIG`/`CHEAT` -> file text, `VERSION -> 0.5,05 April 2017`,
-   `RESPOND -> RESPONSE`.
-3. Start the GUI (terminal 2). Expect it to reach
-   `Detected OS: Windows 10 64bit` with **no** `settings.xml` parse error, then a
-   window.
-4. In the GUI: set the OPL folder when prompted (the `program_test_folder/` OPL
-   drive next to the repo works), pick **PS2**, load a game list, pull cover art —
-   the request goes to the local server; watch
-   `server/build-local/serverdata/Log/traffic_log.txt` fill in.
-5. `server/build-local/serverdata/Log/error_log.txt` should **not** appear (only
-   created on a bad/oversized request).
+**Part 1** — build on a modern JDK:
+- `PopsGameManager.getServerAddress()` / `getServerPort()` honour
+  `-Doplpops.server.address` / `-Doplpops.server.port` (env vars too),
+  falling back to the old hardcoded `192.168.0.60` / `6789`.
+- `javax/swing/JCheckBoxList.java` → `oplpops/game/manager/JCheckBoxList.java`
+  — a user class can't live in the `javax.swing` package under the module
+  system (JDK 9+). `TestScreen` (dead code), its one importer, updated.
 
----
-
-## Source changes carried into this repo (Part 1)
-
-- **`PopsGameManager.getServerAddress()` / `getServerPort()`** — now honour
-  `-Doplpops.server.address` / `-Doplpops.server.port` (or the
-  `OPLPOPS_SERVER_ADDRESS` / `OPLPOPS_SERVER_PORT` env vars), falling back to the
-  old hardcoded `192.168.0.60` / `6789`.
-- **`javax/swing/JCheckBoxList.java` → `oplpops/game/manager/JCheckBoxList.java`** —
-  a user class can't live in the `javax.swing` package under the module system
-  (JDK 9+). Repackaged; the one importer (`TestScreen`, dead code) updated.
-- New `desktop/build.ps1`, `server/build.ps1`, this `local-dev/`, and a
-  monorepo-appropriate root `.gitignore`.
-
-Nothing else in the ~24k-LOC app was modified.
+**Part 2** — the API backend:
+- `BackendClient` interface; `MyTCPClient` implements it unchanged;
+  `MyApiClient` is the new HTTP implementation (`java.net.http.HttpClient`,
+  no new dependency — see `MiniJson` for why). All 21 call sites go through
+  `PopsGameManager.newBackendClient()`.
+- `MyAPIClient.java` (the old empty stub) deleted.
 
 ---
 
@@ -133,7 +116,10 @@ Nothing else in the ~24k-LOC app was modified.
 - Swing on JDK 25 / Win10 looks dated; HiDPI scaling may be off. Not blocking.
 - `sevenzipjbinding` native load can fail on modern Windows → archive
   extraction features break, app still starts.
-- The upload protocol prefixes the text header with a **2-digit** length, so
-  requests whose header is <10 or >99 chars are already malformed.
+- TCP protocol only: the upload header's 2-digit length prefix means headers
+  <10 or >99 chars are already malformed. Not applicable to the API backend.
 - `server/` has no path sanitisation, auth, or connection limits — fine for
   localhost, do not expose it.
+- `java.net.http.HttpClient` defaults to an HTTP/2 upgrade attempt that
+  uvicorn's dev server mishandles (drops POST bodies) — `MyApiClient` pins
+  `HTTP_1_1`.

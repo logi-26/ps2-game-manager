@@ -489,16 +489,21 @@ next to the repo, not in it (large binaries, .gitignored):
     <div class="stage" data-stage>
       <div class="stage-head">
         <span class="stage-no">11</span>
-        <h3>Cutover, screen by screen</h3>
+        <h3>Cutover</h3>
         <span class="stage-frac" data-frac>0/0</span>
       </div>
       <div class="stage-bar"><i></i></div>
+      <p class="phase-intro" style="margin:.2rem 0 .8rem">
+        Turned out narrower than &ldquo;screen by screen&rdquo;: every screen already goes through
+        the one <code>BackendClient</code> factory (stage&nbsp;9), so there's no per-screen
+        porting left &mdash; switching backends is one flag, everywhere, at once.
+      </p>
       <ul class="steps">
-        <li><label><input type="checkbox" data-k="p2-smoke-api"><span class="txt">Flip the flag in a dev build; rerun the Part&nbsp;1 smoke test against the API</span></label></li>
-        <li><label><input type="checkbox" data-k="p2-port-art"><span class="txt">Port art screens &rarr; delete their <code>MyTCPClient</code> paths once verified</span></label></li>
-        <li><label><input type="checkbox" data-k="p2-port-cfg"><span class="txt">Port configs &rarr; cheats &rarr; VMC</span></label></li>
-        <li><label><input type="checkbox" data-k="p2-port-upload"><span class="txt">Port uploads, then updates / tools, then reports</span></label></li>
-        <li><label><input type="checkbox" data-k="p2-moderation"><span class="txt">Minimal moderation view for <code>status=pending</code> uploads</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-smoke-api" data-default-done><span class="txt">Automated coverage of all 12 <code>BackendClient</code> methods against the live API<small>Extended the smoke harness past stage&nbsp;9's core reads to <code>shareConfigWithServer</code>, <code>shareVMCWithServer</code>, <code>getCue2PopsFromServer</code>, and a no-release <code>getJarFileFromServer</code>. Found and fixed a real bug: <code>getCue2PopsFromServer</code> NPE&rsquo;d on a null OS type instead of degrading like the TCP client implicitly did.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-runscripts-api" data-default-done><span class="txt"><code>desktop/build.ps1 -Run -Backend api</code>, <code>local-dev/run-manager.ps1 -Backend api</code>, and new <code>local-dev/run-api.ps1</code> &mdash; launching against the API is now as easy as the TCP path</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-clicktest"><span class="txt">Your own click-through against <code>program_test_folder/</code> (the real OPL drive) with <code>-Backend api</code> <span class="tag decide">you</span><small>Batch download/share screens, VMC screen, cheat screen &mdash; anything my harness can't drive through Swing. This is the real gate before the default flips.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-moderation"><span class="txt">Minimal moderation view for <code>status=pending</code> uploads &mdash; nothing surfaces them yet beyond a direct DB query</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-flipdefault"><span class="txt">Flip <code>PopsGameManager.getBackendMode()</code>&rsquo;s default from <code>tcp</code> to <code>api</code> once the click-through passes</span></label></li>
       </ul>
     </div>
 

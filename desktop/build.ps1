@@ -4,8 +4,10 @@
 
     Usage:
         pwsh ./build.ps1                              # compile + jar into build-local/
-        pwsh ./build.ps1 -Run                         # build, then launch (server 127.0.0.1:6789)
+        pwsh ./build.ps1 -Run                         # build, then launch against the TCP server (127.0.0.1:6789)
         pwsh ./build.ps1 -Run -Server 10.0.0.5 -Port 6789 -Debug
+        pwsh ./build.ps1 -Run -Backend api             # launch against the HTTP API instead (127.0.0.1:8000/v1)
+        pwsh ./build.ps1 -Run -Backend api -ApiBaseUrl http://10.0.0.5:8000/v1
         pwsh ./build.ps1 -Run -Fresh                  # re-copy lib/ hdd/ POPSTARTER/ into the run dir
 
     IMPORTANT: on launch the app rewrites sibling files next to its jar
@@ -18,8 +20,12 @@ param(
     [switch]$Run,
     [switch]$Debug,
     [switch]$Fresh,
+    [ValidateSet('tcp', 'api')]
+    [string]$Backend = 'tcp',
     [string]$Server = '127.0.0.1',
-    [int]$Port = 6789
+    [int]$Port = 6789,
+    [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1',
+    [string]$ApiKey
 )
 
 $ErrorActionPreference = 'Stop'
@@ -91,13 +97,17 @@ if ($Run) {
     Copy-Item $jarPath (Join-Path $runDir 'OPLPOPS-Manager-local.jar') -Force
 
     $jvmArgs = @(
+        "-Doplpops.backend=$Backend"
         "-Doplpops.server.address=$Server"
         "-Doplpops.server.port=$Port"
-        '-jar', (Join-Path $runDir 'OPLPOPS-Manager-local.jar')
+        "-Doplpops.api.baseurl=$ApiBaseUrl"
     )
+    if ($ApiKey) { $jvmArgs += "-Doplpops.api.key=$ApiKey" }
+    $jvmArgs += @('-jar', (Join-Path $runDir 'OPLPOPS-Manager-local.jar'))
     if ($Debug) { $jvmArgs += '-DEBUG' }   # consumed by Main.main(args)
 
-    Write-Host "==> Launching from $runDir  (server $Server`:$Port)"
+    $target = if ($Backend -eq 'api') { $ApiBaseUrl } else { "$Server`:$Port" }
+    Write-Host "==> Launching from $runDir  (backend=$Backend, $target)"
     Push-Location $runDir
     try { & java @jvmArgs } finally { Pop-Location }
 }

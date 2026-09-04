@@ -161,7 +161,8 @@ public class MyApiClient implements BackendClient {
 
     @Override
     public void getCue2PopsFromServer(String cue2popsPath, String cue2popsMD5) {
-        String os = PopsGameManager.getOSType().toLowerCase().contains("win") ? "windows" : "linux";
+        String osType = PopsGameManager.getOSType();
+        String os = (osType != null && osType.toLowerCase().contains("win")) ? "windows" : "linux";
         try {
             byte[] data = getBytes("/tools/cue2pops?os=" + os, DOWNLOAD_TIMEOUT);
             if (data == null) return;
