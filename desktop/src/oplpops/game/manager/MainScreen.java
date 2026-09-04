@@ -2303,12 +2303,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jRadioButtonMenuItemPlaystation2ActionPerformed
 
     private void jButtonGameArtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGameArtActionPerformed
-        
-        GameCheatScreenNew gameCheatScreenNew = new GameCheatScreenNew(this, true);
-        gameCheatScreenNew.setLocationRelativeTo(this);
-        gameCheatScreenNew.setVisible(true);
-        
-        /*
+
         if (jListGameList.getSelectedIndex() != -1) {
             if (PopsGameManager.getCurrentConsole().equals("PS1")) {
                 gameImageScreenPS1 = new GameImageScreenPS1(this, true);
@@ -2324,8 +2319,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
             }
         }
         else {JOptionPane.showMessageDialog(null,"You need to select a game before you can manage the game ART."," No game selected!",JOptionPane.WARNING_MESSAGE);}
-        */
-        
+
     }//GEN-LAST:event_jButtonGameArtActionPerformed
 
     private void jButtonCreateConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCreateConfigActionPerformed
