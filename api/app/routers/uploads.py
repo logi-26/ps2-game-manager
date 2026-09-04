@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..blobstore import get_blobstore
@@ -29,6 +30,20 @@ def _require_game(db: Session, game_id: str) -> Game:
     if game is None:
         raise HTTPException(404, "unknown game")
     return game
+
+
+def _commit(db: Session, row) -> dict:
+    """Commits a new upload row, turning a duplicate-slot insert into a clean
+    409 instead of a raw 500 - one pending candidate at a time per
+    (game, kind[, variant]) slot; a later contributor is told plainly rather
+    than crashing."""
+    db.add(row)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "a pending submission already exists for this slot - it needs to be reviewed before another can be added")
+    return {"id": row.id, "status": row.status, "sha256": row.sha256}
 
 
 @router.post("/games/{game_id}/artwork", status_code=201)
@@ -62,9 +77,7 @@ def upload_artwork(
         status="pending",
         submitted_by=submitted_by,
     )
-    db.add(row)
-    db.commit()
-    return {"id": row.id, "status": row.status, "sha256": sha}
+    return _commit(db, row)
 
 
 @router.post("/games/{game_id}/config", status_code=201)
@@ -85,9 +98,7 @@ def upload_config(
         status="pending",
         submitted_by=submitted_by,
     )
-    db.add(row)
-    db.commit()
-    return {"id": row.id, "status": row.status, "sha256": sha}
+    return _commit(db, row)
 
 
 @router.post("/games/{game_id}/vmc", status_code=201)
@@ -112,6 +123,4 @@ def upload_vmc(
         status="pending",
         submitted_by=submitted_by,
     )
-    db.add(row)
-    db.commit()
-    return {"id": row.id, "status": row.status, "sha256": sha}
+    return _commit(db, row)

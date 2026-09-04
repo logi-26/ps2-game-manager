@@ -117,6 +117,11 @@ class VmcFile(Base, TimestampMixin):
 
 
 class AppRelease(Base, TimestampMixin):
+    """Unused: app updates are served live from GitHub Releases (see
+    app/github.py + routers/releases.py) rather than mirrored into the DB -
+    cutting a release on GitHub *is* publishing it. Table kept, empty, as a
+    landing spot if a self-hosted fallback is ever needed."""
+
     __tablename__ = "app_release"
 
     version: Mapped[str] = mapped_column(String(32), primary_key=True)

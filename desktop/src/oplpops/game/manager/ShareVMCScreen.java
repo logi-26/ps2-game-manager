@@ -110,7 +110,7 @@ public class ShareVMCScreen extends javax.swing.JDialog {
             
             if (conatinsIdentifier){
                 String gameRegion = PopsGameManager.determineGameRegion(jTextFieldGameId.getText().substring(0, 4).toUpperCase());
-                MyTCPClient myTCPClient = new MyTCPClient();
+                BackendClient myTCPClient = PopsGameManager.newBackendClient();
                 try {
                     myTCPClient.shareVMCWithServer(jComboBoxConsole.getSelectedItem().toString(), gameRegion, jTextFieldGameId.getText(), jTextFieldVMCPath.getText(), jTextAreaVMCDescription.getText());
                     JOptionPane.showMessageDialog(null, "Your VMC file has been uploaded to the server, thank you for your contribution.", " VMC File Uploaded", JOptionPane.PLAIN_MESSAGE); 

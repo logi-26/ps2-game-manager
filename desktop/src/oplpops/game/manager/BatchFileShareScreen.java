@@ -75,7 +75,7 @@ public class BatchFileShareScreen extends javax.swing.JDialog {
         
         // Download the art file list from the server
         serverArtList = new ArrayList<>();
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         
         // This gets all of the art lists from the server
         File serverArtFile;
@@ -94,7 +94,7 @@ public class BatchFileShareScreen extends javax.swing.JDialog {
         
         // Download the config file list from the server
         serverConfigList = new ArrayList<>();
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         
         // This gets all of the config lists from the server
         File serverConfigFile;
@@ -124,7 +124,7 @@ public class BatchFileShareScreen extends javax.swing.JDialog {
     // Check the art files
     private void checkArtFiles(){
         
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         
         // Check if the server is responding before performing the batch image upload
         String serverResponse = tcpClient.sendMessageToServer("RESPOND");
@@ -355,7 +355,7 @@ public class BatchFileShareScreen extends javax.swing.JDialog {
     // Check the config files
     private void checkConfigFiles(){
         
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         
         // Check if the server is responding before performing the batch image upload
         String serverResponse = tcpClient.sendMessageToServer("RESPOND");
@@ -579,7 +579,7 @@ public class BatchFileShareScreen extends javax.swing.JDialog {
         @Override
         protected Object doInBackground() throws Exception {
 
-            MyTCPClient tcpClient = new MyTCPClient();
+            BackendClient tcpClient = PopsGameManager.newBackendClient();
             
             if (coverType!= null) {tcpClient.shareImageWithServer(console, gameRegion, gameID, coverType, filePath);}
             else {tcpClient.shareConfigWithServer(console, gameRegion, gameID, filePath);}     

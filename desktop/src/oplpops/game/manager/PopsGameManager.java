@@ -182,6 +182,33 @@ public class PopsGameManager {
         }
         if (TestMode){return 9876;} else {return 6789;}
     }
+
+    // Which backend a fresh BackendClient talks to: "tcp" (MyTCPClient, default) or "api" (MyApiClient)
+    // Override with -Doplpops.backend=api (or the OPLPOPS_BACKEND env var)
+    public static String getBackendMode(){
+        String override = System.getProperty("oplpops.backend", System.getenv("OPLPOPS_BACKEND"));
+        return (override != null && !override.trim().isEmpty()) ? override.trim().toLowerCase() : "tcp";
+    }
+
+    // Base URL of the HTTP API (only used when getBackendMode() is "api")
+    // Override with -Doplpops.api.baseurl=http://host:8000/v1 (or the OPLPOPS_API_BASEURL env var)
+    public static String getApiBaseUrl(){
+        String override = System.getProperty("oplpops.api.baseurl", System.getenv("OPLPOPS_API_BASEURL"));
+        return (override != null && !override.trim().isEmpty()) ? override.trim() : "http://127.0.0.1:8000/v1";
+    }
+
+    // API key sent as X-API-Key on write requests, if the API has one configured
+    // Set with -Doplpops.api.key=... (or the OPLPOPS_API_KEY env var)
+    public static String getApiWriteKey(){
+        return System.getProperty("oplpops.api.key", System.getenv("OPLPOPS_API_KEY"));
+    }
+
+    // Creates a fresh backend client of whichever kind getBackendMode() selects.
+    // Every screen should get its client through here rather than constructing
+    // MyTCPClient/MyApiClient directly - this is the one place the switch happens.
+    public static BackendClient newBackendClient(){
+        return "api".equals(getBackendMode()) ? new MyApiClient() : new MyTCPClient();
+    }
     
     // This loads the settings from the settings.xml file
     public static void loadSettings(){
@@ -532,7 +559,7 @@ public class PopsGameManager {
 
                 // If the MD5 does not match the version on the server, this downloads the latest version
                 if (!currentCue2PopsMD5.equals(cue2popsMD5)){
-                    MyTCPClient tcpClient = new MyTCPClient();
+                    BackendClient tcpClient = newBackendClient();
                     
                     // Create the temporary cue2pops backup folder
                     new File(currentCue2PopsFile.getParent() + File.separator + "backup").mkdir();
@@ -553,7 +580,7 @@ public class PopsGameManager {
             
                 // If the MD5 does not match the version on the server, this downloads the latest version
                 if (!currentCue2PopsMD5.equals(cue2popsMD5)){
-                    MyTCPClient tcpClient = new MyTCPClient();
+                    BackendClient tcpClient = newBackendClient();
                     
                     // Create the temporary cue2pops backup folder
                     new File(currentCue2PopsFile.getParent() + File.separator + "backup").mkdir();

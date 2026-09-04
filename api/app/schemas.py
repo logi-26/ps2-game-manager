@@ -66,13 +66,17 @@ class VmcOut(ORMModel):
     status: str
 
 
-class AppReleaseOut(ORMModel):
+class AppReleaseOut(BaseModel):
+    """A GitHub Release, as served by app/github.py - see AppRelease's
+    docstring in models.py for why this isn't a DB-backed model."""
+
     version: str
     channel: str
     notes: str | None
-    sha256: str
+    published_at: str | None
+    asset_name: str
     bytes: int
-    published_at: datetime | None
+    download_url: str
 
 
 class ToolReleaseOut(ORMModel):

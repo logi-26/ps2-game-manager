@@ -67,7 +67,7 @@ public class FileReportScreen extends javax.swing.JDialog {
 
                 // Detremine game region and console here using the unique game ID!!!!
                 String gameRegion = PopsGameManager.determineGameRegion(fileName.substring(0, 4));
-                new MyTCPClient().sendMessageToServer("REPORT," + fileName + "," + jComboBoxConsole.getSelectedItem() + "," + jComboBoxFileTypes.getSelectedItem() + "," + gameRegion + "," + errorDescription + "," + PopsGameManager.getMacAddress() + "," + PopsGameManager.getApplicationVersionNumber());
+                PopsGameManager.newBackendClient().submitReport(fileName, jComboBoxConsole.getSelectedItem().toString(), jComboBoxFileTypes.getSelectedItem().toString(), gameRegion, errorDescription);
                 JOptionPane.showMessageDialog(null, "Your message has been sent, thank you for your contribution.", " Message Sent", JOptionPane.PLAIN_MESSAGE); 
                 dispose();
             }

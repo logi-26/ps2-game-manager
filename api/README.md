@@ -31,6 +31,17 @@ python -m scripts.import_content --content-dir "..\..\Server Content" --console 
 Idempotent — safe to re-run. Blobs land in `api/var/blobs/` (content-addressed
 `<sha[:2]>/<sha[2:4]>/<sha>`); the DB stores only the sha256.
 
+## App updates
+
+`/v1/app/latest` and `/v1/app/releases/{version}/download` read live from
+**GitHub Releases** on this repo (`app/github.py`) — there's no jar mirrored
+into the DB. To publish an update: attach a `.jar` asset to a GitHub release
+(`gh release create v0.7.0 OPLPOPS-Manager_0.7.0.jar`). Mark it a
+pre-release for the `beta` channel; anything else counts as `stable`. An
+unauthenticated client is capped at 60 req/hr by GitHub — the module caches
+responses for `OPLAPI_GITHUB_CACHE_SECONDS` (default 300s), and setting
+`OPLAPI_GITHUB_TOKEN` (no special scope needed) raises that to 5000/hr.
+
 ## Switching to Postgres
 
 ```powershell
@@ -50,6 +61,9 @@ python -m alembic upgrade head
 | `OPLAPI_BLOB_ROOT` | `api/var/blobs` | blob storage root |
 | `OPLAPI_WRITE_API_KEY` | *(unset)* | when set, `POST` routes require `X-API-Key` |
 | `OPLAPI_MAX_UPLOAD_BYTES` | `33554432` | per-upload cap |
+| `OPLAPI_GITHUB_REPO` | `logi-26/ps2-game-manager` | where app releases are read from |
+| `OPLAPI_GITHUB_TOKEN` | *(unset)* | raises the GitHub API rate limit from 60/hr to 5000/hr |
+| `OPLAPI_GITHUB_CACHE_SECONDS` | `300` | how long a release lookup is cached |
 
 ## Endpoints (v1)
 
@@ -62,7 +76,7 @@ python -m alembic upgrade head
 | `CHEAT` / `CHEAT_LIST` | `GET /v1/games/{id}/cheats` · `GET /v1/cheats` |
 | `VMC` / `VMC_LIST` | `GET /v1/games/{id}/vmc[/{vmc_id}]` · `GET /v1/vmc` |
 | `UPLOAD_ART/CFG/VMC` | `POST /v1/games/{id}/artwork` · `.../config` · `.../vmc` (→ `pending`) |
-| `VERSION` / `UPDATE` | `GET /v1/app/latest` · `GET /v1/app/releases/{v}/download` |
+| `VERSION` / `UPDATE` | `GET /v1/app/latest` · `GET /v1/app/releases/{v}/download` (both read GitHub Releases live) |
 | `CUE2POPS` | `GET /v1/tools/cue2pops?os=windows` |
 | `REPORT` | `POST /v1/reports` |
 | `RESPOND` | `GET /v1/health` |

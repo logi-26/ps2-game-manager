@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     page_size_default: int = 100
     page_size_max: int = 1000
 
+    # app-update source: GitHub Releases on this repo (see app/github.py).
+    # An unauthenticated client is capped at 60 req/hr by GitHub; the module
+    # caches responses, and a token (no special scope needed) raises that to 5000/hr.
+    github_repo: str = "logi-26/ps2-game-manager"
+    github_token: str | None = None
+    github_cache_seconds: int = 300
+
     # cap on inbound uploads (bytes)
     max_upload_bytes: int = 32 * 1024 * 1024
 

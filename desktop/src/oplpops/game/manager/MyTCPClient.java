@@ -11,17 +11,24 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
-public class MyTCPClient {
-    
-    //private static final String SERVER_ADDRESS = "oplpops-manager.myftp.org"; 
+/** The original raw-TCP backend client. Being replaced by {@link MyApiClient} - see {@link BackendClient}. */
+public class MyTCPClient implements BackendClient {
+
+    //private static final String SERVER_ADDRESS = "oplpops-manager.myftp.org";
     //private static final int SERVER_PORT = 6789;
-    
-    //private static final String SERVER_ADDRESS = "oplpops-test.myftp.org"; 
+
+    //private static final String SERVER_ADDRESS = "oplpops-test.myftp.org";
     //private static final int SERVER_PORT = 9876;
 
-    
-    public MyTCPClient() {} 
-  
+
+    public MyTCPClient() {}
+
+    // Reports a bad/missing file to the server (moved here, verbatim, from the old inline call in FileReportScreen)
+    @Override
+    public void submitReport(String fileName, String console, String fileType, String gameRegion, String errorDescription){
+        sendMessageToServer("REPORT," + fileName + "," + console + "," + fileType + "," + gameRegion + "," + errorDescription + "," + PopsGameManager.getMacAddress() + "," + PopsGameManager.getApplicationVersionNumber());
+    }
+
     // This shares an image file with the server
     public void shareImageWithServer(String console, String gameRegion, String gameID, String coverType, String imagePath) throws IOException{
 

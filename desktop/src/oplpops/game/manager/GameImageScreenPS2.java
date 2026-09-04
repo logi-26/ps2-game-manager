@@ -86,7 +86,7 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         
         String coverPath = coverType;
         
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         tcpClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber-1, false);
         
         File image; 
@@ -106,7 +106,7 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         String[] splitName = gameList.get(currentListIndex).getGameID().split("_");
         int numberOfFiles = 0;
 
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         numberOfFiles = tcpClient.getImagesAvailableOnServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, false);
         
         if (numberOfFiles > 0){

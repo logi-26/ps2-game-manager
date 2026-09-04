@@ -200,7 +200,11 @@ def import_covers(db: Session, root: Path, only_console: str | None, limit: int 
 
 
 def import_vmcs(db: Session, root: Path, only_console: str | None) -> None:
-    for vmc in sorted(root.glob("MemoryCards/*/*/*.VMC")):
+    # PS1 memory cards are .VMC, PS2 ones are .bin (see MyTCPClient.shareVMCWithServer)
+    vmc_files = sorted(root.glob("MemoryCards/PS1/*/*.VMC")) + sorted(
+        root.glob("MemoryCards/PS2/*/*.bin")
+    )
+    for vmc in vmc_files:
         console, region = vmc.parts[-3], vmc.parts[-2]
         if console not in CONSOLES or region not in REGIONS:
             continue

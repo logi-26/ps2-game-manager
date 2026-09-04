@@ -18,8 +18,12 @@ This is the consolidated repo. It supersedes the three earlier repos
 | `docs/plan.html` | The rebuild + overhaul plan (open in a browser; progress is checkable). |
 | `compose.yaml` | Optional Postgres + MinIO for running `api/` on non-default infra. |
 
-Still to come: pointing the desktop app at `api/` instead of `server/`
-(a `BackendClient` interface + `MyApiClient`), then retiring `server/`.
+The desktop app can now talk to either backend: `desktop/src/.../BackendClient.java`
+is the shared interface, `MyTCPClient` (old) and `MyApiClient` (new, on
+`java.net.http.HttpClient`) both implement it, and
+`PopsGameManager.newBackendClient()` picks one — `tcp` by default, `api` via
+`-Doplpops.backend=api -Doplpops.api.baseurl=http://host:8000/v1`. Still to
+come: cutting the app over screen by screen, then retiring `server/`.
 
 ## Build & run locally
 

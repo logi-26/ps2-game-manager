@@ -142,7 +142,7 @@ public class GameCheatScreen extends javax.swing.JDialog {
         
         // Download the cheat file list from the server
         serverCheatList = new ArrayList<>();
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         tcpClient.getListFromServer("CHEAT", PopsGameManager.getCurrentConsole());
 
         File cheatListFile = new File(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "lists" + File.separator + PopsGameManager.getCurrentConsole() + "_ServerCheatList.dat");
@@ -322,7 +322,7 @@ public class GameCheatScreen extends javax.swing.JDialog {
         // If the game ID is in the server cheat list, this sends a message to the server in order to request the specific cheat file
         if (!serverCheatList.isEmpty() && serverCheatList.contains(gameList.get(currentListIndex).getGameID())){
             
-            MyTCPClient tcpClient = new MyTCPClient();
+            BackendClient tcpClient = PopsGameManager.newBackendClient();
             String splitCheats[] = null;
             List<String> cheatList = new ArrayList<>();
             String[] splitName = gameList.get(currentListIndex).getGameID().split("_");       

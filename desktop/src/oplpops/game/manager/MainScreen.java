@@ -1001,7 +1001,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     // This checks to see if there is an update available on the server and if there is an update, the user has the option to download it
     private void checkForUpdate(){
 
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
         
         // Send a message to the server asking for the latest version number
         String serverResponse = tcpClient.sendMessageToServer("VERSION");

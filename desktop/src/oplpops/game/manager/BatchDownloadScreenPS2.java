@@ -133,7 +133,7 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
         processedGameList = new ArrayList<>();
         
         // First check to see if the server is responding to prevent wasting time sending many un-answered requests
-        MyTCPClient tcpClient = new MyTCPClient();
+        BackendClient tcpClient = PopsGameManager.newBackendClient();
 
         if (tcpClient.sendMessageToServer("RESPOND").equals("RESPONSE")){
             
@@ -296,7 +296,7 @@ public class BatchDownloadScreenPS2 extends javax.swing.JDialog {
                 // Send the UDP request for the specific image file
                 String[] splitName = gameID.split("_");
 
-                MyTCPClient tcpClient = new MyTCPClient();
+                BackendClient tcpClient = PopsGameManager.newBackendClient();
                 switch (fileType) {
                     case "CONFIG":
                         tcpClient.getConfigFromServer(PopsGameManager.determineGameRegion(splitName[0]), gameID, gameName, true); 
