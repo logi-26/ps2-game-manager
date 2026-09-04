@@ -581,8 +581,8 @@ public class PopsGameManager {
             for (int i = 0; i < mdbytes.length; i++) {sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));}   
             fileMD5 = sb.toString();
         } 
-        catch (FileNotFoundException ex) {displayErrorMessageDebug(ex.toString());} catch (IOException | NoSuchAlgorithmException ex) {displayErrorMessageDebug(ex.toString());} 
-        finally {try {if (fileInputStream != null) {fileInputStream.close();}} catch (IOException ex) {}} 
+        catch (FileNotFoundException ex) {displayErrorMessageDebug(ex.toString());} catch (IOException | NoSuchAlgorithmException ex) {displayErrorMessageDebug(ex.toString());}
+        finally {try {if (fileInputStream != null) {fileInputStream.close();}} catch (IOException ex) {displayErrorMessageDebug(ex.toString());}}
         
         return fileMD5;
     }

@@ -644,7 +644,7 @@ public class SyncFileScreen extends javax.swing.JDialog {
         try {
             jFormattedTextFieldIPAddress.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("###.###.###.###")));
         } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
         }
         jFormattedTextFieldIPAddress.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
@@ -931,7 +931,7 @@ public class SyncFileScreen extends javax.swing.JDialog {
 
     private void jComboBoxPartitionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxPartitionActionPerformed
         PopsGameManager.setRemoteOPLPath(jComboBoxPartition.getSelectedItem().toString());
-        try {XMLFileManager.writeSettingsXML();} catch (TransformerException | ParserConfigurationException ex) {}
+        try {XMLFileManager.writeSettingsXML();} catch (TransformerException | ParserConfigurationException ex) {PopsGameManager.displayErrorMessageDebug("Error saving the settings!\n\n" + ex.toString());}
     }//GEN-LAST:event_jComboBoxPartitionActionPerformed
     // </editor-fold>
    

@@ -547,7 +547,7 @@ public class AddGameHDDScreenPS1 extends javax.swing.JDialog {
         try {
             jFormattedTextFieldIPAddress.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("###.###.###.###")));
         } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
         }
         jFormattedTextFieldIPAddress.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jFormattedTextFieldIPAddress.setPreferredSize(new java.awt.Dimension(208, 25));

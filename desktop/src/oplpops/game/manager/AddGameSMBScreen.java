@@ -121,11 +121,11 @@ public class AddGameSMBScreen extends javax.swing.JDialog {
                                     
                                     // If the ISO file is bigger than 4GB it will need to be converted to UL format
                                     if (isoFile.length() > 4294967296L){
-                                        System.out.println("PS2 ISO File greater than 4GB!");
+                                        PopsGameManager.displayMessageDebug("PS2 ISO File greater than 4GB!");
                                     }
                                     else {
-                                        System.out.println("PS2 ISO File smaller than 4GB!\nAdding to USB!");
-                                        
+                                        PopsGameManager.displayMessageDebug("PS2 ISO File smaller than 4GB!\nAdding to USB!");
+
                                         String newFileName = AddGameManager.truncate(isoFile.getName(), isoFile.getName().length()-3);
                                         String newFileFullName = newFileName + "iso";
                                         

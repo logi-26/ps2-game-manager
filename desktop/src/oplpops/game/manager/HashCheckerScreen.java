@@ -100,7 +100,7 @@ public class HashCheckerScreen extends javax.swing.JDialog {
 
                 jTextFieldMD5.setText(sb.toString());
             } 
-            catch (FileNotFoundException ex) {} catch (IOException | NoSuchAlgorithmException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} 
+            catch (FileNotFoundException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} catch (IOException | NoSuchAlgorithmException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
             finally {try {if (fileInputStream != null) {fileInputStream.close();}} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}}
             
             return null;

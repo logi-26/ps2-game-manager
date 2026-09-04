@@ -27,8 +27,16 @@ public class HDLDumpManager {
     public String getTimeRemaining() {return timeRemaining;}
     public int getPercentDownloaded() {return percentDownloaded;}
     public boolean getUploadnInProgress() {return uploadInProgress;}
-    
-    
+
+
+    // Closes hdl_dump's stdout/stderr readers once they're done with, swallowing (but logging) any close failure
+    private static void closeQuietly(BufferedReader... readers){
+        for (BufferedReader reader : readers){
+            if (reader != null) {try {reader.close();} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}}
+        }
+    }
+
+
     // Upload a PS2 game to the console using HDL_Dump
     public void hdlDumpUploadGame(AddGameHDDScreenPS2 addGameScreen, String destination, String gameName, String gamePath) throws IOException, InterruptedException{
         timeRemaining = "0:00";
@@ -105,22 +113,21 @@ public class HDLDumpManager {
             Process process = processBuilder.start();
 
             // Buffers for storing the command line output from hdl_dump
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
-            // Read the output from the command
             String line = null;
+            try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                 BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
 
-            while ((line = stdError.readLine()) != null) {errorConnecting = true;}
+                while ((line = stdError.readLine()) != null) {errorConnecting = true;}
 
-            // Try and store the HDD game list to an XML file
-            if (!errorConnecting){
-                gameListPS2 = new ArrayList<>();
-                while ((line = stdInput.readLine()) != null) if (line.contains("DVD")) {addGameToList(gameListPS2, line);}
+                // Try and store the HDD game list to an XML file
+                if (!errorConnecting){
+                    gameListPS2 = new ArrayList<>();
+                    while ((line = stdInput.readLine()) != null) if (line.contains("DVD")) {addGameToList(gameListPS2, line);}
+                }
             }
 
             // Wait for HDL_Dump
-            process.waitFor(); 
+            process.waitFor();
 
             if (errorConnecting) {JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);} 
         }
@@ -368,12 +375,13 @@ public class HDLDumpManager {
                 }
 
                 // Wait for HDL_Dump
-                process.waitFor(); 
+                process.waitFor();
 
                 while ((line = stdError.readLine()) != null) {errorConnecting = true;}
+                closeQuietly(stdInput, stdError);
 
-                if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE); 
-            
+                if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);
+
             // END OF LOOP!!
             }
             
@@ -550,11 +558,12 @@ public class HDLDumpManager {
             }
 
             // Wait for HDL_Dump
-            process.waitFor(); 
+            process.waitFor();
 
             while ((line = stdError.readLine()) != null) {errorConnecting = true;}
+            closeQuietly(stdInput, stdError);
 
-            if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE); 
+            if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);
 
             return null;
         }
@@ -651,6 +660,7 @@ public class HDLDumpManager {
         
         // Read any errors from the attempted command and display a message to the user
         while ((s = stdError.readLine()) != null) {errorConnecting = true;}
+        closeQuietly(stdInput, stdError);
 
         // If HDL_Dump reported an error
         if (errorConnecting) {ps2HDDFound = false;}

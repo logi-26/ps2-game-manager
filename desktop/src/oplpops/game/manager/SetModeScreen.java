@@ -290,7 +290,7 @@ public class SetModeScreen extends javax.swing.JDialog {
         try {
             jFormattedTextPathHDD.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("###.###.###.###")));
         } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
         }
         jFormattedTextPathHDD.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jFormattedTextPathHDD.setPreferredSize(new java.awt.Dimension(335, 25));

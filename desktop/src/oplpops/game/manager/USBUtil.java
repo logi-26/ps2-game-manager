@@ -167,7 +167,7 @@ public final class USBUtil {
             }
             // Close the ul.cfg file once all of the UL Games have been written
             outputStream.close();
-        } catch (FileNotFoundException ex) {} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+        } catch (FileNotFoundException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
     
     
