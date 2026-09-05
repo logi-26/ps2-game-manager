@@ -746,10 +746,19 @@ public class GameListManager {
                 // Try and get the game ID from the VCD
                 try {gameID = getPS1GameIDFromVCD(vcdFile);} catch (Exception ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
 
-                // Split the string to get the game name without the directory path or file extension
+                // Derive the descriptive game name from the file name: strip the extension, then
+                // strip the trailing game ID and any separator before it. POPS VCDs are named
+                // "<name> <id>.vcd", "<name>-<id>.vcd" or just "<id>.vcd" - the last has no
+                // descriptive part, so fall back to the ID rather than running off the end of
+                // the string (the old fixed "chop last 12 chars" crashed on "<id>.vcd").
                 String gamePath = vcdFile.toString();
-                String gameName = gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).substring(0,gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).lastIndexOf('.'));
-                gameName = gameName.substring(0, gameName.length() -12);
+                String fileName = vcdFile.getName();
+                int extDot = fileName.lastIndexOf('.');
+                String gameName = extDot > 0 ? fileName.substring(0, extDot) : fileName;
+                if (gameID != null && gameName.length() >= gameID.length() && gameName.endsWith(gameID)) {
+                    gameName = gameName.substring(0, gameName.length() - gameID.length()).replaceAll("[\\s.\\-_]+$", "");
+                }
+                if (gameName.isEmpty()) {gameName = gameID != null ? gameID : (extDot > 0 ? fileName.substring(0, extDot) : fileName);}
 
                 // Used to calculate the total size of all VCD files combined
                 totalSize += vcdFile.length();
