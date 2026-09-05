@@ -27,6 +27,8 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
     private static List<String> processedGameList;
   
     // Count the missing files (Used for the progress bar)
+    private int missingSpines = 0;
+    private int missingLogos = 0;
     private int missingFrontCovers = 0;
     private int missingRearCovers = 0;
     private int missingDiscImages = 0;
@@ -61,6 +63,8 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
         jLabelGameScreenshot1.setBackground(AppTheme.imagePreviewBackground());
         jLabelGameScreenshot2.setBackground(AppTheme.imagePreviewBackground());
         jLabelGameBackgroundImage.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameSpine.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameLogo.setBackground(AppTheme.imagePreviewBackground());
     }
     
     
@@ -131,6 +135,12 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
         }).map((game) -> {
             if (GameArtFileManager.isMissing(artList, game, "_BG")) {missingBackgrounds++;}
             return game;
+        }).map((game) -> {
+            if (GameArtFileManager.isMissing(artList, game, "_LAB")) {missingSpines++;}
+            return game;
+        }).map((game) -> {
+            if (GameArtFileManager.isMissing(artList, game, "_LGO")) {missingLogos++;}
+            return game;
         }).filter((game) -> (!configList.contains(game.getGameID() + ".cfg"))).forEach((_item) -> {missingConfigss++;});
     }
     
@@ -153,6 +163,8 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
             if (jCheckBoxDiscImage.isSelected()) {totalFilesToDownload += missingDiscImages;}
             if (jCheckBoxScreenshot.isSelected()) {totalFilesToDownload += missingScreenshots;}
             if (jCheckBoxBackground.isSelected()) {totalFilesToDownload += missingBackgrounds;}
+            if (jCheckBoxSpine.isSelected()) {totalFilesToDownload += missingSpines;}
+            if (jCheckBoxLogo.isSelected()) {totalFilesToDownload += missingLogos;}
             if (jCheckBoxConfigFile.isSelected()) {totalFilesToDownload += missingConfigss;}
 
             totalFilesProcessed = 0;
@@ -169,6 +181,8 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
                 for (int i = 0; i < gameList.size(); i++) {if (GameArtFileManager.isMissing(artList, gameList.get(i), "_SCR2")) new BackgroundWorker(gameList.get(i).getGameName(), gameList.get(i).getGameID(), "_SCR2").execute();}
             }
             if (jCheckBoxBackground.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_BG")) new BackgroundWorker(gameList.get(i).getGameName(), gameList.get(i).getGameID(), "_BG").execute();}
+            if (jCheckBoxSpine.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_LAB")) new BackgroundWorker(gameList.get(i).getGameName(), gameList.get(i).getGameID(), "_LAB").execute();}
+            if (jCheckBoxLogo.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (GameArtFileManager.isMissing(artList, gameList.get(i), "_LGO")) new BackgroundWorker(gameList.get(i).getGameName(), gameList.get(i).getGameID(), "_LGO").execute();}
             if (jCheckBoxConfigFile.isSelected()) {for (int i = 0; i < gameList.size(); i++) if (!configList.contains(gameList.get(i).getGameID() + ".cfg")) new BackgroundWorker(gameList.get(i).getGameName(), gameList.get(i).getGameID(), "CONFIG").execute();}
         }
         else {JOptionPane.showMessageDialog(null,"The server is not responding at the moment!"," Server Connection Error!",JOptionPane.ERROR_MESSAGE);}
@@ -218,6 +232,18 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
             File screenshot2Image = GameArtFileManager.resolve(game, "_SCR2");
             if (screenshot2Image != null) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
             else {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
+        }
+
+        // Spine (LAB) - no placeholder art, clear the label when absent
+        if (fileType.equals("_LAB")){
+            File spineImage = GameArtFileManager.resolve(game, "_LAB");
+            jLabelGameSpine.setIcon(spineImage != null ? new ImageIcon(new ImageIcon(spineImage.toString()).getImage().getScaledInstance(jLabelGameSpine.getWidth(), jLabelGameSpine.getHeight(), Image.SCALE_DEFAULT)) : null);
+        }
+
+        // Logo (LGO) - no placeholder art, clear the label when absent
+        if (fileType.equals("_LGO")){
+            File logoImage = GameArtFileManager.resolve(game, "_LGO");
+            jLabelGameLogo.setIcon(logoImage != null ? new ImageIcon(new ImageIcon(logoImage.toString()).getImage().getScaledInstance(jLabelGameLogo.getWidth(), jLabelGameLogo.getHeight(), Image.SCALE_DEFAULT)) : null);
         }
     }
     
@@ -328,6 +354,22 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTextFieldGameName = new javax.swing.JTextField();
+        jPanelGameFrontCover = new javax.swing.JPanel();
+        jLabelGameFrontCover = new javax.swing.JLabel();
+        jPanelGameSpine = new javax.swing.JPanel();
+        jLabelGameSpine = new javax.swing.JLabel();
+        jPanelGameRearCover = new javax.swing.JPanel();
+        jLabelGameRearCover = new javax.swing.JLabel();
+        jPanelGameDiscImage = new javax.swing.JPanel();
+        jLabelGameDiscImage = new javax.swing.JLabel();
+        jPanelGameLogo = new javax.swing.JPanel();
+        jLabelGameLogo = new javax.swing.JLabel();
+        jPanelGameBackgroundImage = new javax.swing.JPanel();
+        jLabelGameBackgroundImage = new javax.swing.JLabel();
+        jPanelGameScreenshots = new javax.swing.JPanel();
+        jLabelGameScreenshot1 = new javax.swing.JLabel();
+        jLabelGameScreenshot2 = new javax.swing.JLabel();
         jPanelDownloads = new javax.swing.JPanel();
         jPanelFiles = new javax.swing.JPanel();
         jCheckBoxFrontCover = new javax.swing.JCheckBox();
@@ -336,25 +378,178 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
         jCheckBoxBackground = new javax.swing.JCheckBox();
         jCheckBoxConfigFile = new javax.swing.JCheckBox();
         jCheckBoxDiscImage = new javax.swing.JCheckBox();
+        jCheckBoxSpine = new javax.swing.JCheckBox();
+        jCheckBoxLogo = new javax.swing.JCheckBox();
         jPanelProgress = new javax.swing.JPanel();
         jButtonDownload = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jListGameList = new javax.swing.JList<>();
-        jTextFieldGameName = new javax.swing.JTextField();
-        jPanelGameFrontCover = new javax.swing.JPanel();
-        jLabelGameFrontCover = new javax.swing.JLabel();
-        jPanelGameRearCover = new javax.swing.JPanel();
-        jLabelGameRearCover = new javax.swing.JLabel();
-        jPanelGameDiscImage = new javax.swing.JPanel();
-        jLabelGameDiscImage = new javax.swing.JLabel();
-        jPanelGameScreenshots = new javax.swing.JPanel();
-        jLabelGameScreenshot1 = new javax.swing.JLabel();
-        jLabelGameScreenshot2 = new javax.swing.JLabel();
-        jPanelGameBackgroundImage = new javax.swing.JPanel();
-        jLabelGameBackgroundImage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
+
+        jTextFieldGameName.setEditable(false);
+        jTextFieldGameName.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jTextFieldGameName.setText("Game name - Game ID");
+        jTextFieldGameName.setBorder(null);
+        jTextFieldGameName.setPreferredSize(new java.awt.Dimension(630, 25));
+
+        jPanelGameFrontCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Font Cover"));
+        jPanelGameFrontCover.setPreferredSize(new java.awt.Dimension(192, 290));
+
+        jLabelGameFrontCover.setToolTipText("");
+        jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanelGameFrontCoverLayout = new javax.swing.GroupLayout(jPanelGameFrontCover);
+        jPanelGameFrontCover.setLayout(jPanelGameFrontCoverLayout);
+        jPanelGameFrontCoverLayout.setHorizontalGroup(
+            jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
+                .addContainerGap(11, Short.MAX_VALUE)
+                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(11, Short.MAX_VALUE))
+        );
+        jPanelGameFrontCoverLayout.setVerticalGroup(
+            jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
+                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanelGameSpine.setBorder(javax.swing.BorderFactory.createTitledBorder("Spine"));
+
+        jLabelGameSpine.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanelGameSpineLayout = new javax.swing.GroupLayout(jPanelGameSpine);
+        jPanelGameSpine.setLayout(jPanelGameSpineLayout);
+        jPanelGameSpineLayout.setHorizontalGroup(
+            jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addComponent(jLabelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+        jPanelGameSpineLayout.setVerticalGroup(
+            jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addComponent(jLabelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanelGameRearCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Rear Cover"));
+        jPanelGameRearCover.setPreferredSize(new java.awt.Dimension(192, 290));
+
+        jLabelGameRearCover.setToolTipText("");
+        jLabelGameRearCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanelGameRearCoverLayout = new javax.swing.GroupLayout(jPanelGameRearCover);
+        jPanelGameRearCover.setLayout(jPanelGameRearCoverLayout);
+        jPanelGameRearCoverLayout.setHorizontalGroup(
+            jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(10, Short.MAX_VALUE))
+        );
+        jPanelGameRearCoverLayout.setVerticalGroup(
+            jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
+                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanelGameDiscImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Disc Image"));
+
+        jLabelGameDiscImage.setToolTipText("");
+        jLabelGameDiscImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanelGameDiscImageLayout = new javax.swing.GroupLayout(jPanelGameDiscImage);
+        jPanelGameDiscImage.setLayout(jPanelGameDiscImageLayout);
+        jPanelGameDiscImageLayout.setHorizontalGroup(
+            jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameDiscImageLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanelGameDiscImageLayout.setVerticalGroup(
+            jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameDiscImageLayout.createSequentialGroup()
+                .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 11, Short.MAX_VALUE))
+        );
+
+        jPanelGameLogo.setBorder(javax.swing.BorderFactory.createTitledBorder("Logo"));
+
+        jLabelGameLogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanelGameLogoLayout = new javax.swing.GroupLayout(jPanelGameLogo);
+        jPanelGameLogo.setLayout(jPanelGameLogoLayout);
+        jPanelGameLogoLayout.setHorizontalGroup(
+            jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameLogo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanelGameLogoLayout.setVerticalGroup(
+            jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                .addComponent(jLabelGameLogo, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jPanelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Background Image"));
+
+        jLabelGameBackgroundImage.setToolTipText("");
+        jLabelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jLabelGameBackgroundImage.setPreferredSize(new java.awt.Dimension(375, 2));
+
+        javax.swing.GroupLayout jPanelGameBackgroundImageLayout = new javax.swing.GroupLayout(jPanelGameBackgroundImage);
+        jPanelGameBackgroundImage.setLayout(jPanelGameBackgroundImageLayout);
+        jPanelGameBackgroundImageLayout.setHorizontalGroup(
+            jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanelGameBackgroundImageLayout.setVerticalGroup(
+            jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanelGameScreenshots.setBorder(javax.swing.BorderFactory.createTitledBorder("Screenshots"));
+
+        jLabelGameScreenshot1.setToolTipText("");
+        jLabelGameScreenshot1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabelGameScreenshot2.setToolTipText("");
+        jLabelGameScreenshot2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanelGameScreenshotsLayout = new javax.swing.GroupLayout(jPanelGameScreenshots);
+        jPanelGameScreenshots.setLayout(jPanelGameScreenshotsLayout);
+        jPanelGameScreenshotsLayout.setHorizontalGroup(
+            jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanelGameScreenshotsLayout.setVerticalGroup(
+            jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         jPanelDownloads.setBorder(javax.swing.BorderFactory.createTitledBorder("Batch Downloads"));
 
@@ -409,25 +604,30 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
             }
         });
 
+        jCheckBoxSpine.setText("Spine");
+
+        jCheckBoxLogo.setText("Logo");
+
         javax.swing.GroupLayout jPanelFilesLayout = new javax.swing.GroupLayout(jPanelFiles);
         jPanelFiles.setLayout(jPanelFilesLayout);
         jPanelFilesLayout.setHorizontalGroup(
             jPanelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelFilesLayout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addGroup(jPanelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jCheckBoxFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
-                    .addComponent(jCheckBoxRearCover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jCheckBoxDiscImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jCheckBoxScreenshot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jCheckBoxConfigFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jCheckBoxBackground, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(jPanelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jCheckBoxConfigFile, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBoxLogo)
+                    .addComponent(jCheckBoxSpine)
+                    .addComponent(jCheckBoxBackground, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBoxScreenshot, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBoxDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBoxRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBoxFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelFilesLayout.setVerticalGroup(
             jPanelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelFilesLayout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(jCheckBoxFrontCover)
                 .addGap(4, 4, 4)
                 .addComponent(jCheckBoxRearCover)
@@ -438,8 +638,12 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckBoxBackground)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBoxSpine)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBoxLogo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jCheckBoxConfigFile)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(12, 12, 12))
         );
 
         jPanelProgress.setBorder(javax.swing.BorderFactory.createTitledBorder("Progress"));
@@ -448,11 +652,11 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
         jPanelProgress.setLayout(jPanelProgressLayout);
         jPanelProgressLayout.setHorizontalGroup(
             jPanelProgressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 203, Short.MAX_VALUE)
+            .addGap(0, 211, Short.MAX_VALUE)
         );
         jPanelProgressLayout.setVerticalGroup(
             jPanelProgressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 52, Short.MAX_VALUE)
+            .addGap(0, 25, Short.MAX_VALUE)
         );
 
         jButtonDownload.setText("Download");
@@ -471,9 +675,9 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
             .addGroup(jPanelDownloadsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanelDownloadsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
                     .addComponent(jButtonDownload, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanelFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 215, Short.MAX_VALUE)
+                    .addComponent(jPanelFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanelProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -483,133 +687,12 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jPanelProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanelFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanelFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jButtonDownload)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-        );
-
-        jTextFieldGameName.setEditable(false);
-        jTextFieldGameName.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jTextFieldGameName.setText("Game name - Game ID");
-        jTextFieldGameName.setBorder(null);
-        jTextFieldGameName.setPreferredSize(new java.awt.Dimension(630, 25));
-
-        jPanelGameFrontCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Font Cover"));
-        jPanelGameFrontCover.setPreferredSize(new java.awt.Dimension(192, 290));
-
-        jLabelGameFrontCover.setToolTipText("");
-        jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        javax.swing.GroupLayout jPanelGameFrontCoverLayout = new javax.swing.GroupLayout(jPanelGameFrontCover);
-        jPanelGameFrontCover.setLayout(jPanelGameFrontCoverLayout);
-        jPanelGameFrontCoverLayout.setHorizontalGroup(
-            jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanelGameFrontCoverLayout.setVerticalGroup(
-            jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
-                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanelGameRearCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Rear Cover"));
-        jPanelGameRearCover.setPreferredSize(new java.awt.Dimension(192, 290));
-
-        jLabelGameRearCover.setToolTipText("");
-        jLabelGameRearCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        javax.swing.GroupLayout jPanelGameRearCoverLayout = new javax.swing.GroupLayout(jPanelGameRearCover);
-        jPanelGameRearCover.setLayout(jPanelGameRearCoverLayout);
-        jPanelGameRearCoverLayout.setHorizontalGroup(
-            jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanelGameRearCoverLayout.setVerticalGroup(
-            jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
-                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanelGameDiscImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Disc Image"));
-
-        jLabelGameDiscImage.setToolTipText("");
-        jLabelGameDiscImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        javax.swing.GroupLayout jPanelGameDiscImageLayout = new javax.swing.GroupLayout(jPanelGameDiscImage);
-        jPanelGameDiscImage.setLayout(jPanelGameDiscImageLayout);
-        jPanelGameDiscImageLayout.setHorizontalGroup(
-            jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameDiscImageLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanelGameDiscImageLayout.setVerticalGroup(
-            jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameDiscImageLayout.createSequentialGroup()
-                .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 11, Short.MAX_VALUE))
-        );
-
-        jPanelGameScreenshots.setBorder(javax.swing.BorderFactory.createTitledBorder("Screenshots"));
-
-        jLabelGameScreenshot1.setToolTipText("");
-        jLabelGameScreenshot1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        jLabelGameScreenshot2.setToolTipText("");
-        jLabelGameScreenshot2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        javax.swing.GroupLayout jPanelGameScreenshotsLayout = new javax.swing.GroupLayout(jPanelGameScreenshots);
-        jPanelGameScreenshots.setLayout(jPanelGameScreenshotsLayout);
-        jPanelGameScreenshotsLayout.setHorizontalGroup(
-            jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
-                .addContainerGap(11, Short.MAX_VALUE)
-                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-        jPanelGameScreenshotsLayout.setVerticalGroup(
-            jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
-                .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Background Image"));
-
-        jLabelGameBackgroundImage.setToolTipText("");
-        jLabelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jLabelGameBackgroundImage.setPreferredSize(new java.awt.Dimension(375, 2));
-
-        javax.swing.GroupLayout jPanelGameBackgroundImageLayout = new javax.swing.GroupLayout(jPanelGameBackgroundImage);
-        jPanelGameBackgroundImage.setLayout(jPanelGameBackgroundImageLayout);
-        jPanelGameBackgroundImageLayout.setHorizontalGroup(
-            jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanelGameBackgroundImageLayout.setVerticalGroup(
-            jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
-                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 11, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -618,20 +701,24 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextFieldGameName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
+                                .addComponent(jPanelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jPanelGameLogo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addComponent(jTextFieldGameName, javax.swing.GroupLayout.PREFERRED_SIZE, 810, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 21, Short.MAX_VALUE)
                 .addComponent(jPanelDownloads, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -639,29 +726,29 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jPanelDownloads, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTextFieldGameName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jPanelGameSpine, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                                    .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jPanelGameLogo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    // <editor-fold defaultstate="collapsed" desc="Button Click Event"> 
     private void jCheckBoxFrontCoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxFrontCoverActionPerformed
 
     }//GEN-LAST:event_jCheckBoxFrontCoverActionPerformed
@@ -682,13 +769,13 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
 
     }//GEN-LAST:event_jCheckBoxConfigFileActionPerformed
 
-    private void jButtonDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDownloadActionPerformed
-        downloadMissingFiles(); 
-    }//GEN-LAST:event_jButtonDownloadActionPerformed
-
     private void jCheckBoxDiscImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDiscImageActionPerformed
 
     }//GEN-LAST:event_jCheckBoxDiscImageActionPerformed
+
+    private void jButtonDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDownloadActionPerformed
+        downloadMissingFiles();
+    }//GEN-LAST:event_jButtonDownloadActionPerformed
     // </editor-fold> 
 
     // <editor-fold defaultstate="collapsed" desc="Generated Variables"> 
@@ -698,22 +785,28 @@ public class BatchDownloadScreenPS1 extends javax.swing.JDialog {
     private javax.swing.JCheckBox jCheckBoxConfigFile;
     private javax.swing.JCheckBox jCheckBoxDiscImage;
     private javax.swing.JCheckBox jCheckBoxFrontCover;
+    private javax.swing.JCheckBox jCheckBoxLogo;
     private javax.swing.JCheckBox jCheckBoxRearCover;
     private javax.swing.JCheckBox jCheckBoxScreenshot;
+    private javax.swing.JCheckBox jCheckBoxSpine;
     private javax.swing.JLabel jLabelGameBackgroundImage;
     private javax.swing.JLabel jLabelGameDiscImage;
     private javax.swing.JLabel jLabelGameFrontCover;
+    private javax.swing.JLabel jLabelGameLogo;
     private javax.swing.JLabel jLabelGameRearCover;
     private javax.swing.JLabel jLabelGameScreenshot1;
     private javax.swing.JLabel jLabelGameScreenshot2;
+    private javax.swing.JLabel jLabelGameSpine;
     private javax.swing.JList<String> jListGameList;
     private javax.swing.JPanel jPanelDownloads;
     private javax.swing.JPanel jPanelFiles;
     javax.swing.JPanel jPanelGameBackgroundImage;
     private javax.swing.JPanel jPanelGameDiscImage;
     private javax.swing.JPanel jPanelGameFrontCover;
+    private javax.swing.JPanel jPanelGameLogo;
     private javax.swing.JPanel jPanelGameRearCover;
     private javax.swing.JPanel jPanelGameScreenshots;
+    private javax.swing.JPanel jPanelGameSpine;
     private javax.swing.JPanel jPanelProgress;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextFieldGameName;

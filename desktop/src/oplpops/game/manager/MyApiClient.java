@@ -123,15 +123,14 @@ public class MyApiClient implements BackendClient {
     public void getImageFromServer(Game selectedGame, String gameRegion, String gameID, String gameName, String coverType, String coverPath, int gameNumber, boolean batchMode) {
         String kind = coverType.equals("_SCR2") ? "SCR" : coverType.substring(1).toUpperCase();
 
+        // _ICO/_LAB/_LGO are stored as PNG (icon, spine label and logo all commonly need
+        // transparency); everything else is JPG.
+        String ext = isPngArt(coverPath) ? ".png" : ".jpg";
         String localImagePath = null;
         if (PopsGameManager.getCurrentConsole().equals("PS1")) {
-            localImagePath = coverPath.equals("_ICO")
-                    ? PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverPath + ".png"
-                    : PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverPath + ".jpg";
+            localImagePath = PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverPath + ext;
         } else if (PopsGameManager.getCurrentConsole().equals("PS2")) {
-            localImagePath = coverPath.equals("_ICO")
-                    ? PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverPath + ".png"
-                    : PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverPath + ".jpg";
+            localImagePath = PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverPath + ext;
         }
 
         try {
@@ -142,6 +141,12 @@ public class MyApiClient implements BackendClient {
         } catch (IOException | InterruptedException ex) {
             PopsGameManager.displayErrorMessageDebug(ex.toString());
         }
+    }
+
+    // Art suffixes this app stores as PNG rather than JPG (icon, spine label, logo - all
+    // commonly carry transparency). Matches the extension the image screens look for.
+    static boolean isPngArt(String suffix) {
+        return "_ICO".equals(suffix) || "_LAB".equals(suffix) || "_LGO".equals(suffix);
     }
 
     @Override

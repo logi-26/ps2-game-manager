@@ -68,7 +68,10 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         if (coverType.equals("_ICO")) if(image.exists() && !image.isDirectory()) {jLabelGameDiscImage.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameDiscImage.getWidth(), jLabelGameDiscImage.getHeight(), Image.SCALE_DEFAULT)));}
         if (coverType.equals("_BG")) if(image.exists() && !image.isDirectory()) {jLabelGameBackgroundImage.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameBackgroundImage.getWidth(), jLabelGameBackgroundImage.getHeight(), Image.SCALE_DEFAULT)));}
         if (coverType.equals("_SCR")) if(image.exists() && !image.isDirectory()) {jLabelGameScreenshot1.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameScreenshot1.getWidth(), jLabelGameScreenshot1.getHeight(), Image.SCALE_DEFAULT)));}
-        if (coverType.equals("_SCR2")) if(image.exists() && !image.isDirectory()) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));} 
+        if (coverType.equals("_SCR2")) if(image.exists() && !image.isDirectory()) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
+        // Spine (LAB) / Logo (LGO) - no "no image" placeholder asset, so clear the label when the file's gone.
+        if (coverType.equals("_LAB")) {jLabelGameSpine.setIcon(image.exists() && !image.isDirectory() ? new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameSpine.getWidth(), jLabelGameSpine.getHeight(), Image.SCALE_DEFAULT)) : null);}
+        if (coverType.equals("_LGO")) {jLabelGameLogo.setIcon(image.exists() && !image.isDirectory() ? new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(jLabelGameLogo.getWidth(), jLabelGameLogo.getHeight(), Image.SCALE_DEFAULT)) : null);}
     }
     
     
@@ -91,9 +94,8 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber-1, false);
         
         String base = GameArtFileManager.baseName(gameList.get(currentListIndex), coverType);
-        File image;
-        if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".png");}
-        else {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".jpg");}
+        String ext = MyApiClient.isPngArt(coverType) ? ".png" : ".jpg";
+        File image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ext);
 
         if(image.exists() && !image.isDirectory()) {if (imageSelectorScreen != null){
             imageSelectorScreen.updateImage(image);}
@@ -117,9 +119,8 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
 
             // Check the directory to see if the image file has been retieved from the server, if it has it is displayed in the GUI
             String base = GameArtFileManager.baseName(gameList.get(currentListIndex), coverPath);
-            File image;
-            if (coverType.equals("_ICO")) {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".png");}
-            else {image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ".jpg");}
+            String ext = MyApiClient.isPngArt(coverType) ? ".png" : ".jpg";
+            File image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ext);
 
             if (coverPath.equals("_COV")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_COV", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
             if (coverPath.equals("_COV2")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_COV2", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
@@ -127,6 +128,8 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
             if (coverPath.equals("_BG")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_BG", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
             if (coverPath.equals("_SCR")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_SCR", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
             if (coverPath.equals("_SCR2")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_SCR2", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_LAB")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_LAB", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_LGO")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_LGO", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
         }  
         else {
             JOptionPane.showMessageDialog(null, "There is no image file available in the database for this game.", " No ART Available!", JOptionPane.WARNING_MESSAGE);
@@ -190,6 +193,16 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
                     catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
                     if (img != null) {jLabelGameDiscImage.setIcon(new javax.swing.ImageIcon(img));}
                     break;
+                case "_LAB":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(jLabelGameSpine.getWidth(), jLabelGameSpine.getHeight(), jLabelGameSpine.getHeight()); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameSpine.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_LGO":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(jLabelGameLogo.getWidth(), jLabelGameLogo.getHeight(), jLabelGameLogo.getHeight()); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameLogo.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
             }
         } 
         catch (HeadlessException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} 
@@ -230,6 +243,13 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         File screenshot2Image = GameArtFileManager.resolve(game, "_SCR2");
         if (screenshot2Image != null) {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(screenshot2Image.toString()).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
         else {jLabelGameScreenshot2.setIcon(new ImageIcon(new ImageIcon(NO_IMAGE_SCREENSHOT_PATH).getImage().getScaledInstance(jLabelGameScreenshot2.getWidth(), jLabelGameScreenshot2.getHeight(), Image.SCALE_DEFAULT)));}
+
+        // Spine (LAB) and Logo (LGO) - no "no image" placeholder art for these, so just clear the label when absent.
+        File spineImage = GameArtFileManager.resolve(game, "_LAB");
+        jLabelGameSpine.setIcon(spineImage != null ? new ImageIcon(new ImageIcon(spineImage.toString()).getImage().getScaledInstance(jLabelGameSpine.getWidth(), jLabelGameSpine.getHeight(), Image.SCALE_DEFAULT)) : null);
+
+        File logoImage = GameArtFileManager.resolve(game, "_LGO");
+        jLabelGameLogo.setIcon(logoImage != null ? new ImageIcon(new ImageIcon(logoImage.toString()).getImage().getScaledInstance(jLabelGameLogo.getWidth(), jLabelGameLogo.getHeight(), Image.SCALE_DEFAULT)) : null);
     }
 
 
@@ -252,6 +272,8 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         jLabelGameScreenshot1.setBackground(AppTheme.imagePreviewBackground());
         jLabelGameScreenshot2.setBackground(AppTheme.imagePreviewBackground());
         jLabelGameBackgroundImage.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameSpine.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameLogo.setBackground(AppTheme.imagePreviewBackground());
     }
 
 
@@ -259,27 +281,37 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTextFieldGameNumber = new javax.swing.JTextField();
+        jTextFieldGameName = new javax.swing.JTextField();
+        jButtonPreviousGame = new javax.swing.JButton();
+        jButtonNextGame = new javax.swing.JButton();
         jPanelGameFrontCover = new javax.swing.JPanel();
         jLabelGameFrontCover = new javax.swing.JLabel();
         jPanelGameFrontCoverButtons = new javax.swing.JPanel();
         jButtonFrontCoverDelete = new javax.swing.JButton();
         jButtonFrontCoverManual = new javax.swing.JButton();
         jButtonFrontCoverAuto = new javax.swing.JButton();
+        jPanelGameSpine = new javax.swing.JPanel();
+        jLabelGameSpine = new javax.swing.JLabel();
+        jButtonSpineManual = new javax.swing.JButton();
+        jButtonSpineAuto = new javax.swing.JButton();
+        jButtonSpineDelete = new javax.swing.JButton();
         jPanelGameRearCover = new javax.swing.JPanel();
         jLabelGameRearCover = new javax.swing.JLabel();
         jPanelGameRearCoverButtons = new javax.swing.JPanel();
         jButtonRearCoverManual = new javax.swing.JButton();
         jButtonRearCoverAuto = new javax.swing.JButton();
         jButtonRearCoverDelete = new javax.swing.JButton();
-        jTextFieldGameName = new javax.swing.JTextField();
-        jTextFieldGameNumber = new javax.swing.JTextField();
-        jButtonPreviousGame = new javax.swing.JButton();
-        jButtonNextGame = new javax.swing.JButton();
         jPanelGameDiscImage = new javax.swing.JPanel();
         jLabelGameDiscImage = new javax.swing.JLabel();
         jButtonDiscImageManual = new javax.swing.JButton();
         jButtonDiscImageAuto = new javax.swing.JButton();
         jButtonDiscImageDelete = new javax.swing.JButton();
+        jPanelGameLogo = new javax.swing.JPanel();
+        jLabelGameLogo = new javax.swing.JLabel();
+        jButtonLogoManual = new javax.swing.JButton();
+        jButtonLogoAuto = new javax.swing.JButton();
+        jButtonLogoDelete = new javax.swing.JButton();
         jPanelGameScreenshots = new javax.swing.JPanel();
         jLabelGameScreenshot1 = new javax.swing.JLabel();
         jLabelGameScreenshot2 = new javax.swing.JLabel();
@@ -297,6 +329,36 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
+
+        jTextFieldGameNumber.setEditable(false);
+        jTextFieldGameNumber.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jTextFieldGameNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jTextFieldGameNumber.setText("[1/12]");
+        jTextFieldGameNumber.setBorder(null);
+
+        jTextFieldGameName.setEditable(false);
+        jTextFieldGameName.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jTextFieldGameName.setText("Game name - Game ID");
+        jTextFieldGameName.setBorder(null);
+        jTextFieldGameName.setPreferredSize(new java.awt.Dimension(630, 25));
+
+        jButtonPreviousGame.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Left Icon.png"))); // NOI18N
+        jButtonPreviousGame.setToolTipText("Previous game");
+        jButtonPreviousGame.setContentAreaFilled(false);
+        jButtonPreviousGame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonPreviousGameActionPerformed(evt);
+            }
+        });
+
+        jButtonNextGame.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Right Icon.png"))); // NOI18N
+        jButtonNextGame.setToolTipText("Next game");
+        jButtonNextGame.setContentAreaFilled(false);
+        jButtonNextGame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonNextGameActionPerformed(evt);
+            }
+        });
 
         jPanelGameFrontCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Font Cover"));
         jPanelGameFrontCover.setPreferredSize(new java.awt.Dimension(192, 290));
@@ -341,7 +403,7 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
                 .addComponent(jButtonFrontCoverManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(36, 36, 36)
                 .addComponent(jButtonFrontCoverAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, Short.MAX_VALUE)
+                .addGap(18, 44, Short.MAX_VALUE)
                 .addComponent(jButtonFrontCoverDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanelGameFrontCoverButtonsLayout.setVerticalGroup(
@@ -358,20 +420,81 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
             .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelGameFrontCoverButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameFrontCoverLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jPanelGameFrontCoverButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanelGameFrontCoverLayout.setVerticalGroup(
             jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
-                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jPanelGameFrontCoverButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+        );
+
+        jPanelGameSpine.setBorder(javax.swing.BorderFactory.createTitledBorder("Spine"));
+
+        jLabelGameSpine.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonSpineManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonSpineManual.setToolTipText("");
+        jButtonSpineManual.setContentAreaFilled(false);
+        jButtonSpineManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSpineManualActionPerformed(evt);
+            }
+        });
+
+        jButtonSpineAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonSpineAuto.setToolTipText("");
+        jButtonSpineAuto.setContentAreaFilled(false);
+        jButtonSpineAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSpineAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonSpineDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonSpineDelete.setToolTipText("");
+        jButtonSpineDelete.setContentAreaFilled(false);
+        jButtonSpineDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonSpineDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSpineDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameSpineLayout = new javax.swing.GroupLayout(jPanelGameSpine);
+        jPanelGameSpine.setLayout(jPanelGameSpineLayout);
+        jPanelGameSpineLayout.setHorizontalGroup(
+            jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonSpineManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonSpineAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonSpineDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(9, Short.MAX_VALUE))
+        );
+        jPanelGameSpineLayout.setVerticalGroup(
+            jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addComponent(jLabelGameSpine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addGap(41, 41, 41)
+                .addComponent(jButtonSpineManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButtonSpineAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButtonSpineDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanelGameRearCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Rear Cover"));
@@ -437,7 +560,7 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
                 .addContainerGap()
                 .addGroup(jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameRearCoverLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(0, 10, Short.MAX_VALUE)
                         .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanelGameRearCoverButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -445,41 +568,11 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         jPanelGameRearCoverLayout.setVerticalGroup(
             jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
-                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jPanelGameRearCoverButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-
-        jTextFieldGameName.setEditable(false);
-        jTextFieldGameName.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jTextFieldGameName.setText("Game name - Game ID");
-        jTextFieldGameName.setBorder(null);
-        jTextFieldGameName.setPreferredSize(new java.awt.Dimension(630, 25));
-
-        jTextFieldGameNumber.setEditable(false);
-        jTextFieldGameNumber.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jTextFieldGameNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        jTextFieldGameNumber.setText("[1/12]");
-        jTextFieldGameNumber.setBorder(null);
-
-        jButtonPreviousGame.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Left Icon.png"))); // NOI18N
-        jButtonPreviousGame.setToolTipText("Previous game");
-        jButtonPreviousGame.setContentAreaFilled(false);
-        jButtonPreviousGame.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonPreviousGameActionPerformed(evt);
-            }
-        });
-
-        jButtonNextGame.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Right Icon.png"))); // NOI18N
-        jButtonNextGame.setToolTipText("Next game");
-        jButtonNextGame.setContentAreaFilled(false);
-        jButtonNextGame.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonNextGameActionPerformed(evt);
-            }
-        });
 
         jPanelGameDiscImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Disc Image"));
 
@@ -519,7 +612,7 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         jPanelGameDiscImageLayout.setHorizontalGroup(
             jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameDiscImageLayout.createSequentialGroup()
-                .addContainerGap(11, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonDiscImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -543,6 +636,67 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
                                 .addComponent(jButtonDiscImageAuto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jButtonDiscImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addGap(77, 77, 77))
+        );
+
+        jPanelGameLogo.setBorder(javax.swing.BorderFactory.createTitledBorder("Logo"));
+
+        jLabelGameLogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonLogoManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonLogoManual.setToolTipText("");
+        jButtonLogoManual.setContentAreaFilled(false);
+        jButtonLogoManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoManualActionPerformed(evt);
+            }
+        });
+
+        jButtonLogoAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonLogoAuto.setToolTipText("");
+        jButtonLogoAuto.setContentAreaFilled(false);
+        jButtonLogoAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonLogoDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/oplpops/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonLogoDelete.setToolTipText("");
+        jButtonLogoDelete.setContentAreaFilled(false);
+        jButtonLogoDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonLogoDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameLogoLayout = new javax.swing.GroupLayout(jPanelGameLogo);
+        jPanelGameLogo.setLayout(jPanelGameLogoLayout);
+        jPanelGameLogoLayout.setHorizontalGroup(
+            jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelGameLogo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                        .addComponent(jButtonLogoManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(101, 101, 101)
+                        .addComponent(jButtonLogoAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonLogoDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        jPanelGameLogoLayout.setVerticalGroup(
+            jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonLogoAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonLogoManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonLogoDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanelGameScreenshots.setBorder(javax.swing.BorderFactory.createTitledBorder("Screenshots"));
@@ -615,45 +769,41 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
             jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
-                        .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButtonDiscImageManual2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButtonDiscImageAuto2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButtonDiscImageDelete2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jButtonDiscImageManual1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(61, 61, 61)
+                        .addComponent(jButtonDiscImageAuto1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonDiscImageDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
-                        .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButtonDiscImageManual1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButtonDiscImageAuto1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButtonDiscImageDelete1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(jButtonDiscImageManual2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(63, 63, 63)
+                        .addComponent(jButtonDiscImageAuto2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonDiscImageDelete2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelGameScreenshotsLayout.setVerticalGroup(
             jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
-                        .addComponent(jButtonDiscImageManual1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(39, 39, 39)
-                        .addComponent(jButtonDiscImageAuto1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButtonDiscImageDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
-                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
-                        .addComponent(jButtonDiscImageManual2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(39, 39, 39)
-                        .addComponent(jButtonDiscImageAuto2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButtonDiscImageDelete2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(21, 21, 21))
+                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonDiscImageManual1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageAuto1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageManual2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageDelete2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageAuto2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Background Image"));
@@ -698,102 +848,91 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
                 .addContainerGap()
                 .addGroup(jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
-                        .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
                         .addComponent(jButtonBackgroundImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(144, 144, 144)
+                        .addGap(104, 104, 104)
                         .addComponent(jButtonBackgroundImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButtonBackgroundImageDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelGameBackgroundImageLayout.setVerticalGroup(
             jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButtonBackgroundImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonBackgroundImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonBackgroundImageDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jPanelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanelGameLogo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTextFieldGameNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextFieldGameName, javax.swing.GroupLayout.PREFERRED_SIZE, 630, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jTextFieldGameName, javax.swing.GroupLayout.PREFERRED_SIZE, 640, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButtonNextGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                        .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(24, 24, 24)
+                        .addComponent(jButtonNextGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextFieldGameName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextFieldGameNumber))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jTextFieldGameName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jTextFieldGameNumber))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(25, 25, 25)
-                        .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButtonNextGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanelGameLogo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanelGameSpine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    // <editor-fold defaultstate="collapsed" desc="Button Click Events">
-    private void jButtonFrontCoverManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverManualActionPerformed
-        loadImageFromDirectory("_COV");
-    }//GEN-LAST:event_jButtonFrontCoverManualActionPerformed
-
-    private void jButtonFrontCoverAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverAutoActionPerformed
-        getImageFromServer("_COV", "_COV", 0);
-    }//GEN-LAST:event_jButtonFrontCoverAutoActionPerformed
-
-    private void jButtonRearCoverManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverManualActionPerformed
-        loadImageFromDirectory("_COV2");
-    }//GEN-LAST:event_jButtonRearCoverManualActionPerformed
-
-    private void jButtonRearCoverAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverAutoActionPerformed
-        getImageFromServer("_COV2", "_COV2", 0);
-    }//GEN-LAST:event_jButtonRearCoverAutoActionPerformed
 
     private void jButtonPreviousGameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPreviousGameActionPerformed
         if (currentListIndex > 0) {
@@ -813,6 +952,42 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         }
     }//GEN-LAST:event_jButtonNextGameActionPerformed
 
+    private void jButtonFrontCoverDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverDeleteActionPerformed
+        deleteImage("_COV");
+    }//GEN-LAST:event_jButtonFrontCoverDeleteActionPerformed
+
+    private void jButtonFrontCoverManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverManualActionPerformed
+        loadImageFromDirectory("_COV");
+    }//GEN-LAST:event_jButtonFrontCoverManualActionPerformed
+
+    private void jButtonFrontCoverAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverAutoActionPerformed
+        getImageFromServer("_COV", "_COV", 0);
+    }//GEN-LAST:event_jButtonFrontCoverAutoActionPerformed
+
+    private void jButtonSpineManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSpineManualActionPerformed
+        loadImageFromDirectory("_LAB");
+    }//GEN-LAST:event_jButtonSpineManualActionPerformed
+
+    private void jButtonSpineAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSpineAutoActionPerformed
+        getImageFromServer("_LAB", "_LAB", 0);
+    }//GEN-LAST:event_jButtonSpineAutoActionPerformed
+
+    private void jButtonSpineDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSpineDeleteActionPerformed
+        deleteImage("_LAB");
+    }//GEN-LAST:event_jButtonSpineDeleteActionPerformed
+
+    private void jButtonRearCoverManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverManualActionPerformed
+        loadImageFromDirectory("_COV2");
+    }//GEN-LAST:event_jButtonRearCoverManualActionPerformed
+
+    private void jButtonRearCoverAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverAutoActionPerformed
+        getImageFromServer("_COV2", "_COV2", 0);
+    }//GEN-LAST:event_jButtonRearCoverAutoActionPerformed
+
+    private void jButtonRearCoverDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverDeleteActionPerformed
+        deleteImage("_COV2");
+    }//GEN-LAST:event_jButtonRearCoverDeleteActionPerformed
+
     private void jButtonDiscImageManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageManualActionPerformed
         loadImageFromDirectory("_ICO");
     }//GEN-LAST:event_jButtonDiscImageManualActionPerformed
@@ -820,6 +995,22 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
     private void jButtonDiscImageAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageAutoActionPerformed
         getImageFromServer("_ICO", "_ICO", 0);
     }//GEN-LAST:event_jButtonDiscImageAutoActionPerformed
+
+    private void jButtonDiscImageDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDeleteActionPerformed
+        deleteImage("_ICO");
+    }//GEN-LAST:event_jButtonDiscImageDeleteActionPerformed
+
+    private void jButtonLogoManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoManualActionPerformed
+        loadImageFromDirectory("_LGO");
+    }//GEN-LAST:event_jButtonLogoManualActionPerformed
+
+    private void jButtonLogoAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoAutoActionPerformed
+        getImageFromServer("_LGO", "_LGO", 0);
+    }//GEN-LAST:event_jButtonLogoAutoActionPerformed
+
+    private void jButtonLogoDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoDeleteActionPerformed
+        deleteImage("_LGO");
+    }//GEN-LAST:event_jButtonLogoDeleteActionPerformed
 
     private void jButtonDiscImageManual1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageManual1ActionPerformed
         loadImageFromDirectory("_SCR");
@@ -837,17 +1028,13 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
         getImageFromServer("_SCR", "_SCR2", 1);
     }//GEN-LAST:event_jButtonDiscImageAuto2ActionPerformed
 
-    private void jButtonFrontCoverDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverDeleteActionPerformed
-        deleteImage("_COV");
-    }//GEN-LAST:event_jButtonFrontCoverDeleteActionPerformed
+    private void jButtonDiscImageDelete1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDelete1ActionPerformed
+        deleteImage("_SCR");
+    }//GEN-LAST:event_jButtonDiscImageDelete1ActionPerformed
 
-    private void jButtonRearCoverDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverDeleteActionPerformed
-        deleteImage("_COV2");
-    }//GEN-LAST:event_jButtonRearCoverDeleteActionPerformed
-
-    private void jButtonDiscImageDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDeleteActionPerformed
-        deleteImage("_ICO");
-    }//GEN-LAST:event_jButtonDiscImageDeleteActionPerformed
+    private void jButtonDiscImageDelete2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDelete2ActionPerformed
+        deleteImage("_SCR2");
+    }//GEN-LAST:event_jButtonDiscImageDelete2ActionPerformed
 
     private void jButtonBackgroundImageManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackgroundImageManualActionPerformed
         loadImageFromDirectory("_BG");
@@ -860,14 +1047,6 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
     private void jButtonBackgroundImageDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackgroundImageDeleteActionPerformed
         deleteImage("_BG");
     }//GEN-LAST:event_jButtonBackgroundImageDeleteActionPerformed
-
-    private void jButtonDiscImageDelete1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDelete1ActionPerformed
-        deleteImage("_SCR");
-    }//GEN-LAST:event_jButtonDiscImageDelete1ActionPerformed
-
-    private void jButtonDiscImageDelete2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDelete2ActionPerformed
-        deleteImage("_SCR2");
-    }//GEN-LAST:event_jButtonDiscImageDelete2ActionPerformed
     // </editor-fold> 
 
     // <editor-fold defaultstate="collapsed" desc="Generated Variables"> 
@@ -887,24 +1066,34 @@ public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSele
     private javax.swing.JButton jButtonFrontCoverAuto;
     private javax.swing.JButton jButtonFrontCoverDelete;
     private javax.swing.JButton jButtonFrontCoverManual;
+    private javax.swing.JButton jButtonLogoAuto;
+    private javax.swing.JButton jButtonLogoDelete;
+    private javax.swing.JButton jButtonLogoManual;
     private javax.swing.JButton jButtonNextGame;
     private javax.swing.JButton jButtonPreviousGame;
     private javax.swing.JButton jButtonRearCoverAuto;
     private javax.swing.JButton jButtonRearCoverDelete;
     private javax.swing.JButton jButtonRearCoverManual;
+    private javax.swing.JButton jButtonSpineAuto;
+    private javax.swing.JButton jButtonSpineDelete;
+    private javax.swing.JButton jButtonSpineManual;
     private javax.swing.JLabel jLabelGameBackgroundImage;
     private javax.swing.JLabel jLabelGameDiscImage;
     private javax.swing.JLabel jLabelGameFrontCover;
+    private javax.swing.JLabel jLabelGameLogo;
     private javax.swing.JLabel jLabelGameRearCover;
     private javax.swing.JLabel jLabelGameScreenshot1;
     private javax.swing.JLabel jLabelGameScreenshot2;
+    private javax.swing.JLabel jLabelGameSpine;
     javax.swing.JPanel jPanelGameBackgroundImage;
     private javax.swing.JPanel jPanelGameDiscImage;
     private javax.swing.JPanel jPanelGameFrontCover;
     private javax.swing.JPanel jPanelGameFrontCoverButtons;
+    private javax.swing.JPanel jPanelGameLogo;
     private javax.swing.JPanel jPanelGameRearCover;
     private javax.swing.JPanel jPanelGameRearCoverButtons;
     private javax.swing.JPanel jPanelGameScreenshots;
+    private javax.swing.JPanel jPanelGameSpine;
     private javax.swing.JTextField jTextFieldGameName;
     private javax.swing.JTextField jTextFieldGameNumber;
     // End of variables declaration//GEN-END:variables

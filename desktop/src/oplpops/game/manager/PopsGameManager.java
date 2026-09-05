@@ -324,6 +324,15 @@ public class PopsGameManager {
                             if (getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 rear cover image
                             else if (getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 242, 344);}      // PS2 rear cover image
                             break;
+                        case "_LAB":
+                        case "_LGO":
+                            // Spine label / logo: no single canonical size, and logos routinely
+                            // rely on transparency - keep the source image's own dimensions and
+                            // alpha rather than forcing it through scaleImage()'s opaque RGB path.
+                            // ImageIO.read() hands back a BufferedImage; fall back to a scaled copy
+                            // only if that ever isn't the case, so the write below never gets null.
+                            scaledImage = (image instanceof BufferedImage) ? (BufferedImage) image : scaleImage(image, 256, 256);
+                            break;
                         default:
                             break;
                     }

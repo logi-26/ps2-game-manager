@@ -70,9 +70,15 @@ public class GameImageSelectorScreenPS1 extends javax.swing.JDialog {
                        case "_ICO":
                            imageSelectListener.imageSelected(imageType, new File(NO_IMAGE_DISC_PATH));
                            break;
+                       case "_LAB":
+                       case "_LGO":
+                           // No placeholder art for spine/logo - hand back the (now-deleted) path
+                           // so the parent screen clears its thumbnail instead of keeping a stale one.
+                           imageSelectListener.imageSelected(imageType, image);
+                           break;
                        default:
                            break;
-                   }  
+                   }
                }
                dispose();
             }
@@ -109,6 +115,14 @@ public class GameImageSelectorScreenPS1 extends javax.swing.JDialog {
             case "_SCR2":
                 jPanelGameBackgroundImage.setBorder(BorderFactory.createTitledBorder("Screenshot 2"));
                 jLabelGameImage.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(225, 170, Image.SCALE_DEFAULT)));
+                break;
+            case "_LAB":
+                jPanelGameBackgroundImage.setBorder(BorderFactory.createTitledBorder("Spine"));
+                jLabelGameImage.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(60, 260, Image.SCALE_DEFAULT)));
+                break;
+            case "_LGO":
+                jPanelGameBackgroundImage.setBorder(BorderFactory.createTitledBorder("Logo"));
+                jLabelGameImage.setIcon(new ImageIcon(new ImageIcon(image.toString()).getImage().getScaledInstance(260, 120, Image.SCALE_DEFAULT)));
                 break;
             default:
                 break;
