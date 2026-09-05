@@ -327,27 +327,40 @@ public class GameListManager {
     }
     
     
-    // This searches the ISO file for the games unique identifier file. .zso is compressed - the
-    // 7-Zip ISO reader below can't parse its content directly - so this reads the ID straight out
-    // of the filename instead (ZSO files are conventionally already named "<id>.<name>.zso").
+    // This searches the ISO file for the game's unique identifier file. Two cases fall back to
+    // reading the ID out of the filename instead ("<id>.<name>.iso" / "<id>.<name>.zso" style):
+    //  - .zso is compressed, so the 7-Zip ISO reader can't parse its content at all;
+    //  - the 7-Zip native library can fail to load on modern Windows (or lose its temp-dir lock
+    //    to another instance), which makes every real ISO fail to open. Rather than detecting
+    //    zero games and flooding the debug log, degrade to the filename in that case too.
     public static String getPS2GameIDFromArchive(String archiveFile) throws Exception {
 
         if (archiveFile.toLowerCase().endsWith(".zso")) {return extractGameIDFromFilename(new File(archiveFile).getName());}
 
-        IInArchive archive;
-        RandomAccessFile randomAccessFile;
-        randomAccessFile = new RandomAccessFile(archiveFile, "r");
-        archive = SevenZip.openInArchive(ArchiveFormat.ISO, new RandomAccessFileInStream(randomAccessFile));
-
+        IInArchive archive = null;
+        RandomAccessFile randomAccessFile = null;
         String theGameID = null;
+        try {
+            randomAccessFile = new RandomAccessFile(archiveFile, "r");
+            archive = SevenZip.openInArchive(ArchiveFormat.ISO, new RandomAccessFileInStream(randomAccessFile));
 
-        for (int i = 0; i <archive.getNumberOfItems(); i++){
-            String gameID = archive.getStringProperty(i, PropID.PATH);
-            for (String regionCode:REGION_CODES) {if (gameID.contains(regionCode)) {theGameID = gameID;}}
+            for (int i = 0; i < archive.getNumberOfItems(); i++){
+                String gameID = archive.getStringProperty(i, PropID.PATH);
+                for (String regionCode:REGION_CODES) {if (gameID.contains(regionCode)) {theGameID = gameID;}}
+            }
         }
-
-        archive.close();
-        randomAccessFile.close();
+        catch (Exception ex) {
+            // 7-Zip couldn't open the archive (broken native lib, temp-dir lock lost to another
+            // instance, or a damaged ISO). Try the filename before giving up so a
+            // "<id>.<name>.iso" still gets detected instead of flooding the debug log.
+            String fromName = extractGameIDFromFilename(new File(archiveFile).getName());
+            if (fromName == null) {PopsGameManager.displayErrorMessageDebug("7-Zip could not open " + new File(archiveFile).getName() + " and its name has no game ID: " + ex);}
+            theGameID = fromName;
+        }
+        finally {
+            if (archive != null) {try {archive.close();} catch (Exception ignored) {}}
+            if (randomAccessFile != null) {try {randomAccessFile.close();} catch (Exception ignored) {}}
+        }
 
         return theGameID;
     }
