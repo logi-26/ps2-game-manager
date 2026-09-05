@@ -1083,11 +1083,20 @@ public class GameListManager {
                 String gamePath = isoFile.toString();
 
                 if (gameID != null) {
-                    
+
                     if (gamePath.contains(gameID)){
 
-                        String gameName = gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).substring(0,gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).lastIndexOf('.'));
-                        gameName = gameName.substring(12);
+                        // Descriptive name = file name minus extension, minus the leading game ID
+                        // and any separator after it. PS2 ISOs are conventionally "<id>.<name>.iso",
+                        // but a bare "<id>.iso" has no descriptive part, so fall back to the ID
+                        // rather than running off the end (the old fixed substring(12) crashed).
+                        String fileName = isoFile.getName();
+                        int extDot = fileName.lastIndexOf('.');
+                        String gameName = extDot > 0 ? fileName.substring(0, extDot) : fileName;
+                        if (gameName.startsWith(gameID)) {
+                            gameName = gameName.substring(gameID.length()).replaceAll("^[\\s.\\-_]+", "");
+                        }
+                        if (gameName.isEmpty()) {gameName = gameID;}
 
                         // Used to calculate the total size of all ISO files combined
                         totalSize += isoFile.length();
