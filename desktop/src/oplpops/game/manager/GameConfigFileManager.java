@@ -53,6 +53,23 @@ public class GameConfigFileManager {
         "$EnableGSM", "$GSMVMode", "$GSMXOffset", "$GSMYOffset", "$GSMFIELDFix", "$EnableCheat"
     };
 
+    // A handful of values carry a second, redundant "type/" sub-prefix baked into the value
+    // itself - e.g. Rating is stored as "Rating=rating/4", not "Rating=4" - a long-standing quirk
+    // of this app's own file format (composeGameConfigData() still writes it), not an OPL
+    // key/value split. Indexed the same as MANAGED_KEYS; null everywhere else.
+    // readGameConfigFormatted() strips this too, so callers keep getting the bare value they
+    // always have (Parental is deliberately not here - its "esrb/17" form is still split on "/"
+    // by the caller, so it needs the whole thing intact).
+    private static final String[] VALUE_SUBPREFIXES = new String[MANAGED_KEYS.length];
+    static {
+        VALUE_SUBPREFIXES[5] = "players/";  // Players
+        VALUE_SUBPREFIXES[6] = "rating/";   // Rating
+        VALUE_SUBPREFIXES[13] = "device/";  // Device
+        VALUE_SUBPREFIXES[14] = "vmode/";   // Vmode
+        VALUE_SUBPREFIXES[15] = "aspect/";  // Aspect
+        VALUE_SUBPREFIXES[16] = "scan/";    // Scan
+    }
+
     public GameConfigFileManager(){}
 
 
@@ -64,7 +81,8 @@ public class GameConfigFileManager {
 
 
     // This reads the data from a game config file and returns an array containing the formatted data
-    // (just the value half of each managed key's line, e.g. "CfgVersion=5" -> "5")
+    // (just the value half of each managed key's line, e.g. "CfgVersion=5" -> "5", and with
+    // VALUE_SUBPREFIXES' extra "type/" stripped too where it applies, e.g. "rating/4" -> "4")
     public String[] readGameConfigFormatted(String gameID, String gameName) throws IOException {
 
         LinkedHashMap<String, String> lines = readRawLines(resolveGameConfigFile(gameID, gameName));
@@ -72,7 +90,11 @@ public class GameConfigFileManager {
 
         for (int i = 0; i < MANAGED_KEYS.length; i++) {
             String line = lines.get(MANAGED_KEYS[i]);
-            if (line != null) {configData[i] = line.substring(MANAGED_KEYS[i].length() + 1);}
+            if (line != null) {
+                String value = line.substring(MANAGED_KEYS[i].length() + 1);
+                if (VALUE_SUBPREFIXES[i] != null && value.startsWith(VALUE_SUBPREFIXES[i])) {value = value.substring(VALUE_SUBPREFIXES[i].length());}
+                configData[i] = value;
+            }
         }
         return configData;
     }
