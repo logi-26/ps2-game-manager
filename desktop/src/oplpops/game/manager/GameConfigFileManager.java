@@ -13,167 +13,116 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class GameConfigFileManager {
-    
+
+    // The 24 keys this app edits in a game's own .cfg file, in NEW_CONFIG_DATA/configData's
+    // index order (GameConfigScreen). Anything else found in the file - $AltStartup, $DMA,
+    // $ConfigSource, PADEMU's own keys, the OSD-language block, or anything a newer OPL adds
+    // that this list doesn't know about yet - is preserved untouched on save; see
+    // writeGameConfigFile()'s merge-with-existing-file behaviour below.
+    //
+    // Index 22 is "$GSMFIELDFix" - OPL's real key (confirmed against its own include/config.h).
+    // This used to be written here as "$GSMSkipVideos", which isn't a key OPL recognises at all,
+    // so every "skip videos" checkbox a user saved was silently a no-op for real OPL.
+    // Indices 24-26 are new: $GSMSource/$CheatsSource/$PADEMUSource ("0"=Global, "1"=PerGame -
+    // matches OPL's own SETTINGS_GLOBAL/SETTINGS_PERGAME) - which of this game's own file vs.
+    // the global conf_game.cfg OPL actually uses for that feature's settings. Read/written the
+    // same safe way as every other managed key; see GameConfigScreen's Source radio buttons.
+    private static final String[] MANAGED_KEYS = {
+        "CfgVersion", "Title", "Genre", "Developer", "Release", "Players", "Rating",
+        "Description", "Notes", "$VMC_0", "$VMC_1", "Cheat", "$EnableCheat", "Device",
+        "Vmode", "Aspect", "Scan", "$Compatibility", "$EnableGSM", "$GSMVMode",
+        "$GSMXOffset", "$GSMYOffset", "$GSMFIELDFix", "Parental",
+        "$GSMSource", "$CheatsSource", "$PADEMUSource"
+    };
+
+    // The keys this app edits in the GLOBAL conf_game.cfg - OPL's own defaults for GSM/Cheat,
+    // applied to a game whenever its own $GSMSource/$CheatsSource is 0 (Global) or absent.
+    // Confirmed against OPL's own src/config.c: conf_game.cfg lives at the OPL root (same file
+    // list as conf_apps.cfg, which this app already writes there) and uses the exact same
+    // "Key=Value" line format as a per-game .cfg - no game identity in it, settings only.
+    // $CheatMode isn't here: this app has no UI for it yet (only $EnableCheat, via
+    // jCheckBoxCheatEnabled), and managing a key with nothing to write only means every save
+    // clobbers whatever real value a user set through OPL itself - see MANAGED_KEYS' own
+    // comment for the same reasoning.
+    private static final String[] GLOBAL_MANAGED_KEYS = {
+        "$EnableGSM", "$GSMVMode", "$GSMXOffset", "$GSMYOffset", "$GSMFIELDFix", "$EnableCheat"
+    };
+
     public GameConfigFileManager(){}
-    
-   
+
+
     // This checks if their is a config file for the specific game
     public Boolean gameConfigExists(String gameID, String gameName){
-        
-        boolean configExists = false;
-        
-        File cfgFile = null;
-        if (gameID != null) {
-            if (PopsGameManager.getCurrentConsole().equals("PS1")){
-                cfgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg");
-            }
-            else if (PopsGameManager.getCurrentConsole().equals("PS2")){
-                cfgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg");
-            }
-        }
-
-        if (cfgFile != null){configExists = cfgFile.exists() && !cfgFile.isDirectory();}
-
-        return configExists;
+        File cfgFile = gameID != null ? resolveGameConfigFile(gameID, gameName) : null;
+        return cfgFile != null && cfgFile.exists() && !cfgFile.isDirectory();
     }
 
-    
+
     // This reads the data from a game config file and returns an array containing the formatted data
+    // (just the value half of each managed key's line, e.g. "CfgVersion=5" -> "5")
     public String[] readGameConfigFormatted(String gameID, String gameName) throws IOException {
 
-        String configData[] = new String[24];
-        File cfgFile = null;
-        if (PopsGameManager.getCurrentConsole().equals("PS1")) {cfgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg");}
-        else {cfgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg");}
-        
-        if (cfgFile.exists() && !cfgFile.isDirectory()){
+        LinkedHashMap<String, String> lines = readRawLines(resolveGameConfigFile(gameID, gameName));
+        String configData[] = new String[MANAGED_KEYS.length];
 
-            try (BufferedReader br = new BufferedReader(new FileReader(cfgFile))) {
-
-                String line;
-                while ((line = br.readLine()) != null) {
-
-                    if (!line.equals("")){
-
-                        if (line.contains("CfgVersion")) {configData[0] = line.substring(11);}
-                        else if (line.contains("Title")) {configData[1] = line.substring(6);}
-                        else if (line.contains("Genre")) {configData[2] = line.substring(6);}
-                        else if (line.contains("Developer")) {configData[3] = line.substring(10);}
-                        else if (line.contains("Release")) {configData[4] = line.substring(8);}
-                        else if (line.contains("Players")) {configData[5] = line.substring(16);}
-                        else if (line.contains("Rating")) {configData[6] = line.substring(14);}
-                        else if (line.contains("Description")) {configData[7] = line.substring(12);}
-                        else if (line.contains("Notes")) {configData[8] = line.substring(6);}
-                        else if (line.contains("$VMC_0")) {configData[9] = line.substring(7);}
-                        else if (line.contains("$VMC_1")) {configData[10] = line.substring(7);}
-                        else if (line.contains("Cheat") && !line.contains("$EnableCheat")) {configData[11] = line.substring(6);}
-                        else if (line.contains("$EnableCheat")) {configData[12] = line.substring(13);}
-                        else if (line.contains("Device")) {configData[13] = line.substring(14);}
-                        else if (line.contains("Vmode")) {configData[14] = line.substring(12);}
-                        else if (line.contains("Aspect")) {configData[15] = line.substring(14);}
-                        else if (line.contains("Scan")) {configData[16] = line.substring(10);}
-                        else if (line.contains("$Compatibility")) {configData[17] = line.substring(15);}
-                        else if (line.contains("$EnableGSM")) {configData[18] = line.substring(11);}
-                        else if (line.contains("$GSMVMode")) {configData[19] = line.substring(10);}
-                        else if (line.contains("$GSMXOffset")) {configData[20] = line.substring(12);}
-                        else if (line.contains("$GSMYOffset")) {configData[21] = line.substring(12);}
-                        else if (line.contains("$GSMSkipVideos")) {configData[22] = line.substring(15);}
-                        else if (line.contains("Parental")) {configData[23] = line.substring(9);}
-                    }
-                }
-            }
-        } 
-        return configData; 
+        for (int i = 0; i < MANAGED_KEYS.length; i++) {
+            String line = lines.get(MANAGED_KEYS[i]);
+            if (line != null) {configData[i] = line.substring(MANAGED_KEYS[i].length() + 1);}
+        }
+        return configData;
     }
-    
-    
-     // This reads the data from a game config file and returns an array containing the formatted data
+
+
+    // This reads the data from a game config file and returns an array containing the raw
+    // "Key=Value" lines (used to compare against a freshly-composed set before saving)
     public String[] readGameConfigRaw(String gameID, String gameName) throws IOException {
-        
-        String configData[] = new String[24];
-        File cfgFile = null;
-        if (PopsGameManager.getCurrentConsole().equals("PS1")) {cfgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg");}
-        else {cfgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg");}
 
-        if (cfgFile.exists() && !cfgFile.isDirectory()){
+        LinkedHashMap<String, String> lines = readRawLines(resolveGameConfigFile(gameID, gameName));
+        String configData[] = new String[MANAGED_KEYS.length];
 
-            try (BufferedReader br = new BufferedReader(new FileReader(cfgFile))) {
-
-                String line;
-                while ((line = br.readLine()) != null) {
-
-                    if (!line.equals("")){
-
-                        if (line.contains("CfgVersion")) {configData[0] = line;}
-                        else if (line.contains("Title")) {configData[1] = line;}
-                        else if (line.contains("Genre")) {configData[2] = line;}
-                        else if (line.contains("Developer")) {configData[3] = line;}
-                        else if (line.contains("Release")) {configData[4] = line;}
-                        else if (line.contains("Players")) {configData[5] = line;}
-                        else if (line.contains("Rating")) {configData[6] = line;}
-                        else if (line.contains("Description")) {configData[7] = line;}
-                        else if (line.contains("Notes")) {configData[8] = line;}
-                        else if (line.contains("$VMC_0")) {configData[9] = line;}
-                        else if (line.contains("$VMC_1")) {configData[10] = line;}
-                        else if (line.contains("Cheat") && !line.contains("$EnableCheat")) {configData[11] = line;}
-                        else if (line.contains("$EnableCheat")) {configData[12] = line;}
-                        else if (line.contains("Device")) {configData[13] = line;}
-                        else if (line.contains("Vmode")) {configData[14] = line;}
-                        else if (line.contains("Aspect")) {configData[15] = line;}
-                        else if (line.contains("Scan")) {configData[16] = line;}
-                        else if (line.contains("$Compatibility")) {configData[17] = line;}
-                        else if (line.contains("$EnableGSM")) {configData[18] = line;}
-                        else if (line.contains("$GSMVMode")) {configData[19] = line;}
-                        else if (line.contains("$GSMXOffset")) {configData[20] = line;}
-                        else if (line.contains("$GSMYOffset")) {configData[21] = line;}
-                        else if (line.contains("$GSMSkipVideos")) {configData[22] = line;}
-                        else if (line.contains("Parental")) {configData[23] = line;}
-                    }
-                }
-            }
-        } 
-        return configData; 
+        for (int i = 0; i < MANAGED_KEYS.length; i++) {configData[i] = lines.get(MANAGED_KEYS[i]);}
+        return configData;
     }
-    
 
-    // This writes a config file for the specific game
+
+    // This writes a config file for the specific game. Reads whatever's already there first and
+    // merges the app's own managed fields into it, rather than overwriting the whole file - any
+    // key this app doesn't know about survives untouched (see MANAGED_KEYS above).
     public void writeGameConfigFile(String newConfigData[], String gameID, String gameName){
-        
-        // Try and write the config file
-        PrintWriter writer = null;
-        try {
-            if (PopsGameManager.getCurrentConsole().equals("PS1")) {writer = new PrintWriter(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg", "UTF-8");}
-            else {if (PopsGameManager.getCurrentConsole().equals("PS2")) {writer = new PrintWriter(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg", "UTF-8");}}
-        } 
-        catch (FileNotFoundException | UnsupportedEncodingException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-        
-        if (writer != null){
-            for (String configData : newConfigData) if (configData != null) writer.println(configData);
-            writer.close();
-        } 
+
+        File cfgFile = resolveGameConfigFile(gameID, gameName);
+        LinkedHashMap<String, String> lines = readRawLines(cfgFile);
+
+        for (int i = 0; i < newConfigData.length && i < MANAGED_KEYS.length; i++) {
+            if (newConfigData[i] != null) {lines.put(MANAGED_KEYS[i], newConfigData[i]);}
+            else {lines.remove(MANAGED_KEYS[i]);}
+        }
+
+        writeRawLines(cfgFile, lines);
     }
-    
+
 
     // This compares 2 sets of config data to determine if they are identical (the order can be different but the actual content must be identical)
     public boolean compareGameConfig(String firstConfigData[], String secondConfigData[]){
-        
+
         ArrayList<String> newList = new ArrayList<>();
         ArrayList<String> storedList = new ArrayList<>();
 
         // Store the first array elements in a list if they do not equal null
         for (String configData1 : firstConfigData){if (configData1 != null) {newList.add(configData1);}}
-        
+
         // Store the second array elements in a list if they do not equal null
         for (String configData2 : secondConfigData){if (configData2 != null) {storedList.add(configData2);}}
-        
+
         // Sort the lists
         Collections.sort(newList);
-        Collections.sort(storedList);  
-        
+        Collections.sort(storedList);
+
         return newList.equals(storedList);
     }
 
@@ -198,5 +147,76 @@ public class GameConfigFileManager {
                 }
             });
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+    }
+
+
+    // Reads conf_game.cfg (OPL's global GSM/Cheat defaults), in GLOBAL_MANAGED_KEYS' index order.
+    public String[] readGlobalConfig(){
+        LinkedHashMap<String, String> lines = readRawLines(resolveGlobalConfigFile());
+        String configData[] = new String[GLOBAL_MANAGED_KEYS.length];
+        for (int i = 0; i < GLOBAL_MANAGED_KEYS.length; i++) {
+            String line = lines.get(GLOBAL_MANAGED_KEYS[i]);
+            if (line != null) {configData[i] = line.substring(GLOBAL_MANAGED_KEYS[i].length() + 1);}
+        }
+        return configData;
+    }
+
+
+    // Writes conf_game.cfg, merging into whatever's already there the same way
+    // writeGameConfigFile() does for a per-game file - anything else OPL keeps in this file
+    // (network/BGM/theme settings etc.) is preserved untouched.
+    public void writeGlobalConfig(String newConfigData[]){
+        File file = resolveGlobalConfigFile();
+        LinkedHashMap<String, String> lines = readRawLines(file);
+        for (int i = 0; i < newConfigData.length && i < GLOBAL_MANAGED_KEYS.length; i++) {
+            if (newConfigData[i] != null) {lines.put(GLOBAL_MANAGED_KEYS[i], newConfigData[i]);}
+            else {lines.remove(GLOBAL_MANAGED_KEYS[i]);}
+        }
+        writeRawLines(file, lines);
+    }
+
+
+    private static File resolveGlobalConfigFile(){
+        return new File(PopsGameManager.getOPLFolder() + File.separator + "conf_game.cfg");
+    }
+
+
+    // The per-game .cfg path, PS1 and PS2 naming conventions differ (see GameArtFileManager for
+    // the equivalent ART-naming split) - factored out since every method above needed it.
+    private static File resolveGameConfigFile(String gameID, String gameName){
+        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+            return new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg");
+        }
+        return new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg");
+    }
+
+
+    // Reads a "Key=Value" file into an ordered map (key -> whole line), preserving file order.
+    // Shared by the per-game .cfg methods above and GlobalConfigManager's conf_game.cfg methods -
+    // both use the exact same line format (confirmed against OPL's own configWrite(), which
+    // writes every config type - conf_game.cfg included - as plain "%s=%s\r\n" lines).
+    static LinkedHashMap<String, String> readRawLines(File file){
+        LinkedHashMap<String, String> lines = new LinkedHashMap<>();
+        if (file.exists() && !file.isDirectory()){
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (!line.trim().isEmpty()) {
+                        int eq = line.indexOf('=');
+                        String key = eq >= 0 ? line.substring(0, eq) : line;
+                        lines.put(key, line);
+                    }
+                }
+            } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+        }
+        return lines;
+    }
+
+
+    // Writes an ordered "Key=Value" map back out, one line per entry, in map order.
+    static void writeRawLines(File file, LinkedHashMap<String, String> lines){
+        try (PrintWriter writer = new PrintWriter(file, "UTF-8")) {
+            for (String line : lines.values()) {writer.println(line);}
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
 }

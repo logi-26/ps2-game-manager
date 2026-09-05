@@ -78,19 +78,41 @@ public class GameConfigScreen extends javax.swing.JDialog {
     private static final String USK_RATING_5_IMAGE_PATH = RATING_IMAGE_PATH + "USK_18.png";
     
     private final GameConfigFileManager configManager;
-    private static final String[] NEW_CONFIG_DATA = new String[24];
+    // Indices 24-26 are $GSMSource/$CheatsSource/$PADEMUSource - see GameConfigFileManager's
+    // MANAGED_KEYS comment and wireSourceRadioButtons() below.
+    private static final String[] NEW_CONFIG_DATA = new String[27];
+
+    // The values this game's save contributes to conf_game.cfg (OPL's global GSM/Cheat
+    // defaults), in GameConfigFileManager.GLOBAL_MANAGED_KEYS' index order. Populated by
+    // composeGameConfigData(), written by writeGameConfigFile().
+    private static final String[] NEW_GLOBAL_CONFIG_DATA = new String[6];
+
+    // Mirrors GameConfigFileManager's private GLOBAL_MANAGED_KEYS (same index order) - this file
+    // already hardcodes every other key name locally (see composeGameConfigData()), so this stays
+    // consistent with that rather than exposing the array across classes.
+    private static final String[] GLOBAL_CONFIG_KEYS = {
+        "$EnableGSM", "$GSMVMode", "$GSMXOffset", "$GSMYOffset", "$GSMFIELDFix", "$EnableCheat"
+    };
+
     private static List<Game> gameList;
 
-    private int currentListIndex; 
+    private int currentListIndex;
     private boolean userRatingSet = false;
     private int userRatingValue = 0;
     private int parentalRating = 0;
     private boolean guiActive = false;
 
+    // This game's own config data (as last loaded/displayed) and conf_game.cfg's global data -
+    // kept around so the Source radio buttons can switch the GSM/Cheat widgets between the two
+    // without re-reading either file. See displayGameConfigDetails() and wireSourceRadioButtons().
+    private String[] loadedGameConfigData = new String[27];
+    private String[] loadedGlobalConfigData = new String[6];
+
     public GameConfigScreen(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
-        initComponents();   
+        initComponents();
         applyThemeColors();
+        wireSourceRadioButtons();
         configManager =  new GameConfigFileManager();
         overideClose();
     }
@@ -101,8 +123,14 @@ public class GameConfigScreen extends javax.swing.JDialog {
     public void initialiseGUI(int gameIndex, boolean configExists){
         
         if (gameIndex < 0) gameIndex = 0;
-        
+
         getGameLists();
+
+        // conf_game.cfg is shared by every game, so re-read it fresh each time - it may have
+        // changed since this dialog opened (e.g. a previous game in this session saving a
+        // Global-source value).
+        loadedGlobalConfigData = configManager.readGlobalConfig();
+
         currentListIndex = gameIndex;
         clearGUI();
         displayGameName();
@@ -707,7 +735,10 @@ public class GameConfigScreen extends javax.swing.JDialog {
     
     // This displays the details from the config file in the GUI
     private void displayGameConfigDetails(String configData[]){
- 
+
+        // Kept for the Source radio buttons' live-switch listeners (wireSourceRadioButtons()).
+        loadedGameConfigData = configData;
+
         //if (configData[1] != null) jTextFieldGameTitle.setText(configData[1]);                                        // Game title
         if (configData[2] != null) {jComboBoxGenre.setSelectedItem(configData[2]);}                                     // Game genre combo
         if (configData[3] != null) {jTextFieldDeveloper.setText(configData[3]);}                                        // Developer text
@@ -733,18 +764,50 @@ public class GameConfigScreen extends javax.swing.JDialog {
             jTextFieldVMC1.setText(configData[10]);
         }
         
-        if (configData[11] != null) {jComboBoxCheat.setSelectedItem(configData[11]);}                                   // Cheat type
-        if (configData[12] != null) {jCheckBoxCheatEnabled.setSelected(true);}                                          // Cheat enabled
-        else {jCheckBoxCheatEnabled.setSelected(false);}
-        
+        if (configData[11] != null) {jComboBoxCheat.setSelectedItem(configData[11]);}                                   // Cheat type (always per-game, no OPL global equivalent)
+
+        // Cheat enabled - $CheatsSource decides whether we show this game's own $EnableCheat or
+        // conf_game.cfg's, matching OPL's own PerGame-overrides-Global load semantics.
+        boolean cheatPerGame = "1".equals(configData[25]);
+        if (cheatPerGame) {jRadioButtonSourcePerGameCheat.setSelected(true);} else {jRadioButtonSourceGlobalCheat.setSelected(true);}
+        jCheckBoxCheatEnabled.setSelected(cheatPerGame ? configData[12] != null : loadedGlobalConfigData[5] != null);
+
         if (configData[13] != null) {checkCompatibleDevices(configData[13]);}                                           // Device compatibility
         if (configData[14] != null) {jComboBoxVMode.setSelectedItem(configData[14].toUpperCase());}                     // V-mode
         if (configData[15] != null) {checkAspectRatio(configData[15]);}                                                 // Aspect
         if (configData[16] != null) {checkScan(configData[16]);}                                                        // Scan
         if (configData[17] != null) {readCompatibilityMode(configData[17]);}                                            // Compatibility Mode
-        
-        // Enable GSM
-        if (configData[18] != null) {
+
+        // GSM - $GSMSource decides whether we show this game's own values or conf_game.cfg's.
+        boolean gsmPerGame = "1".equals(configData[24]);
+        if (gsmPerGame) {jRadioButtonSourcePerGameGSM.setSelected(true);} else {jRadioButtonSourceGlobalGSM.setSelected(true);}
+        if (gsmPerGame) {populateGSMValues(configData[18], configData[19], configData[20], configData[21], configData[22]);}
+        else {populateGSMValues(loadedGlobalConfigData[0], loadedGlobalConfigData[1], loadedGlobalConfigData[2], loadedGlobalConfigData[3], loadedGlobalConfigData[4]);}
+
+        // PADEMU - Source flag only for now, no value widgets exist yet to load/display.
+        if ("1".equals(configData[26])) {jRadioButtonSourcePerGamePADEMU.setSelected(true);} else {jRadioButtonSourceGlobalPADEMU.setSelected(true);}
+
+        if (configData[23] != null) {
+            String[] splitParentalRating = configData[23].split("/");
+            String ratingSystem = splitParentalRating[0];                 
+            String ratingValue = splitParentalRating[1];                  
+            
+            if (ratingSystem.equals("ofcl")) {ratingSystem = "oflc";}
+            
+            jComboBoxRatingSystem.setSelectedItem(ratingSystem.toUpperCase(Locale.ENGLISH));
+            switchParentRatingValue(ratingSystem, ratingValue);
+            updateParentalRatingImage();
+        }
+    }
+
+
+    // Populates the GSM widgets from one data source (this game's own values, or conf_game.cfg's
+    // - see displayGameConfigDetails() and wireSourceRadioButtons()). Each parameter is a raw
+    // value string (or null if absent), in the same order as $EnableGSM/$GSMVMode/$GSMXOffset/
+    // $GSMYOffset/$GSMFIELDFix.
+    private void populateGSMValues(String enableGSM, String gsmVMode, String gsmXOffset, String gsmYOffset, String gsmFieldFix){
+
+        if (enableGSM != null) {
             jCheckBoxGSMEnabled.setSelected(true);
             jComboBoxGSMVMode.setEnabled(true);
             jCheckBoxGSMSkipVideos.setEnabled(true);
@@ -759,24 +822,56 @@ public class GameConfigScreen extends javax.swing.JDialog {
             jSpinnerVPos.setEnabled(false);
         }
 
-        if (configData[19] != null) {jComboBoxGSMVMode.setSelectedIndex(Integer.parseInt(configData[19]));}             // GSM V-mode
-        if (configData[20] != null) {jSpinnerHPos.setValue(Integer.parseInt(configData[20]));}                          // V-mode H-pos
-        if (configData[21] != null) {jSpinnerVPos.setValue(Integer.parseInt(configData[21]));}                          // V-mode V-pos
-        if (configData[22] != null) {jCheckBoxGSMSkipVideos.setSelected(true);}                                         // GSM Skip Videos
-
-        if (configData[23] != null) {
-            String[] splitParentalRating = configData[23].split("/");
-            String ratingSystem = splitParentalRating[0];                 
-            String ratingValue = splitParentalRating[1];                  
-            
-            if (ratingSystem.equals("ofcl")) {ratingSystem = "oflc";}
-            
-            jComboBoxRatingSystem.setSelectedItem(ratingSystem.toUpperCase(Locale.ENGLISH));
-            switchParentRatingValue(ratingSystem, ratingValue);
-            updateParentalRatingImage(); 
-        }
+        jComboBoxGSMVMode.setSelectedIndex(gsmVMode != null ? Integer.parseInt(gsmVMode) : 0);
+        jSpinnerHPos.setValue(gsmXOffset != null ? Integer.parseInt(gsmXOffset) : 0);
+        jSpinnerVPos.setValue(gsmYOffset != null ? Integer.parseInt(gsmYOffset) : 0);
+        jCheckBoxGSMSkipVideos.setSelected(gsmFieldFix != null);
     }
-    
+
+
+    // Re-emits conf_game.cfg's existing value for a GLOBAL_CONFIG_KEYS index unchanged. Used by
+    // composeGameConfigData() when this game's own Source flag says a feature is PerGame, so this
+    // game's save must not touch (and must not blank) whatever value other games sharing the
+    // Global source currently rely on.
+    private String preserveGlobalValue(int index){
+        return loadedGlobalConfigData[index] != null ? GLOBAL_CONFIG_KEYS[index] + "=" + loadedGlobalConfigData[index] : null;
+    }
+
+
+    // Groups the Source radio pairs so PerGame/Global stay mutually exclusive per feature (GSM,
+    // Cheat, PADEMU) - done here rather than in the .form, since this runs safely right after
+    // initComponents() either way (see the class comment convention used by applyThemeColors()).
+    // Also wires GSM/Cheat's pair to redisplay the correct value set (this game's own copy vs.
+    // conf_game.cfg's) whenever the user flips between PerGame and Global.
+    private void wireSourceRadioButtons(){
+
+        javax.swing.ButtonGroup gsmSourceGroup = new javax.swing.ButtonGroup();
+        gsmSourceGroup.add(jRadioButtonSourcePerGameGSM);
+        gsmSourceGroup.add(jRadioButtonSourceGlobalGSM);
+
+        javax.swing.ButtonGroup cheatSourceGroup = new javax.swing.ButtonGroup();
+        cheatSourceGroup.add(jRadioButtonSourcePerGameCheat);
+        cheatSourceGroup.add(jRadioButtonSourceGlobalCheat);
+
+        javax.swing.ButtonGroup pademuSourceGroup = new javax.swing.ButtonGroup();
+        pademuSourceGroup.add(jRadioButtonSourcePerGamePADEMU);
+        pademuSourceGroup.add(jRadioButtonSourceGlobalPADEMU);
+
+        java.awt.event.ActionListener gsmSourceListener = evt -> {
+            if (jRadioButtonSourcePerGameGSM.isSelected()) {populateGSMValues(loadedGameConfigData[18], loadedGameConfigData[19], loadedGameConfigData[20], loadedGameConfigData[21], loadedGameConfigData[22]);}
+            else {populateGSMValues(loadedGlobalConfigData[0], loadedGlobalConfigData[1], loadedGlobalConfigData[2], loadedGlobalConfigData[3], loadedGlobalConfigData[4]);}
+        };
+        jRadioButtonSourcePerGameGSM.addActionListener(gsmSourceListener);
+        jRadioButtonSourceGlobalGSM.addActionListener(gsmSourceListener);
+
+        java.awt.event.ActionListener cheatSourceListener = evt -> {
+            if (jRadioButtonSourcePerGameCheat.isSelected()) {jCheckBoxCheatEnabled.setSelected(loadedGameConfigData[12] != null);}
+            else {jCheckBoxCheatEnabled.setSelected(loadedGlobalConfigData[5] != null);}
+        };
+        jRadioButtonSourcePerGameCheat.addActionListener(cheatSourceListener);
+        jRadioButtonSourceGlobalCheat.addActionListener(cheatSourceListener);
+    }
+
 
     // This converts the compatability mode
     private String convertCompatabilityMode(){
@@ -815,9 +910,10 @@ public class GameConfigScreen extends javax.swing.JDialog {
     // This writes the config file for the game
     private void composeGameConfigData(){
 
-        // Clear the array
+        // Clear the arrays
         Arrays.fill(NEW_CONFIG_DATA, null);
-        
+        Arrays.fill(NEW_GLOBAL_CONFIG_DATA, null);
+
         // Compose the config data array using the information in the GUI
         NEW_CONFIG_DATA[0] = "CfgVersion=5";
         NEW_CONFIG_DATA[1] = "Title=" + gameList.get(currentListIndex).getGameName();
@@ -833,40 +929,99 @@ public class GameConfigScreen extends javax.swing.JDialog {
         if (jCheckBoxVMC1.isSelected()) {NEW_CONFIG_DATA[10] = "$VMC_1=" + jTextFieldVMC1.getText();}
         
         if (jComboBoxCheat.getSelectedIndex() != 0 || !jComboBoxCheat.getSelectedItem().equals(" ")){NEW_CONFIG_DATA[11] = "Cheat=" + jComboBoxCheat.getSelectedItem().toString();}
-        if (jCheckBoxCheatEnabled.isSelected()) {NEW_CONFIG_DATA[12] = "$EnableCheat=1";}
-        
+
+        // Cheat enabled - routed to this game's own file or conf_game.cfg depending on
+        // $CheatsSource, matching OPL's own PerGame/Global save semantics. Whichever side isn't
+        // this game's own gets an unchanged re-echo of what's already in conf_game.cfg, so this
+        // save never blanks another game's Global setting.
+        boolean cheatPerGame = jRadioButtonSourcePerGameCheat.isSelected();
+        if (cheatPerGame) {NEW_CONFIG_DATA[25] = "$CheatsSource=1";}
+        String cheatEnabledLine = jCheckBoxCheatEnabled.isSelected() ? "$EnableCheat=1" : null;
+        if (cheatPerGame) {
+            NEW_CONFIG_DATA[12] = cheatEnabledLine;
+            NEW_GLOBAL_CONFIG_DATA[5] = preserveGlobalValue(5);
+        }
+        else {NEW_GLOBAL_CONFIG_DATA[5] = cheatEnabledLine;}
+
         if (jCheckBoxUSB.isSelected() || jCheckBoxETH.isSelected() || jCheckBoxHDD.isSelected()) {NEW_CONFIG_DATA[13] = "Device=device/" + convertCompatibleDevices();}
         if (jComboBoxVMode.getSelectedIndex() != 0) {NEW_CONFIG_DATA[14] = "Vmode=vmode/" + jComboBoxVMode.getSelectedItem().toString().toLowerCase();}
         if (jComboBoxAspectRatio.getSelectedIndex() != 0) {NEW_CONFIG_DATA[15] = "Aspect=aspect/" + convertAspectRation();}
         if (jComboBoxScan.getSelectedIndex() != 0) {NEW_CONFIG_DATA[16] = "Scan=scan/" + convertScanRate();}
         if (compatabilityModeSelected()) {NEW_CONFIG_DATA[17] = "$Compatibility=" + convertCompatabilityMode();}
-        if (jCheckBoxGSMEnabled.isSelected()) {NEW_CONFIG_DATA[18] = "$EnableGSM=1";}
-        if (jComboBoxGSMVMode.getSelectedIndex() != 0) {NEW_CONFIG_DATA[19] = "$GSMVMode=" + jComboBoxGSMVMode.getSelectedIndex();}
-        if (!jSpinnerHPos.getValue().toString().equals("0")) {NEW_CONFIG_DATA[20] = "$GSMXOffset=" + jSpinnerHPos.getValue().toString();}
-        if (!jSpinnerVPos.getValue().toString().equals("0")) {NEW_CONFIG_DATA[21] = "$GSMYOffset=" + jSpinnerVPos.getValue().toString();}
-        if (jCheckBoxGSMSkipVideos.isSelected()) {NEW_CONFIG_DATA[22] = "$GSMSkipVideos=1";} 
-        if (parentalRating != 0) {NEW_CONFIG_DATA[23] = convertParentRatingValue();} 
+
+        // GSM - routed to this game's own file or conf_game.cfg depending on $GSMSource, same
+        // preserve-the-other-side behaviour as Cheat above.
+        boolean gsmPerGame = jRadioButtonSourcePerGameGSM.isSelected();
+        if (gsmPerGame) {NEW_CONFIG_DATA[24] = "$GSMSource=1";}
+        String gsmEnabledLine = jCheckBoxGSMEnabled.isSelected() ? "$EnableGSM=1" : null;
+        String gsmVModeLine = jComboBoxGSMVMode.getSelectedIndex() != 0 ? "$GSMVMode=" + jComboBoxGSMVMode.getSelectedIndex() : null;
+        String gsmXOffsetLine = !jSpinnerHPos.getValue().toString().equals("0") ? "$GSMXOffset=" + jSpinnerHPos.getValue().toString() : null;
+        String gsmYOffsetLine = !jSpinnerVPos.getValue().toString().equals("0") ? "$GSMYOffset=" + jSpinnerVPos.getValue().toString() : null;
+        String gsmFieldFixLine = jCheckBoxGSMSkipVideos.isSelected() ? "$GSMFIELDFix=1" : null;
+        if (gsmPerGame) {
+            NEW_CONFIG_DATA[18] = gsmEnabledLine;
+            NEW_CONFIG_DATA[19] = gsmVModeLine;
+            NEW_CONFIG_DATA[20] = gsmXOffsetLine;
+            NEW_CONFIG_DATA[21] = gsmYOffsetLine;
+            NEW_CONFIG_DATA[22] = gsmFieldFixLine;
+            NEW_GLOBAL_CONFIG_DATA[0] = preserveGlobalValue(0);
+            NEW_GLOBAL_CONFIG_DATA[1] = preserveGlobalValue(1);
+            NEW_GLOBAL_CONFIG_DATA[2] = preserveGlobalValue(2);
+            NEW_GLOBAL_CONFIG_DATA[3] = preserveGlobalValue(3);
+            NEW_GLOBAL_CONFIG_DATA[4] = preserveGlobalValue(4);
+        }
+        else {
+            NEW_GLOBAL_CONFIG_DATA[0] = gsmEnabledLine;
+            NEW_GLOBAL_CONFIG_DATA[1] = gsmVModeLine;
+            NEW_GLOBAL_CONFIG_DATA[2] = gsmXOffsetLine;
+            NEW_GLOBAL_CONFIG_DATA[3] = gsmYOffsetLine;
+            NEW_GLOBAL_CONFIG_DATA[4] = gsmFieldFixLine;
+        }
+
+        // PADEMU - Source flag only for now; no value widgets exist yet to compose (real PADEMU
+        // value keys stay protected as unmanaged keys - see GameConfigFileManager).
+        if (jRadioButtonSourcePerGamePADEMU.isSelected()) {NEW_CONFIG_DATA[26] = "$PADEMUSource=1";}
+
+        if (parentalRating != 0) {NEW_CONFIG_DATA[23] = convertParentRatingValue();}
     }
     
 
     // This writes the config file for the game
     private void writeGameConfigFile(){
         configManager.writeGameConfigFile(NEW_CONFIG_DATA, gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName());
+        configManager.writeGlobalConfig(NEW_GLOBAL_CONFIG_DATA);
         checkForVMC();
     }
-    
+
 
     // This checks if a config file already exists and compares the data to determine if any changes have been made by the user
     private boolean compareConfigData(){
-        
+
         // Try and compare the current config data with the config data stored in the file
         boolean configIdentical = false;
         try {
             String[] storedConfigFile = configManager.readGameConfigRaw(gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName());
             if (storedConfigFile != null){if (NEW_CONFIG_DATA.length == storedConfigFile.length){configIdentical = configManager.compareGameConfig(NEW_CONFIG_DATA, storedConfigFile);}}
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-      
-        return configIdentical;
+
+        return configIdentical && !globalConfigChanged();
+    }
+
+
+    // Whether composeGameConfigData()'s GSM/Cheat values currently in Global mode differ from
+    // what's actually on disk in conf_game.cfg - compareConfigData() alone can't see this, since
+    // it only compares against this game's own file. Slots this game doesn't own always match
+    // (they're an unchanged re-echo from preserveGlobalValue()), so this only trips on a real
+    // edit to a Global-sourced value.
+    private boolean globalConfigChanged(){
+
+        for (int i = 0; i < NEW_GLOBAL_CONFIG_DATA.length; i++) {
+            String newLine = NEW_GLOBAL_CONFIG_DATA[i];
+            String newValue = newLine != null ? newLine.substring(GLOBAL_CONFIG_KEYS[i].length() + 1) : null;
+            String oldValue = loadedGlobalConfigData[i];
+            if (newValue == null ? oldValue != null : !newValue.equals(oldValue)) {return true;}
+        }
+        return false;
     }
     
 
@@ -1405,6 +1560,12 @@ public class GameConfigScreen extends javax.swing.JDialog {
         jLabelStar4.setEnabled(enabled);
         jLabelStar5.setEnabled(enabled);
         jCheckBoxCheatEnabled.setEnabled(enabled);
+        jRadioButtonSourcePerGameGSM.setEnabled(enabled);
+        jRadioButtonSourcePerGameCheat.setEnabled(enabled);
+        jRadioButtonSourcePerGamePADEMU.setEnabled(enabled);
+        jRadioButtonSourceGlobalGSM.setEnabled(enabled);
+        jRadioButtonSourceGlobalCheat.setEnabled(enabled);
+        jRadioButtonSourceGlobalPADEMU.setEnabled(enabled);
     }
     
     
@@ -1441,9 +1602,17 @@ public class GameConfigScreen extends javax.swing.JDialog {
         jCheckBoxETH.setSelected(false);
         jCheckBoxUSB.setSelected(false);
         jCheckBoxHDD.setSelected(false);
-        jCheckBoxGSMEnabled.setSelected(false);     
+        jCheckBoxGSMEnabled.setSelected(false);
         jLabelRatingImage.setIcon(new ImageIcon(new ImageIcon(NO_RATING_IMAGE_PATH).getImage()));
         jCheckBoxCheatEnabled.setSelected(false);
+
+        // Default to Global for all 3 - matches OPL's own fallback when a game's Source flag is
+        // absent (SETTINGS_GLOBAL = 0). Setting one radio true deselects its PerGame pair via the
+        // ButtonGroups from wireSourceRadioButtons().
+        jRadioButtonSourceGlobalGSM.setSelected(true);
+        jRadioButtonSourceGlobalCheat.setSelected(true);
+        jRadioButtonSourceGlobalPADEMU.setSelected(true);
+        loadedGameConfigData = new String[27];
     }
     
     
