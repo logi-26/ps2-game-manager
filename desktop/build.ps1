@@ -10,7 +10,7 @@
         pwsh ./build.ps1 -Stage                       # assemble build-local/run/ without launching (package.ps1 uses this)
 
     IMPORTANT: on launch the app rewrites sibling files next to its jar
-    (start-oplpops.*, READ ME.txt, settings.xml/oplpops-settings, lib/data/data_3, ...).
+    (start-ps2gm.*, READ ME.txt, settings.xml/ps2gm-settings, lib/data/data_3, ...).
     To keep the working tree clean it is NEVER run from the project folder. -Run
     assembles an isolated  build-local/run/  (jar + copies of the data dirs it reads)
     and launches from there; all app-generated churn stays inside build-local/ (gitignored).
@@ -29,7 +29,7 @@ $srcRoot    = Join-Path $root 'src'
 $libDir     = Join-Path $root 'lib'
 $buildLocal = Join-Path $root 'build-local'
 $outDir     = Join-Path $buildLocal 'classes'
-$jarPath    = Join-Path $buildLocal 'OPLPOPS-Manager-local.jar'
+$jarPath    = Join-Path $buildLocal 'PS2GM-local.jar'
 $runDir     = Join-Path $buildLocal 'run'
 
 $cp = @(
@@ -61,14 +61,14 @@ Get-ChildItem -Recurse -Path $srcRoot -File |
 Write-Host "==> Packaging $jarPath"
 $manifest = Join-Path $outDir 'manifest.txt'
 @(
-    'Main-Class: oplpops.game.manager.Main'
+    'Main-Class: ps2gm.game.manager.Main'
     'Class-Path: lib/commons-net-3.5.jar lib/sevenzipjbinding.jar lib/sevenzipjbinding-AllPlatforms.jar lib/flatlaf-3.7.2.jar'
     ''
 ) -join "`n" | Set-Content -Encoding ascii $manifest
 
 Push-Location $outDir
 try {
-    & jar cfm $jarPath manifest.txt oplpops
+    & jar cfm $jarPath manifest.txt ps2gm
     if ($LASTEXITCODE -ne 0) { throw "jar failed" }
 } finally { Pop-Location }
 
@@ -91,13 +91,13 @@ if ($Run -or $Stage) {
     Copy-Item (Join-Path $libDir 'sevenzipjbinding.jar')            (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'sevenzipjbinding-AllPlatforms.jar') (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'flatlaf-3.7.2.jar')                (Join-Path $runDir 'lib') -Force
-    Copy-Item $jarPath (Join-Path $runDir 'OPLPOPS-Manager-local.jar') -Force
+    Copy-Item $jarPath (Join-Path $runDir 'PS2GM-local.jar') -Force
     Write-Host "==> Staged $runDir"
 }
 
 if ($Run) {
-    $jvmArgs = @("-Doplpops.api.baseurl=$ApiBaseUrl")
-    $jvmArgs += @('-jar', (Join-Path $runDir 'OPLPOPS-Manager-local.jar'))
+    $jvmArgs = @("-Dps2gm.api.baseurl=$ApiBaseUrl")
+    $jvmArgs += @('-jar', (Join-Path $runDir 'PS2GM-local.jar'))
     if ($Debug) { $jvmArgs += '-DEBUG' }   # consumed by Main.main(args)
 
     Write-Host "==> Launching from $runDir  ($ApiBaseUrl)"

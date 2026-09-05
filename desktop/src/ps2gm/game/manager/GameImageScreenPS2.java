@@ -1,0 +1,1126 @@
+package ps2gm.game.manager;
+
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
+
+public class GameImageScreenPS2 extends javax.swing.JDialog implements ImageSelectListener, ImageChangedListener{
+
+    private static final String NO_IMAGE_PS2_COVER_PATH = PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "images" + File.separator + "No Image Cover PS2.png";
+    private static final String NO_IMAGE_BACKGROUND_PATH = PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "images" + File.separator + "No Image Background.png";
+    private static final String NO_IMAGE_SCREENSHOT_PATH = PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "images" + File.separator + "No Image Screenshot.png";
+    private static final String NO_IMAGE_DISC_PATH = PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "images" + File.separator + "No Image Disc.png";
+    
+    private static List<Game> gameList;
+    private int currentListIndex; 
+    private final java.awt.Frame parent;
+    private GameImageSelectorScreenPS2 imageSelectorScreen = null;
+    
+    public GameImageScreenPS2(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+        this.parent = parent;
+        initComponents();
+        applyThemeColors();
+        AppTheme.applyDarkButtonIcons(getContentPane());
+        pinPreviewLabelSizes();
+        overideClose();
+    }
+    
+    
+    // Initialise the GUI elements
+    public void initialiseGUI(int gameIndex){
+        currentListIndex = gameIndex;
+        getGameLists();
+        displayGameNumber();
+        displayGameName();
+        displayGameImages();
+        this.setTitle(" Manage PlayStation 2 Game ART");
+    }
+
+    
+    // Overide the close operation
+    private void overideClose(){
+
+        // Callback to update the main GUI when this window is closed
+        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent ev) {
+                PopsGameManager.callbackToUpdateGUIGameList(null, currentListIndex);
+                dispose();
+            }
+        });
+        //this.setTitle(" Select Mode");
+    }
+    
+    
+    // Callback from image selector screen (called when a user selects the image from the image selector screen) 
+    @Override
+    public void imageSelected(String coverType, File image) {
+
+        if (coverType.equals("_COV")) if(image.exists() && !image.isDirectory()) {jLabelGameFrontCover.setIcon(scaledIcon(image.toString(), COVER_PREVIEW));}
+        if (coverType.equals("_COV2")) if(image.exists() && !image.isDirectory()) {jLabelGameRearCover.setIcon(scaledIcon(image.toString(), COVER_PREVIEW));}
+        if (coverType.equals("_ICO")) if(image.exists() && !image.isDirectory()) {jLabelGameDiscImage.setIcon(scaledIcon(image.toString(), DISC_PREVIEW));}
+        if (coverType.equals("_BG")) if(image.exists() && !image.isDirectory()) {jLabelGameBackgroundImage.setIcon(scaledIcon(image.toString(), BACKGROUND_PREVIEW));}
+        if (coverType.equals("_SCR")) if(image.exists() && !image.isDirectory()) {jLabelGameScreenshot1.setIcon(scaledIcon(image.toString(), SCREENSHOT_PREVIEW));}
+        if (coverType.equals("_SCR2")) if(image.exists() && !image.isDirectory()) {jLabelGameScreenshot2.setIcon(scaledIcon(image.toString(), SCREENSHOT_PREVIEW));}
+        // Spine (LAB) / Logo (LGO) - no "no image" placeholder asset, so clear the label when the file's gone.
+        if (coverType.equals("_LAB")) {jLabelGameSpine.setIcon(image.exists() && !image.isDirectory() ? scaledIcon(image.toString(), SPINE_PREVIEW) : null);}
+        if (coverType.equals("_LGO")) {jLabelGameLogo.setIcon(image.exists() && !image.isDirectory() ? scaledIcon(image.toString(), LOGO_PREVIEW) : null);}
+    }
+    
+    
+    // Callback from image selector screen (called when a user changes the image from the image selector screen)
+    @Override
+    public void imageChanged(String coverType, int currentImageNumber) {
+        getNextImageFromServer(coverType, currentImageNumber);
+    }
+    
+
+    // This gets the next image when there are multiple images available
+    public void getNextImageFromServer(String coverType, int currentImageNumber){
+        
+        // Send the TCP request for the specific image file
+        String[] splitName = gameList.get(currentListIndex).getGameID().split("_");
+        
+        String coverPath = coverType;
+        
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber-1, false);
+        
+        String base = GameArtFileManager.baseName(gameList.get(currentListIndex), coverType);
+        String ext = MyApiClient.isPngArt(coverType) ? ".png" : ".jpg";
+        File image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ext);
+
+        if(image.exists() && !image.isDirectory()) {if (imageSelectorScreen != null){
+            imageSelectorScreen.updateImage(image);}
+        }
+    }
+    
+    
+    // This tries to get the image file from the server
+    public void getImageFromServer(String coverType, String coverPath, int currentImageNumber){
+        
+        // Send the TCP request for the specific image file
+        String[] splitName = gameList.get(currentListIndex).getGameID().split("_");
+        int numberOfFiles = 0;
+
+        BackendClient apiClient = PopsGameManager.newBackendClient();
+        numberOfFiles = apiClient.getImagesAvailableOnServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, false);
+        
+        if (numberOfFiles > 0){
+
+            apiClient.getImageFromServer(gameList.get(currentListIndex), PopsGameManager.determineGameRegion(splitName[0]),gameList.get(currentListIndex).getGameID(),gameList.get(currentListIndex).getGameName(),coverType, coverPath, currentImageNumber, false);
+
+            // Check the directory to see if the image file has been retieved from the server, if it has it is displayed in the GUI
+            String base = GameArtFileManager.baseName(gameList.get(currentListIndex), coverPath);
+            String ext = MyApiClient.isPngArt(coverType) ? ".png" : ".jpg";
+            File image = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + base + ext);
+
+            if (coverPath.equals("_COV")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_COV", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_COV2")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_COV2", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_ICO")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_ICO", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_BG")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_BG", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_SCR")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_SCR", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_SCR2")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_SCR2", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_LAB")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_LAB", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+            if (coverPath.equals("_LGO")) if(image.exists() && !image.isDirectory()) {displayImageSelectorScreen("_LGO", image, numberOfFiles, currentImageNumber+1, gameList.get(currentListIndex).getGameID());}
+        }  
+        else {
+            JOptionPane.showMessageDialog(null, "There is no image file available in the database for this game.", " No ART Available!", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+   
+
+    // Display the game image selector screen
+    private void displayImageSelectorScreen(String coverType, File image, int numberOfFiles, int currentImageNumber, String gameID){
+        imageSelectorScreen = new GameImageSelectorScreenPS2(parent, true, this, this, currentImageNumber, coverType, image, numberOfFiles, gameID, currentListIndex);
+        imageSelectorScreen.setLocationRelativeTo(parent);
+        imageSelectorScreen.setVisible(true);
+    }
+    
+    
+    // This displays the game name in the GUI
+    private void displayGameName(){jTextFieldGameName.setText(gameList.get(currentListIndex).getGameName() + "  :  " + gameList.get(currentListIndex).getGameID());}
+    
+    
+    // This displays the game ID in the GUI
+    private void displayGameNumber(){jTextFieldGameNumber.setText("[" + (currentListIndex+1) + "/" + gameList.size() + "]");}
+    
+    
+    // This loads the game lists
+    private void getGameLists(){gameList = new ArrayList<>(GameListManager.getGameListPS2());}
+    
+
+    // This loads an image file that the user has selected
+    private void loadImageFromDirectory(String coverType) {
+
+        Image img = null;
+        try {
+            switch (coverType) {
+                case "_COV":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(COVER_PREVIEW.width, COVER_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameFrontCover.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_COV2":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(COVER_PREVIEW.width, COVER_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameRearCover.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_SCR":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(SCREENSHOT_PREVIEW.width, SCREENSHOT_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameScreenshot1.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_SCR2":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(SCREENSHOT_PREVIEW.width, SCREENSHOT_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameScreenshot2.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_BG":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(BACKGROUND_PREVIEW.width, BACKGROUND_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameBackgroundImage.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_ICO":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(DISC_PREVIEW.width, DISC_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameDiscImage.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_LAB":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(SPINE_PREVIEW.width, SPINE_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameSpine.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+                case "_LGO":
+                    try{img = PopsGameManager.manualImageSelection(coverType, gameList.get(currentListIndex).getGameName(), gameList.get(currentListIndex).getGameID()).getScaledInstance(LOGO_PREVIEW.width, LOGO_PREVIEW.height, Image.SCALE_DEFAULT); }
+                    catch (NullPointerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                    if (img != null) {jLabelGameLogo.setIcon(new javax.swing.ImageIcon(img));}
+                    break;
+            }
+        } 
+        catch (HeadlessException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} 
+    }
+    
+  
+    // Fixed preview dimensions. Scaling to these constants (rather than jLabel.getWidth()/getHeight())
+    // keeps the icon a stable size across refreshes: reading the label's own size back in made each
+    // arrow-button click re-scale to the previous icon plus the label border, so the form crept
+    // taller every click. These match the label sizes in the NetBeans-Form layout.
+    private static final java.awt.Dimension COVER_PREVIEW   = new java.awt.Dimension(160, 210);
+    private static final java.awt.Dimension BACKGROUND_PREVIEW = new java.awt.Dimension(300, 170);
+    private static final java.awt.Dimension DISC_PREVIEW    = new java.awt.Dimension(70, 70);
+    private static final java.awt.Dimension SCREENSHOT_PREVIEW = new java.awt.Dimension(225, 170);
+    private static final java.awt.Dimension SPINE_PREVIEW   = new java.awt.Dimension(20, 260);
+    private static final java.awt.Dimension LOGO_PREVIEW    = new java.awt.Dimension(195, 93);
+
+    private static ImageIcon scaledIcon(String path, java.awt.Dimension size){
+        return new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(size.width, size.height, Image.SCALE_DEFAULT));
+    }
+
+    // This displays the game images in the GUI
+    private void displayGameImages(){
+
+        Game game = gameList.get(currentListIndex);
+
+        // Front cover
+        File frontCover = GameArtFileManager.resolve(game, "_COV");
+        jLabelGameFrontCover.setIcon(scaledIcon(frontCover != null ? frontCover.toString() : NO_IMAGE_PS2_COVER_PATH, COVER_PREVIEW));
+
+        // Rear cover
+        File rearCover = GameArtFileManager.resolve(game, "_COV2");
+        jLabelGameRearCover.setIcon(scaledIcon(rearCover != null ? rearCover.toString() : NO_IMAGE_PS2_COVER_PATH, COVER_PREVIEW));
+
+        // Background image
+        File backgroundImage = GameArtFileManager.resolve(game, "_BG");
+        jLabelGameBackgroundImage.setIcon(scaledIcon(backgroundImage != null ? backgroundImage.toString() : NO_IMAGE_BACKGROUND_PATH, BACKGROUND_PREVIEW));
+
+        // Disc image
+        File discImage = GameArtFileManager.resolve(game, "_ICO");
+        jLabelGameDiscImage.setIcon(scaledIcon(discImage != null ? discImage.toString() : NO_IMAGE_DISC_PATH, DISC_PREVIEW));
+
+        // Screenshot 1 image
+        File screenshot1Image = GameArtFileManager.resolve(game, "_SCR");
+        jLabelGameScreenshot1.setIcon(scaledIcon(screenshot1Image != null ? screenshot1Image.toString() : NO_IMAGE_SCREENSHOT_PATH, SCREENSHOT_PREVIEW));
+
+        // Screenshot 2 image
+        File screenshot2Image = GameArtFileManager.resolve(game, "_SCR2");
+        jLabelGameScreenshot2.setIcon(scaledIcon(screenshot2Image != null ? screenshot2Image.toString() : NO_IMAGE_SCREENSHOT_PATH, SCREENSHOT_PREVIEW));
+
+        // Spine (LAB) and Logo (LGO) - no "no image" placeholder art for these, so just clear the label when absent.
+        File spineImage = GameArtFileManager.resolve(game, "_LAB");
+        jLabelGameSpine.setIcon(spineImage != null ? scaledIcon(spineImage.toString(), SPINE_PREVIEW) : null);
+
+        File logoImage = GameArtFileManager.resolve(game, "_LGO");
+        jLabelGameLogo.setIcon(logoImage != null ? scaledIcon(logoImage.toString(), LOGO_PREVIEW) : null);
+    }
+
+
+    // This deletes an image file
+    private void deleteImage(String coverType){
+        GameArtFileManager.deleteAll(gameList.get(currentListIndex), coverType);
+
+        // Update the image display
+        displayGameImages();
+    }
+    
+
+    // Colors that need to respect the active theme (light/dark) instead of a NetBeans-Form
+    // hardcoded literal - set here, outside initComponents(), so a future NetBeans form save
+    // can't silently regenerate them back to a fixed color.
+    private void applyThemeColors(){
+        jLabelGameFrontCover.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameRearCover.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameDiscImage.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameScreenshot1.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameScreenshot2.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameBackgroundImage.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameSpine.setBackground(AppTheme.imagePreviewBackground());
+        jLabelGameLogo.setBackground(AppTheme.imagePreviewBackground());
+    }
+
+
+    // Pin an explicit preferred size on the preview labels whose NetBeans-Form layout
+    // leaves one axis as DEFAULT_SIZE (front cover, rear cover, spine, logo). displayGameImages()
+    // rescales each icon to jLabel.getWidth()/getHeight(); without a fixed preferred size the
+    // label's preferred size tracks the icon, so every arrow-button refresh feeds the label's
+    // own (border-inflated) size back in and the form creeps taller on each click. Set here,
+    // outside initComponents(), so a future NetBeans form save can't silently drop it.
+    private void pinPreviewLabelSizes(){
+        jLabelGameFrontCover.setPreferredSize(new java.awt.Dimension(160, 210));
+        jLabelGameRearCover.setPreferredSize(new java.awt.Dimension(160, 210));
+        jLabelGameSpine.setPreferredSize(new java.awt.Dimension(20, 260));
+        jLabelGameLogo.setPreferredSize(new java.awt.Dimension(195, 93));
+    }
+
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jTextFieldGameNumber = new javax.swing.JTextField();
+        jTextFieldGameName = new javax.swing.JTextField();
+        jButtonPreviousGame = new javax.swing.JButton();
+        jButtonNextGame = new javax.swing.JButton();
+        jPanelGameFrontCover = new javax.swing.JPanel();
+        jLabelGameFrontCover = new javax.swing.JLabel();
+        jPanelGameFrontCoverButtons = new javax.swing.JPanel();
+        jButtonFrontCoverDelete = new javax.swing.JButton();
+        jButtonFrontCoverManual = new javax.swing.JButton();
+        jButtonFrontCoverAuto = new javax.swing.JButton();
+        jPanelGameSpine = new javax.swing.JPanel();
+        jLabelGameSpine = new javax.swing.JLabel();
+        jButtonSpineManual = new javax.swing.JButton();
+        jButtonSpineAuto = new javax.swing.JButton();
+        jButtonSpineDelete = new javax.swing.JButton();
+        jPanelGameRearCover = new javax.swing.JPanel();
+        jLabelGameRearCover = new javax.swing.JLabel();
+        jPanelGameRearCoverButtons = new javax.swing.JPanel();
+        jButtonRearCoverManual = new javax.swing.JButton();
+        jButtonRearCoverAuto = new javax.swing.JButton();
+        jButtonRearCoverDelete = new javax.swing.JButton();
+        jPanelGameDiscImage = new javax.swing.JPanel();
+        jLabelGameDiscImage = new javax.swing.JLabel();
+        jButtonDiscImageManual = new javax.swing.JButton();
+        jButtonDiscImageAuto = new javax.swing.JButton();
+        jButtonDiscImageDelete = new javax.swing.JButton();
+        jPanelGameLogo = new javax.swing.JPanel();
+        jLabelGameLogo = new javax.swing.JLabel();
+        jButtonLogoManual = new javax.swing.JButton();
+        jButtonLogoAuto = new javax.swing.JButton();
+        jButtonLogoDelete = new javax.swing.JButton();
+        jPanelGameScreenshots = new javax.swing.JPanel();
+        jLabelGameScreenshot1 = new javax.swing.JLabel();
+        jLabelGameScreenshot2 = new javax.swing.JLabel();
+        jButtonDiscImageManual1 = new javax.swing.JButton();
+        jButtonDiscImageAuto1 = new javax.swing.JButton();
+        jButtonDiscImageManual2 = new javax.swing.JButton();
+        jButtonDiscImageAuto2 = new javax.swing.JButton();
+        jButtonDiscImageDelete1 = new javax.swing.JButton();
+        jButtonDiscImageDelete2 = new javax.swing.JButton();
+        jPanelGameBackgroundImage = new javax.swing.JPanel();
+        jLabelGameBackgroundImage = new javax.swing.JLabel();
+        jButtonBackgroundImageManual = new javax.swing.JButton();
+        jButtonBackgroundImageAuto = new javax.swing.JButton();
+        jButtonBackgroundImageDelete = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
+
+        jTextFieldGameNumber.setEditable(false);
+        jTextFieldGameNumber.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jTextFieldGameNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jTextFieldGameNumber.setText("[1/12]");
+        jTextFieldGameNumber.setBorder(null);
+
+        jTextFieldGameName.setEditable(false);
+        jTextFieldGameName.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jTextFieldGameName.setText("Game name - Game ID");
+        jTextFieldGameName.setBorder(null);
+        jTextFieldGameName.setPreferredSize(new java.awt.Dimension(630, 25));
+
+        jButtonPreviousGame.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Left Icon.png"))); // NOI18N
+        jButtonPreviousGame.setToolTipText("Previous game");
+        jButtonPreviousGame.setContentAreaFilled(false);
+        jButtonPreviousGame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonPreviousGameActionPerformed(evt);
+            }
+        });
+
+        jButtonNextGame.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Right Icon.png"))); // NOI18N
+        jButtonNextGame.setToolTipText("Next game");
+        jButtonNextGame.setContentAreaFilled(false);
+        jButtonNextGame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonNextGameActionPerformed(evt);
+            }
+        });
+
+        jPanelGameFrontCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Font Cover"));
+        jPanelGameFrontCover.setPreferredSize(new java.awt.Dimension(192, 290));
+
+        jLabelGameFrontCover.setToolTipText("");
+        jLabelGameFrontCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonFrontCoverDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonFrontCoverDelete.setToolTipText("");
+        jButtonFrontCoverDelete.setContentAreaFilled(false);
+        jButtonFrontCoverDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonFrontCoverDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonFrontCoverDeleteActionPerformed(evt);
+            }
+        });
+
+        jButtonFrontCoverManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonFrontCoverManual.setToolTipText("");
+        jButtonFrontCoverManual.setContentAreaFilled(false);
+        jButtonFrontCoverManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonFrontCoverManualActionPerformed(evt);
+            }
+        });
+
+        jButtonFrontCoverAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonFrontCoverAuto.setToolTipText("");
+        jButtonFrontCoverAuto.setContentAreaFilled(false);
+        jButtonFrontCoverAuto.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonFrontCoverAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonFrontCoverAutoActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameFrontCoverButtonsLayout = new javax.swing.GroupLayout(jPanelGameFrontCoverButtons);
+        jPanelGameFrontCoverButtons.setLayout(jPanelGameFrontCoverButtonsLayout);
+        jPanelGameFrontCoverButtonsLayout.setHorizontalGroup(
+            jPanelGameFrontCoverButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameFrontCoverButtonsLayout.createSequentialGroup()
+                .addComponent(jButtonFrontCoverManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(36, 36, 36)
+                .addComponent(jButtonFrontCoverAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 44, Short.MAX_VALUE)
+                .addComponent(jButtonFrontCoverDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanelGameFrontCoverButtonsLayout.setVerticalGroup(
+            jPanelGameFrontCoverButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jButtonFrontCoverDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jButtonFrontCoverManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jButtonFrontCoverAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        javax.swing.GroupLayout jPanelGameFrontCoverLayout = new javax.swing.GroupLayout(jPanelGameFrontCover);
+        jPanelGameFrontCover.setLayout(jPanelGameFrontCoverLayout);
+        jPanelGameFrontCoverLayout.setHorizontalGroup(
+            jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelGameFrontCoverButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameFrontCoverLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanelGameFrontCoverLayout.setVerticalGroup(
+            jPanelGameFrontCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameFrontCoverLayout.createSequentialGroup()
+                .addComponent(jLabelGameFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanelGameFrontCoverButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanelGameSpine.setBorder(javax.swing.BorderFactory.createTitledBorder("Spine"));
+
+        jLabelGameSpine.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonSpineManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonSpineManual.setToolTipText("");
+        jButtonSpineManual.setContentAreaFilled(false);
+        jButtonSpineManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSpineManualActionPerformed(evt);
+            }
+        });
+
+        jButtonSpineAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonSpineAuto.setToolTipText("");
+        jButtonSpineAuto.setContentAreaFilled(false);
+        jButtonSpineAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSpineAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonSpineDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonSpineDelete.setToolTipText("");
+        jButtonSpineDelete.setContentAreaFilled(false);
+        jButtonSpineDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonSpineDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSpineDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameSpineLayout = new javax.swing.GroupLayout(jPanelGameSpine);
+        jPanelGameSpine.setLayout(jPanelGameSpineLayout);
+        jPanelGameSpineLayout.setHorizontalGroup(
+            jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonSpineManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonSpineAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonSpineDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(9, Short.MAX_VALUE))
+        );
+        jPanelGameSpineLayout.setVerticalGroup(
+            jPanelGameSpineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addComponent(jLabelGameSpine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(jPanelGameSpineLayout.createSequentialGroup()
+                .addGap(41, 41, 41)
+                .addComponent(jButtonSpineManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButtonSpineAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButtonSpineDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanelGameRearCover.setBorder(javax.swing.BorderFactory.createTitledBorder("Rear Cover"));
+        jPanelGameRearCover.setPreferredSize(new java.awt.Dimension(192, 290));
+
+        jLabelGameRearCover.setToolTipText("");
+        jLabelGameRearCover.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonRearCoverManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonRearCoverManual.setToolTipText("");
+        jButtonRearCoverManual.setContentAreaFilled(false);
+        jButtonRearCoverManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRearCoverManualActionPerformed(evt);
+            }
+        });
+
+        jButtonRearCoverAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonRearCoverAuto.setToolTipText("");
+        jButtonRearCoverAuto.setContentAreaFilled(false);
+        jButtonRearCoverAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRearCoverAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonRearCoverDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonRearCoverDelete.setToolTipText("");
+        jButtonRearCoverDelete.setContentAreaFilled(false);
+        jButtonRearCoverDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonRearCoverDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRearCoverDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameRearCoverButtonsLayout = new javax.swing.GroupLayout(jPanelGameRearCoverButtons);
+        jPanelGameRearCoverButtons.setLayout(jPanelGameRearCoverButtonsLayout);
+        jPanelGameRearCoverButtonsLayout.setHorizontalGroup(
+            jPanelGameRearCoverButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameRearCoverButtonsLayout.createSequentialGroup()
+                .addComponent(jButtonRearCoverManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(36, 36, 36)
+                .addComponent(jButtonRearCoverAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButtonRearCoverDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanelGameRearCoverButtonsLayout.setVerticalGroup(
+            jPanelGameRearCoverButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameRearCoverButtonsLayout.createSequentialGroup()
+                .addGroup(jPanelGameRearCoverButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonRearCoverAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonRearCoverManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonRearCoverDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanelGameRearCoverLayout = new javax.swing.GroupLayout(jPanelGameRearCover);
+        jPanelGameRearCover.setLayout(jPanelGameRearCoverLayout);
+        jPanelGameRearCoverLayout.setHorizontalGroup(
+            jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameRearCoverLayout.createSequentialGroup()
+                        .addGap(0, 10, Short.MAX_VALUE)
+                        .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanelGameRearCoverButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanelGameRearCoverLayout.setVerticalGroup(
+            jPanelGameRearCoverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameRearCoverLayout.createSequentialGroup()
+                .addComponent(jLabelGameRearCover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanelGameRearCoverButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanelGameDiscImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Disc Image"));
+
+        jLabelGameDiscImage.setToolTipText("");
+        jLabelGameDiscImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonDiscImageManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonDiscImageManual.setToolTipText("");
+        jButtonDiscImageManual.setContentAreaFilled(false);
+        jButtonDiscImageManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageManualActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonDiscImageAuto.setToolTipText("");
+        jButtonDiscImageAuto.setContentAreaFilled(false);
+        jButtonDiscImageAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonDiscImageDelete.setToolTipText("");
+        jButtonDiscImageDelete.setContentAreaFilled(false);
+        jButtonDiscImageDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonDiscImageDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameDiscImageLayout = new javax.swing.GroupLayout(jPanelGameDiscImage);
+        jPanelGameDiscImage.setLayout(jPanelGameDiscImageLayout);
+        jPanelGameDiscImageLayout.setHorizontalGroup(
+            jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameDiscImageLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButtonDiscImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButtonDiscImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButtonDiscImageDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanelGameDiscImageLayout.setVerticalGroup(
+            jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelGameDiscImageLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanelGameDiscImageLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButtonDiscImageDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanelGameDiscImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jButtonDiscImageAuto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jButtonDiscImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(77, 77, 77))
+        );
+
+        jPanelGameLogo.setBorder(javax.swing.BorderFactory.createTitledBorder("Logo"));
+
+        jLabelGameLogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonLogoManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonLogoManual.setToolTipText("");
+        jButtonLogoManual.setContentAreaFilled(false);
+        jButtonLogoManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoManualActionPerformed(evt);
+            }
+        });
+
+        jButtonLogoAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonLogoAuto.setToolTipText("");
+        jButtonLogoAuto.setContentAreaFilled(false);
+        jButtonLogoAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonLogoDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonLogoDelete.setToolTipText("");
+        jButtonLogoDelete.setContentAreaFilled(false);
+        jButtonLogoDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonLogoDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogoDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameLogoLayout = new javax.swing.GroupLayout(jPanelGameLogo);
+        jPanelGameLogo.setLayout(jPanelGameLogoLayout);
+        jPanelGameLogoLayout.setHorizontalGroup(
+            jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelGameLogo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                        .addComponent(jButtonLogoManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(101, 101, 101)
+                        .addComponent(jButtonLogoAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonLogoDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        jPanelGameLogoLayout.setVerticalGroup(
+            jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameLogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameLogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonLogoAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonLogoManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonLogoDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanelGameScreenshots.setBorder(javax.swing.BorderFactory.createTitledBorder("Screenshots"));
+
+        jLabelGameScreenshot1.setToolTipText("");
+        jLabelGameScreenshot1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabelGameScreenshot2.setToolTipText("");
+        jLabelGameScreenshot2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonDiscImageManual1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonDiscImageManual1.setToolTipText("");
+        jButtonDiscImageManual1.setContentAreaFilled(false);
+        jButtonDiscImageManual1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageManual1ActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageAuto1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonDiscImageAuto1.setToolTipText("");
+        jButtonDiscImageAuto1.setContentAreaFilled(false);
+        jButtonDiscImageAuto1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageAuto1ActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageManual2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonDiscImageManual2.setToolTipText("");
+        jButtonDiscImageManual2.setContentAreaFilled(false);
+        jButtonDiscImageManual2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageManual2ActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageAuto2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonDiscImageAuto2.setToolTipText("");
+        jButtonDiscImageAuto2.setContentAreaFilled(false);
+        jButtonDiscImageAuto2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageAuto2ActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageDelete1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonDiscImageDelete1.setToolTipText("");
+        jButtonDiscImageDelete1.setContentAreaFilled(false);
+        jButtonDiscImageDelete1.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonDiscImageDelete1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageDelete1ActionPerformed(evt);
+            }
+        });
+
+        jButtonDiscImageDelete2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonDiscImageDelete2.setToolTipText("");
+        jButtonDiscImageDelete2.setContentAreaFilled(false);
+        jButtonDiscImageDelete2.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonDiscImageDelete2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDiscImageDelete2ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameScreenshotsLayout = new javax.swing.GroupLayout(jPanelGameScreenshots);
+        jPanelGameScreenshots.setLayout(jPanelGameScreenshotsLayout);
+        jPanelGameScreenshotsLayout.setHorizontalGroup(
+            jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
+                        .addComponent(jButtonDiscImageManual1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(61, 61, 61)
+                        .addComponent(jButtonDiscImageAuto1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonDiscImageDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
+                        .addComponent(jButtonDiscImageManual2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(63, 63, 63)
+                        .addComponent(jButtonDiscImageAuto2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonDiscImageDelete2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanelGameScreenshotsLayout.setVerticalGroup(
+            jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameScreenshotsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelGameScreenshot2, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelGameScreenshot1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameScreenshotsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonDiscImageManual1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageAuto1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageManual2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageDelete2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonDiscImageAuto2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createTitledBorder("Background Image"));
+
+        jLabelGameBackgroundImage.setToolTipText("");
+        jLabelGameBackgroundImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jLabelGameBackgroundImage.setPreferredSize(new java.awt.Dimension(375, 2));
+
+        jButtonBackgroundImageManual.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Folder Icon.png"))); // NOI18N
+        jButtonBackgroundImageManual.setToolTipText("");
+        jButtonBackgroundImageManual.setContentAreaFilled(false);
+        jButtonBackgroundImageManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBackgroundImageManualActionPerformed(evt);
+            }
+        });
+
+        jButtonBackgroundImageAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Download Icon.png"))); // NOI18N
+        jButtonBackgroundImageAuto.setToolTipText("");
+        jButtonBackgroundImageAuto.setContentAreaFilled(false);
+        jButtonBackgroundImageAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBackgroundImageAutoActionPerformed(evt);
+            }
+        });
+
+        jButtonBackgroundImageDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ps2gm/game/manager/images/buttons/Delete Icon.png"))); // NOI18N
+        jButtonBackgroundImageDelete.setToolTipText("");
+        jButtonBackgroundImageDelete.setContentAreaFilled(false);
+        jButtonBackgroundImageDelete.setPreferredSize(new java.awt.Dimension(40, 40));
+        jButtonBackgroundImageDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBackgroundImageDeleteActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelGameBackgroundImageLayout = new javax.swing.GroupLayout(jPanelGameBackgroundImage);
+        jPanelGameBackgroundImage.setLayout(jPanelGameBackgroundImageLayout);
+        jPanelGameBackgroundImageLayout.setHorizontalGroup(
+            jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
+                        .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
+                        .addComponent(jButtonBackgroundImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(104, 104, 104)
+                        .addComponent(jButtonBackgroundImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonBackgroundImageDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanelGameBackgroundImageLayout.setVerticalGroup(
+            jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGameBackgroundImageLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanelGameBackgroundImageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonBackgroundImageManual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonBackgroundImageAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonBackgroundImageDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jPanelGameSpine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanelGameLogo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jTextFieldGameNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jTextFieldGameName, javax.swing.GroupLayout.PREFERRED_SIZE, 640, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(24, 24, 24)
+                        .addComponent(jButtonNextGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jTextFieldGameName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jTextFieldGameNumber))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButtonNextGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonPreviousGame, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanelGameDiscImage, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanelGameLogo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanelGameSpine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanelGameFrontCover, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(jPanelGameRearCover, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelGameBackgroundImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelGameScreenshots, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButtonPreviousGameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPreviousGameActionPerformed
+        if (currentListIndex > 0) {
+            currentListIndex -=1;
+            displayGameName();
+            displayGameNumber();
+            displayGameImages();
+        }
+    }//GEN-LAST:event_jButtonPreviousGameActionPerformed
+
+    private void jButtonNextGameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonNextGameActionPerformed
+        if (currentListIndex < gameList.size()-1) {
+            currentListIndex +=1;
+            displayGameName();
+            displayGameNumber();
+            displayGameImages();
+        }
+    }//GEN-LAST:event_jButtonNextGameActionPerformed
+
+    private void jButtonFrontCoverDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverDeleteActionPerformed
+        deleteImage("_COV");
+    }//GEN-LAST:event_jButtonFrontCoverDeleteActionPerformed
+
+    private void jButtonFrontCoverManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverManualActionPerformed
+        loadImageFromDirectory("_COV");
+    }//GEN-LAST:event_jButtonFrontCoverManualActionPerformed
+
+    private void jButtonFrontCoverAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFrontCoverAutoActionPerformed
+        getImageFromServer("_COV", "_COV", 0);
+    }//GEN-LAST:event_jButtonFrontCoverAutoActionPerformed
+
+    private void jButtonSpineManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSpineManualActionPerformed
+        loadImageFromDirectory("_LAB");
+    }//GEN-LAST:event_jButtonSpineManualActionPerformed
+
+    private void jButtonSpineAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSpineAutoActionPerformed
+        getImageFromServer("_LAB", "_LAB", 0);
+    }//GEN-LAST:event_jButtonSpineAutoActionPerformed
+
+    private void jButtonSpineDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSpineDeleteActionPerformed
+        deleteImage("_LAB");
+    }//GEN-LAST:event_jButtonSpineDeleteActionPerformed
+
+    private void jButtonRearCoverManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverManualActionPerformed
+        loadImageFromDirectory("_COV2");
+    }//GEN-LAST:event_jButtonRearCoverManualActionPerformed
+
+    private void jButtonRearCoverAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverAutoActionPerformed
+        getImageFromServer("_COV2", "_COV2", 0);
+    }//GEN-LAST:event_jButtonRearCoverAutoActionPerformed
+
+    private void jButtonRearCoverDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRearCoverDeleteActionPerformed
+        deleteImage("_COV2");
+    }//GEN-LAST:event_jButtonRearCoverDeleteActionPerformed
+
+    private void jButtonDiscImageManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageManualActionPerformed
+        loadImageFromDirectory("_ICO");
+    }//GEN-LAST:event_jButtonDiscImageManualActionPerformed
+
+    private void jButtonDiscImageAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageAutoActionPerformed
+        getImageFromServer("_ICO", "_ICO", 0);
+    }//GEN-LAST:event_jButtonDiscImageAutoActionPerformed
+
+    private void jButtonDiscImageDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDeleteActionPerformed
+        deleteImage("_ICO");
+    }//GEN-LAST:event_jButtonDiscImageDeleteActionPerformed
+
+    private void jButtonLogoManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoManualActionPerformed
+        loadImageFromDirectory("_LGO");
+    }//GEN-LAST:event_jButtonLogoManualActionPerformed
+
+    private void jButtonLogoAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoAutoActionPerformed
+        getImageFromServer("_LGO", "_LGO", 0);
+    }//GEN-LAST:event_jButtonLogoAutoActionPerformed
+
+    private void jButtonLogoDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoDeleteActionPerformed
+        deleteImage("_LGO");
+    }//GEN-LAST:event_jButtonLogoDeleteActionPerformed
+
+    private void jButtonDiscImageManual1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageManual1ActionPerformed
+        loadImageFromDirectory("_SCR");
+    }//GEN-LAST:event_jButtonDiscImageManual1ActionPerformed
+
+    private void jButtonDiscImageAuto1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageAuto1ActionPerformed
+        getImageFromServer("_SCR", "_SCR", 0);
+    }//GEN-LAST:event_jButtonDiscImageAuto1ActionPerformed
+
+    private void jButtonDiscImageManual2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageManual2ActionPerformed
+        loadImageFromDirectory("_SCR2");
+    }//GEN-LAST:event_jButtonDiscImageManual2ActionPerformed
+
+    private void jButtonDiscImageAuto2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageAuto2ActionPerformed
+        getImageFromServer("_SCR", "_SCR2", 1);
+    }//GEN-LAST:event_jButtonDiscImageAuto2ActionPerformed
+
+    private void jButtonDiscImageDelete1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDelete1ActionPerformed
+        deleteImage("_SCR");
+    }//GEN-LAST:event_jButtonDiscImageDelete1ActionPerformed
+
+    private void jButtonDiscImageDelete2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDiscImageDelete2ActionPerformed
+        deleteImage("_SCR2");
+    }//GEN-LAST:event_jButtonDiscImageDelete2ActionPerformed
+
+    private void jButtonBackgroundImageManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackgroundImageManualActionPerformed
+        loadImageFromDirectory("_BG");
+    }//GEN-LAST:event_jButtonBackgroundImageManualActionPerformed
+
+    private void jButtonBackgroundImageAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackgroundImageAutoActionPerformed
+        getImageFromServer("_BG", "_BG", 0);
+    }//GEN-LAST:event_jButtonBackgroundImageAutoActionPerformed
+
+    private void jButtonBackgroundImageDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackgroundImageDeleteActionPerformed
+        deleteImage("_BG");
+    }//GEN-LAST:event_jButtonBackgroundImageDeleteActionPerformed
+    // </editor-fold> 
+
+    // <editor-fold defaultstate="collapsed" desc="Generated Variables"> 
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButtonBackgroundImageAuto;
+    private javax.swing.JButton jButtonBackgroundImageDelete;
+    private javax.swing.JButton jButtonBackgroundImageManual;
+    private javax.swing.JButton jButtonDiscImageAuto;
+    private javax.swing.JButton jButtonDiscImageAuto1;
+    private javax.swing.JButton jButtonDiscImageAuto2;
+    private javax.swing.JButton jButtonDiscImageDelete;
+    private javax.swing.JButton jButtonDiscImageDelete1;
+    private javax.swing.JButton jButtonDiscImageDelete2;
+    private javax.swing.JButton jButtonDiscImageManual;
+    private javax.swing.JButton jButtonDiscImageManual1;
+    private javax.swing.JButton jButtonDiscImageManual2;
+    private javax.swing.JButton jButtonFrontCoverAuto;
+    private javax.swing.JButton jButtonFrontCoverDelete;
+    private javax.swing.JButton jButtonFrontCoverManual;
+    private javax.swing.JButton jButtonLogoAuto;
+    private javax.swing.JButton jButtonLogoDelete;
+    private javax.swing.JButton jButtonLogoManual;
+    private javax.swing.JButton jButtonNextGame;
+    private javax.swing.JButton jButtonPreviousGame;
+    private javax.swing.JButton jButtonRearCoverAuto;
+    private javax.swing.JButton jButtonRearCoverDelete;
+    private javax.swing.JButton jButtonRearCoverManual;
+    private javax.swing.JButton jButtonSpineAuto;
+    private javax.swing.JButton jButtonSpineDelete;
+    private javax.swing.JButton jButtonSpineManual;
+    private javax.swing.JLabel jLabelGameBackgroundImage;
+    private javax.swing.JLabel jLabelGameDiscImage;
+    private javax.swing.JLabel jLabelGameFrontCover;
+    private javax.swing.JLabel jLabelGameLogo;
+    private javax.swing.JLabel jLabelGameRearCover;
+    private javax.swing.JLabel jLabelGameScreenshot1;
+    private javax.swing.JLabel jLabelGameScreenshot2;
+    private javax.swing.JLabel jLabelGameSpine;
+    javax.swing.JPanel jPanelGameBackgroundImage;
+    private javax.swing.JPanel jPanelGameDiscImage;
+    private javax.swing.JPanel jPanelGameFrontCover;
+    private javax.swing.JPanel jPanelGameFrontCoverButtons;
+    private javax.swing.JPanel jPanelGameLogo;
+    private javax.swing.JPanel jPanelGameRearCover;
+    private javax.swing.JPanel jPanelGameRearCoverButtons;
+    private javax.swing.JPanel jPanelGameScreenshots;
+    private javax.swing.JPanel jPanelGameSpine;
+    private javax.swing.JTextField jTextFieldGameName;
+    private javax.swing.JTextField jTextFieldGameNumber;
+    // End of variables declaration//GEN-END:variables
+// </editor-fold> 
+}

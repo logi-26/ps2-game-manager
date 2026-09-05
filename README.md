@@ -1,17 +1,17 @@
-# ps2-game-manager
+# PS2GM
 
-Game manager for Open PS2 Loader (OPL) and POPSTARTER — a cross-platform desktop
-app for managing PlayStation 1 / PlayStation 2 game, art, config, cheat and save
-files, plus the API that serves shared art/config data.
+**PS2GM** — Game Manager for Open PS2 Loader (OPL) and POPSTARTER: a
+cross-platform desktop app for managing PlayStation 1 / PlayStation 2 game, art,
+config, cheat and save files, plus the API that serves shared art/config data.
 
-This is the consolidated repo. It supersedes the three earlier repos
-`oplpops-manager`, `oplpops-server`, `oplpops-api` (kept archived for history).
+This is the consolidated repo (checked out as `ps2-game-manager/`). It supersedes
+three earlier separate repos, kept archived for history.
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `desktop/` | Java 8 Swing desktop app (`oplpops.game.manager`). Build with `desktop/build.ps1`. |
+| `desktop/` | Java 8 Swing desktop app (`ps2gm.game.manager`). Build with `desktop/build.ps1`. |
 | `api/` | HTTP API + database (FastAPI + SQLAlchemy + Alembic) — the backend. SQLite + local blobs by default; Postgres via one env var. See [`api/README.md`](api/README.md). |
 | `local-dev/` | Scripts to run desktop ↔ API on localhost. |
 | `docs/plan.html` | The rebuild + overhaul plan (open in a browser; progress is checkable). |
@@ -46,13 +46,13 @@ Windows users get a standalone `.exe`, no Java required; Mac and Linux users
 get a plain jar and use their own Java install:
 
 ```powershell
-./desktop/package.ps1     # -> desktop/build-local/release/windows/OPLPOPS-Manager/OPLPOPS-Manager.exe
+./desktop/package.ps1     # -> desktop/build-local/release/windows/PS2GM/PS2GM.exe
 ./desktop/bundle-jar.ps1  # -> desktop/build-local/release/jar/
 ```
 
 `package.ps1` builds a `jpackage` app-image: a folder with a native
-`OPLPOPS-Manager.exe` and a bundled, `jdeps`-trimmed JRE (`java.base` +
-`java.desktop` + `java.net.http`, ~86 MB total) — zip the `OPLPOPS-Manager`
+`PS2GM.exe` and a bundled, `jdeps`-trimmed JRE (`java.base` +
+`java.desktop` + `java.net.http`, ~86 MB total) — zip the `PS2GM`
 folder and hand it to a Windows user with no Java installed. jpackage doesn't
 cross-compile, so this only ever produces a Windows artifact (a macOS `.app`/
 Linux AppImage would need building on those platforms). An actual installer

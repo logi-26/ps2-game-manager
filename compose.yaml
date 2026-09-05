@@ -2,7 +2,7 @@
 # instead of the SQLite + local-filesystem dev defaults.
 #
 #   docker compose up -d
-#   OPLAPI_DATABASE_URL=postgresql+psycopg://oplpops:oplpops@localhost:5432/oplpops \
+#   OPLAPI_DATABASE_URL=postgresql+psycopg://ps2gm:ps2gm@localhost:5432/ps2gm \
 #     python -m alembic upgrade head            # (run from api/)
 #
 # MinIO is here for the eventual S3 blob backend; the current BlobStore is
@@ -12,15 +12,15 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: oplpops
-      POSTGRES_PASSWORD: oplpops
-      POSTGRES_DB: oplpops
+      POSTGRES_USER: ps2gm
+      POSTGRES_PASSWORD: ps2gm
+      POSTGRES_DB: ps2gm
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U oplpops"]
+      test: ["CMD-SHELL", "pg_isready -U ps2gm"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -29,8 +29,8 @@ services:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: oplpops
-      MINIO_ROOT_PASSWORD: oplpops-secret
+      MINIO_ROOT_USER: ps2gm
+      MINIO_ROOT_PASSWORD: ps2gm-secret
     ports:
       - "9000:9000"
       - "9001:9001"

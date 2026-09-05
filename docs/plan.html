@@ -1,4 +1,4 @@
-<title>OPLPOPS Rebuild Plan</title>
+<title>PS2GM Rebuild Plan</title>
 <meta name="description" content="Checklist for reviving the PS2 game-library manager and replacing its TCP file server with a database and API.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -250,7 +250,7 @@
 
 <header class="masthead">
   <div class="wrap">
-    <p class="eyebrow">OPLPOPS &middot; PS2 game-library manager</p>
+    <p class="eyebrow">PS2GM &middot; PS2 game-library manager</p>
     <h1>Rebuild Plan</h1>
     <p class="lede">
       Get the Swing desktop app and its file server building and talking again on
@@ -283,9 +283,9 @@
       <dt>Toolchain</dt>
       <dd><strong>Temurin JDK 25.0.1</strong> only &mdash; no 8/11, no Ant, no NetBeans. Builds target <code>--release 11</code>. Python 3.11 (has Pillow) + 3.14.</dd>
       <dt>Repo</dt>
-      <dd>Consolidated into <code>github.com/logi-26/ps2-game-manager</code> with <code>desktop/</code> + <code>server/</code> dirs. The three old repos (<code>oplpops-*</code>) are kept for history.</dd>
+      <dd>Consolidated into <code>github.com/logi-26/ps2-game-manager</code> with <code>desktop/</code> + <code>server/</code> dirs. The three old repos (<code>ps2gm-*</code>) are kept for history.</dd>
       <dt>Backend</dt>
-      <dd><code>oplpops-server</code> &mdash; raw TCP on <strong>6789</strong>, length-prefixed binary protocol, serves static files from folders beside its own jar. <code>oplpops-api</code> is an abandoned stub.</dd>
+      <dd><code>ps2gm-server</code> &mdash; raw TCP on <strong>6789</strong>, length-prefixed binary protocol, serves static files from folders beside its own jar. <code>ps2gm-api</code> is an abandoned stub.</dd>
       <dt>Not in scope</dt>
       <dd><code>MyFTPClient</code> talks to a real PS2 console over FTP &mdash; unchanged. <code>MyAPIClient</code> is empty &mdash; it gets filled in during Part&nbsp;2.</dd>
     </dl>
@@ -303,9 +303,9 @@
       it&rsquo;s retired.
     </p>
     <pre><code>ps2-game-manager/
-  desktop/            Java Swing app          (was oplpops-manager/src)   DONE
+  desktop/            Java Swing app          (was ps2gm-manager/src)   DONE
     build.ps1  src/  lib/  nbproject/
-  server/             raw-TCP file server     (was oplpops-server/src)    DONE
+  server/             raw-TCP file server     (was ps2gm-server/src)    DONE
     build.ps1  src/
   local-dev/          fixtures + run scripts                              DONE
   docs/plan.html      this document                                      DONE
@@ -336,8 +336,8 @@ next to the repo, not in it (large binaries, .gitignored):
       <div class="stage-bar"><i></i></div>
       <ul class="steps">
         <li><label><input type="checkbox" data-k="p1-jdk" data-default-done><span class="txt">Confirm <code>javac</code> / <code>jar</code> on PATH; accept <code>--release 11</code> as the build target<small>JDK 25 dropped <code>--release 8</code>. Prebuilt jars still run on 25.</small></span></label></li>
-        <li><label><input type="checkbox" data-k="p1-jcheckbox" data-default-done><span class="txt">Repackage <code>JCheckBoxList</code> out of <code>javax.swing</code> into <code>oplpops.game.manager</code><small>Only hard compile error &mdash; user classes can&rsquo;t join a JDK module&rsquo;s package. Its one importer, <code>TestScreen</code> (dead code), updated.</small></span></label></li>
-        <li><label><input type="checkbox" data-k="p1-serveropt" data-default-done><span class="txt">Make server address/port configurable in <code>PopsGameManager</code><small>Honours <code>-Doplpops.server.address</code> / <code>-Doplpops.server.port</code> (and matching env vars), falling back to the old hardcoded values.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-jcheckbox" data-default-done><span class="txt">Repackage <code>JCheckBoxList</code> out of <code>javax.swing</code> into <code>ps2gm.game.manager</code><small>Only hard compile error &mdash; user classes can&rsquo;t join a JDK module&rsquo;s package. Its one importer, <code>TestScreen</code> (dead code), updated.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-serveropt" data-default-done><span class="txt">Make server address/port configurable in <code>PopsGameManager</code><small>Honours <code>-Dps2gm.server.address</code> / <code>-Dps2gm.server.port</code> (and matching env vars), falling back to the old hardcoded values.</small></span></label></li>
       </ul>
     </div>
 
@@ -349,8 +349,8 @@ next to the repo, not in it (large binaries, .gitignored):
       </div>
       <div class="stage-bar"><i></i></div>
       <ul class="steps">
-        <li><label><input type="checkbox" data-k="p1-buildserver" data-default-done><span class="txt"><code>oplpops-server/build.ps1</code> &mdash; compiles the two classes, jars to <code>build-local/</code></span></label></li>
-        <li><label><input type="checkbox" data-k="p1-buildmanager" data-default-done><span class="txt"><code>oplpops-manager/build.ps1</code> &mdash; compiles 48 sources, copies <code>.png</code>/<code>.txt</code> resources, jars with a <code>Class-Path</code> manifest for the two <code>lib/</code> jars</span></label></li>
+        <li><label><input type="checkbox" data-k="p1-buildserver" data-default-done><span class="txt"><code>ps2gm-server/build.ps1</code> &mdash; compiles the two classes, jars to <code>build-local/</code></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-buildmanager" data-default-done><span class="txt"><code>ps2gm-manager/build.ps1</code> &mdash; compiles 48 sources, copies <code>.png</code>/<code>.txt</code> resources, jars with a <code>Class-Path</code> manifest for the two <code>lib/</code> jars</span></label></li>
         <li><label><input type="checkbox" data-k="p1-gitignore" data-default-done><span class="txt">Add <code>.gitignore</code> (<code>build-local/</code>, <code>*-local.jar</code>) to both projects</span></label></li>
       </ul>
     </div>
@@ -377,7 +377,7 @@ next to the repo, not in it (large binaries, .gitignored):
       <div class="stage-bar"><i></i></div>
       <ul class="steps">
         <li><label><input type="checkbox" data-k="p1-runscripts" data-default-done><span class="txt"><code>run-server.ps1</code> / <code>run-manager.ps1</code> &mdash; build + launch, app pointed at <code>127.0.0.1:6789</code></span></label></li>
-        <li><label><input type="checkbox" data-k="p1-isolate" data-default-done><span class="txt">Launch the app from an isolated <code>build-local/run/</code>, never from <code>src/</code><small>On start the app rewrites sibling files (<code>start-oplpops.*</code>, <code>READ&nbsp;ME.txt</code>, <code>settings.xml</code>, <code>lib/data/data_3</code>&hellip;). The run dir keeps that churn out of the repo.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p1-isolate" data-default-done><span class="txt">Launch the app from an isolated <code>build-local/run/</code>, never from <code>src/</code><small>On start the app rewrites sibling files (<code>start-ps2gm.*</code>, <code>READ&nbsp;ME.txt</code>, <code>settings.xml</code>, <code>lib/data/data_3</code>&hellip;). The run dir keeps that churn out of the repo.</small></span></label></li>
       </ul>
     </div>
 
@@ -466,7 +466,7 @@ next to the repo, not in it (large binaries, .gitignored):
       <ul class="steps">
         <li><label><input type="checkbox" data-k="p2-iface" data-default-done><span class="txt">Extract a <code>BackendClient</code> interface; <code>MyTCPClient</code> implements it as-is, plus a new <code>submitReport(...)</code> method (was an inline string built in <code>FileReportScreen</code>)</span></label></li>
         <li><label><input type="checkbox" data-k="p2-apiclient" data-default-done><span class="txt"><code>MyApiClient</code> on <code>java.net.http.HttpClient</code> &mdash; no new dependency<small>Same signatures, return types and local-file side effects as <code>MyTCPClient</code>, so all 21 call sites just swap <code>new MyTCPClient()</code> for <code>PopsGameManager.newBackendClient()</code>. JSON parsing is a ~130-line hand-rolled <code>MiniJson</code> reader (no JSON library in the build) &mdash; the API's response shapes are small and known.</small></span></label></li>
-        <li><label><input type="checkbox" data-k="p2-flag" data-default-done><span class="txt"><code>-Doplpops.backend=api|tcp</code>, <code>-Doplpops.api.baseurl</code>, <code>-Doplpops.api.key</code> (+ matching env vars) select and configure the backend; default stays <code>tcp</code> until cutover</span></label></li>
+        <li><label><input type="checkbox" data-k="p2-flag" data-default-done><span class="txt"><code>-Dps2gm.backend=api|tcp</code>, <code>-Dps2gm.api.baseurl</code>, <code>-Dps2gm.api.key</code> (+ matching env vars) select and configure the backend; default stays <code>tcp</code> until cutover</span></label></li>
         <li><label><input type="checkbox" data-k="p2-statushandling" data-default-done><span class="txt">Real HTTP status codes replace the &ldquo;response &gt; 20 bytes = a file&rdquo; heuristic and the <code>NO_IMAGE</code>/<code>NO_CONFIG</code> sentinels</span></label></li>
         <li><label><input type="checkbox" data-k="p2-smoketested" data-default-done><span class="txt">Verified end-to-end against the real imported DB (14,354 games): art/config/cheat/VMC downloads, list pagination, report submission, and an upload &rarr; <code>pending</code> &rarr; correctly hidden from public reads<small>Two real bugs caught and fixed this way: uvicorn mishandling the JDK client's default HTTP/2 upgrade attempt on POST bodies (<code>HttpClient.Version.HTTP_1_1</code> pinned), and a duplicate upload to the same slot raising a raw 500 instead of a clean 409.</small></span></label></li>
       </ul>
@@ -503,7 +503,7 @@ next to the repo, not in it (large binaries, .gitignored):
         <li><label><input type="checkbox" data-k="p2-runscripts-api" data-default-done><span class="txt"><code>desktop/build.ps1 -Run -Backend api</code>, <code>local-dev/run-manager.ps1 -Backend api</code>, and new <code>local-dev/run-api.ps1</code> &mdash; launching against the API is now as easy as the TCP path</span></label></li>
         <li><label><input type="checkbox" data-k="p2-clicktest" data-default-done><span class="txt">Click-through against <code>program_test_folder/</code> (the real OPL drive) with <code>-Backend api</code><small>ART screen, batch-download art, VMC screen and cheat screen all confirmed working. Three real, pre-existing issues found and fixed along the way, none caused by the backend work: the ART button opening an abandoned screen with the real logic commented out beneath it; both batch-download screens updating art thumbnails/labels from <code>doInBackground()</code> instead of the EDT; a stale old-process lock on the 7-Zip native library silently breaking PS2 game-ID detection.</small></span></label></li>
         <li><label><input type="checkbox" data-k="p2-removeuploads" data-default-done><span class="txt">Uploads and bad-file reports removed as a feature (decision, not a bug)<small>Deleted <code>BatchFileShareScreen</code>, <code>ShareVMCScreen</code>, <code>FileReportScreen</code>; their menu items and the per-image report button fully excised (field, wiring and <code>.form</code> layout removed, not just hidden) so NetBeans can't resurrect them from the form on a future save. <code>shareImageWithServer</code>/<code>shareConfigWithServer</code>/<code>shareVMCWithServer</code>/<code>submitReport</code> dropped from <code>BackendClient</code>. API side: <code>uploads.py</code> + <code>reports.py</code> routers deleted, <code>file_report</code> table dropped by migration, write-key config removed. The API is fully read-only.</small></span></label></li>
-        <li><label><input type="checkbox" data-k="p2-flipdefault" data-default-done><span class="txt">Flipped <code>PopsGameManager.getBackendMode()</code>&rsquo;s default from <code>tcp</code> to <code>api</code><small><code>-Doplpops.backend=tcp</code> still falls back to the old server if something turns up. <code>desktop/build.ps1</code> and <code>local-dev/run-manager.ps1</code> defaults flipped to match.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-flipdefault" data-default-done><span class="txt">Flipped <code>PopsGameManager.getBackendMode()</code>&rsquo;s default from <code>tcp</code> to <code>api</code><small><code>-Dps2gm.backend=tcp</code> still falls back to the old server if something turns up. <code>desktop/build.ps1</code> and <code>local-dev/run-manager.ps1</code> defaults flipped to match.</small></span></label></li>
       </ul>
     </div>
 
@@ -517,7 +517,7 @@ next to the repo, not in it (large binaries, .gitignored):
       <ul class="steps">
         <li><label><input type="checkbox" data-k="p2-harden" data-default-done><span class="txt">API hardening<small>Gzip on unconditionally (<code>GZipMiddleware</code>, &ge;500 bytes). Rate limiting off by default, opt in via <code>OPLAPI_RATE_LIMIT_PER_MINUTE</code> &mdash; a naive always-on limit would misread a normal batch-download run (thousands of requests in minutes) as abuse; a simple in-process fixed-window counter (<code>app/ratelimit.py</code>), no new dependency. Path safety already held: no endpoint builds a filesystem path from request input &mdash; blob paths are server-computed <code>sha256</code>, everything else goes through parameterized SQLAlchemy. Not done: S3/MinIO blob backend &mdash; no driver for it yet, filesystem storage is fine at this scale.</small></span></label></li>
         <li><label><input type="checkbox" data-k="p2-retire" data-default-done><span class="txt">Deleted <code>MyTCPClient</code> and <code>server/</code> (the <code>tcpserver</code> project) outright<small><code>BackendClient</code> now has one implementation, <code>MyApiClient</code>; <code>PopsGameManager.newBackendClient()</code> constructs it directly, no more mode switch. Removed with it: <code>getBackendMode()</code>, <code>getServerAddress()</code>/<code>getServerPort()</code>, the unused <code>TestMode</code> flag and Main's <code>-TEST</code> arg (both existed only to point the TCP client at a test server), and every <code>-Backend</code>/<code>-Server</code>/<code>-Port</code> flag across <code>desktop/build.ps1</code>, <code>package.ps1</code>, <code>bundle-jar.ps1</code>, <code>release.ps1</code> and <code>local-dev/run-manager.ps1</code>. TCP-only dev scripts (<code>run-server.ps1</code>, <code>setup-serverdata.ps1</code>, <code>protocol-check.py</code>) deleted too. The local <code>tcpClient</code> variable name at every call site (a leftover from before the API existed) renamed to <code>apiClient</code>.</small></span></label></li>
-        <li><label><input type="checkbox" data-k="p2-package" data-default-done><span class="txt">Per-platform packaging: Windows <code>.exe</code>, Mac/Linux plain jar &mdash; <code>desktop/release.ps1</code><small>New <code>-Stage</code> mode on <code>build.ps1</code> assembles the jar + <code>lib/</code>/<code>hdd/</code>/<code>POPSTARTER/</code> without launching (reused by <code>-Run</code> too); the run dir is wiped first so app-generated churn from interactive testing (<code>settings.xml</code>, <code>READ&nbsp;ME.txt</code>, &hellip;) can&rsquo;t leak into a shipped image. <strong>Windows</strong> (<code>package.ps1</code>): <code>jpackage</code> app-image with a bundled, trimmed JRE &mdash; <code>jdeps --print-module-deps</code> cuts it to <code>java.base,java.desktop,java.net.http</code> instead of the whole JDK, 86&nbsp;MB total; no separate Java install needed. jpackage doesn&rsquo;t cross-compile, so this is Windows-only output regardless of host. <strong>Mac/Linux</strong> (<code>bundle-jar.ps1</code>): plain jar next to <code>lib/</code>/<code>hdd/</code>/<code>POPSTARTER/</code> plus a <code>run.sh</code>/<code>run.cmd</code> &mdash; recipient needs their own Java&nbsp;11+, but the bundled 7-Zip native bindings and tool binaries already cover every OS, so it's one build for all three, no jpackage needed. The jar is named to match <code>PopsGameManager</code>'s hardcoded <code>CURRENT_APP_NAME</code> so the app's own self-rewritten launch scripts stay correct; <code>run.sh</code>/<code>run.cmd</code> use env vars instead of <code>-D</code> flags so a baked-in backend choice survives past the first launch (the app deletes/regenerates <code>start-oplpops.*</code> on every startup). Verified: both launch and run standalone. <code>--type exe</code>/<code>msi</code> (an actual Windows installer, not just an app-image) needs the WiX Toolset, not installed here &mdash; documented, not built.</small></span></label></li>
+        <li><label><input type="checkbox" data-k="p2-package" data-default-done><span class="txt">Per-platform packaging: Windows <code>.exe</code>, Mac/Linux plain jar &mdash; <code>desktop/release.ps1</code><small>New <code>-Stage</code> mode on <code>build.ps1</code> assembles the jar + <code>lib/</code>/<code>hdd/</code>/<code>POPSTARTER/</code> without launching (reused by <code>-Run</code> too); the run dir is wiped first so app-generated churn from interactive testing (<code>settings.xml</code>, <code>READ&nbsp;ME.txt</code>, &hellip;) can&rsquo;t leak into a shipped image. <strong>Windows</strong> (<code>package.ps1</code>): <code>jpackage</code> app-image with a bundled, trimmed JRE &mdash; <code>jdeps --print-module-deps</code> cuts it to <code>java.base,java.desktop,java.net.http</code> instead of the whole JDK, 86&nbsp;MB total; no separate Java install needed. jpackage doesn&rsquo;t cross-compile, so this is Windows-only output regardless of host. <strong>Mac/Linux</strong> (<code>bundle-jar.ps1</code>): plain jar next to <code>lib/</code>/<code>hdd/</code>/<code>POPSTARTER/</code> plus a <code>run.sh</code>/<code>run.cmd</code> &mdash; recipient needs their own Java&nbsp;11+, but the bundled 7-Zip native bindings and tool binaries already cover every OS, so it's one build for all three, no jpackage needed. The jar is named to match <code>PopsGameManager</code>'s hardcoded <code>CURRENT_APP_NAME</code> so the app's own self-rewritten launch scripts stay correct; <code>run.sh</code>/<code>run.cmd</code> use env vars instead of <code>-D</code> flags so a baked-in backend choice survives past the first launch (the app deletes/regenerates <code>start-ps2gm.*</code> on every startup). Verified: both launch and run standalone. <code>--type exe</code>/<code>msi</code> (an actual Windows installer, not just an app-image) needs the WiX Toolset, not installed here &mdash; documented, not built.</small></span></label></li>
       </ul>
     </div>
 
@@ -573,7 +573,7 @@ next to the repo, not in it (large binaries, .gitignored):
       <li><span class="txt"><code>sevenzipjbinding</code> native load can fail on modern Windows &rarr; archive extraction breaks, app still starts.</span></li>
       <li><span class="txt"><code>server/</code> has no auth, path sanitisation, or connection limits (only matters if it's ever exposed beyond localhost, and it's on its way out regardless).</span></li>
       <li><span class="txt"><code>java.net.http.HttpClient</code> defaults to an HTTP/2 upgrade attempt on every request; uvicorn's dev server mishandles it and silently drops POST bodies. <code>MyApiClient</code> pins <code>HTTP_1_1</code> &mdash; worth re-checking if the API ever moves behind a real HTTP/2-capable proxy.</span></li>
-      <li><span class="txt">Don't run two OPLPOPS instances (old or new) at once &mdash; they fight over the same <code>sevenzipjbinding</code> native-library temp folder, and the loser's PS2 game-ID detection fails silently.</span></li>
+      <li><span class="txt">Don't run two PS2GM instances (old or new) at once &mdash; they fight over the same <code>sevenzipjbinding</code> native-library temp folder, and the loser's PS2 game-ID detection fails silently.</span></li>
     </ul>
 
     <h2 style="margin-top:2rem">Added in Part 1</h2>
@@ -583,10 +583,10 @@ local-dev/run-manager.ps1         local-dev/protocol-check.py
 local-dev/README.md               docs/plan.html   (this file)
 .gitignore  (monorepo)            README.md
 
-edited:  desktop/src/oplpops/game/manager/PopsGameManager.java
-         desktop/src/oplpops/game/manager/TestScreen.java
+edited:  desktop/src/ps2gm/game/manager/PopsGameManager.java
+         desktop/src/ps2gm/game/manager/TestScreen.java
 moved:   src/javax/swing/JCheckBoxList.java
-      &rarr; src/oplpops/game/manager/JCheckBoxList.java</code></pre>
+      &rarr; src/ps2gm/game/manager/JCheckBoxList.java</code></pre>
 
     <h2 style="margin-top:2rem">Added so far in Part 2</h2>
     <pre><code>api/app/github.py                          desktop/src/.../BackendClient.java
@@ -612,7 +612,7 @@ removed: desktop/src/.../MyAPIClient.java  (the empty stub)
 
 <footer>
   <div class="wrap">
-    <span class="mono">OPLPOPS Rebuild Plan</span> &middot; progress is saved in this browser only &middot;
+    <span class="mono">PS2GM Rebuild Plan</span> &middot; progress is saved in this browser only &middot;
     generated 2026-09-05
   </div>
 </footer>
@@ -620,7 +620,7 @@ removed: desktop/src/.../MyAPIClient.java  (the empty stub)
 <script>
 (function(){
   "use strict";
-  var KEY = "oplpops-rebuild-progress-v1";
+  var KEY = "ps2gm-rebuild-progress-v1";
   var boxes = Array.prototype.slice.call(document.querySelectorAll('ul.steps input[type=checkbox]'));
 
   function load(){

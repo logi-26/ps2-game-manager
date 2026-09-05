@@ -11,7 +11,7 @@ from .routers import artwork, files, games, health, releases
 app = FastAPI(
     title="PS2 Game Manager API",
     version=__version__,
-    summary="Database-backed replacement for the OPLPOPS raw-TCP file server.",
+    summary="Database-backed replacement for the PS2GM raw-TCP file server.",
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=500)

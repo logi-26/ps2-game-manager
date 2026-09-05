@@ -42,8 +42,8 @@ feature), so there's nothing to review afterwards.
 
 ### Why the app is never run from the project folder
 
-On launch it **rewrites files next to its jar** (`start-oplpops.*`,
-`READ ME.txt`, `settings.xml` / `oplpops-settings`, `lib/data/data_3`,
+On launch it **rewrites files next to its jar** (`start-ps2gm.*`,
+`READ ME.txt`, `settings.xml` / `ps2gm-settings`, `lib/data/data_3`,
 `tools/windows/backup/`, …). `desktop/build.ps1 -Run` therefore assembles
 `desktop/build-local/run/` and launches from there; all that churn stays
 inside `build-local/` (gitignored). `-Fresh` re-copies `lib/ hdd/ POPSTARTER/`
@@ -54,7 +54,7 @@ into it.
 ## Source changes carried into this repo
 
 **Part 1** — build on a modern JDK:
-- `javax/swing/JCheckBoxList.java` → `oplpops/game/manager/JCheckBoxList.java`
+- `javax/swing/JCheckBoxList.java` → `ps2gm/game/manager/JCheckBoxList.java`
   — a user class can't live in the `javax.swing` package under the module
   system (JDK 9+). `TestScreen` (dead code), its one importer, updated.
 
@@ -81,7 +81,7 @@ into it.
 
 - Swing on JDK 25 / Win10 looks dated; HiDPI scaling may be off. Not blocking.
 - `sevenzipjbinding` native load can fail on modern Windows → PS2 game-ID
-  detection breaks silently. Usually caused by another OPLPOPS instance (old
+  detection breaks silently. Usually caused by another PS2GM instance (old
   or new) holding the native library's temp folder locked — don't run two at
   once; clearing `%LOCALAPPDATA%\Temp\SevenZipJBinding-*` also helps.
 - `java.net.http.HttpClient` defaults to an HTTP/2 upgrade attempt that

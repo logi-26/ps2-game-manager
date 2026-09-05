@@ -29,7 +29,7 @@ $root       = $PSScriptRoot
 $buildLocal = Join-Path $root 'build-local'
 $runDir     = Join-Path $buildLocal 'run'
 $bundleDir  = Join-Path $buildLocal 'release\jar'
-$jarName    = "OPLPOPS-Manager_$AppVersion.jar"   # must match PopsGameManager.CURRENT_APP_NAME
+$jarName    = "PS2GM_$AppVersion.jar"   # must match PopsGameManager.CURRENT_APP_NAME
 
 # 1. Compile + stage jar + lib/ + hdd/ + POPSTARTER/ as siblings (same clean
 #    staging package.ps1 uses - see build.ps1 for why it's wiped first).
@@ -39,7 +39,7 @@ if ($LASTEXITCODE -ne 0) { throw "build.ps1 -Stage failed" }
 
 # 2. Copy the staged tree into the bundle. The jar is renamed to match
 #    PopsGameManager's hardcoded CURRENT_APP_NAME - needed because the app
-#    deletes and regenerates start-oplpops.sh/.bat on every launch pointing
+#    deletes and regenerates start-ps2gm.sh/.bat on every launch pointing
 #    at that exact filename (deletePreviousAppVersion()); if the jar isn't
 #    actually called that, its own self-written launchers point at nothing.
 if (Test-Path $bundleDir) { Remove-Item -Recurse -Force $bundleDir }
@@ -47,9 +47,9 @@ New-Item -ItemType Directory -Force -Path $bundleDir | Out-Null
 Copy-Item (Join-Path $runDir 'lib')        $bundleDir -Recurse
 Copy-Item (Join-Path $runDir 'hdd')        $bundleDir -Recurse
 Copy-Item (Join-Path $runDir 'POPSTARTER') $bundleDir -Recurse
-Copy-Item (Join-Path $runDir 'OPLPOPS-Manager-local.jar') (Join-Path $bundleDir $jarName)
+Copy-Item (Join-Path $runDir 'PS2GM-local.jar') (Join-Path $bundleDir $jarName)
 
-# 3. Launch scripts, deliberately NOT named start-oplpops.sh/.bat: the app
+# 3. Launch scripts, deliberately NOT named start-ps2gm.sh/.bat: the app
 #    rewrites those two exact filenames on every startup with a bare
 #    `java -jar <jar>`, no backend flags, so anything baked in there only
 #    survives the first launch. run.sh/run.cmd are left alone by the app and
@@ -57,7 +57,7 @@ Copy-Item (Join-Path $runDir 'OPLPOPS-Manager-local.jar') (Join-Path $bundleDir 
 #    also checks (see getApiBaseUrl()) - equivalent to package.ps1's
 #    --java-options, just via env instead of a native launcher config.
 $envLines = @(
-    "OPLPOPS_API_BASEURL=$ApiBaseUrl"
+    "PS2GM_API_BASEURL=$ApiBaseUrl"
 )
 
 $sh = "#!/bin/sh`n" +
@@ -76,4 +76,4 @@ Set-Content -Path (Join-Path $bundleDir 'run.cmd') -Value $cmd -Encoding ascii -
 Write-Host "==> Bundled at $bundleDir"
 Write-Host "    Mac/Linux: chmod +x run.sh && ./run.sh   (needs Java 11+ on PATH)"
 Write-Host "    Windows:   run.cmd"
-Write-Host "    Zip the 'jar' folder (rename it e.g. OPLPOPS-Manager-$AppVersion) to hand it out."
+Write-Host "    Zip the 'jar' folder (rename it e.g. PS2GM-$AppVersion) to hand it out."

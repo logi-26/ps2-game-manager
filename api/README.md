@@ -39,7 +39,7 @@ Idempotent — safe to re-run. Blobs land in `api/var/blobs/` (content-addressed
 `/v1/app/latest` and `/v1/app/releases/{version}/download` read live from
 **GitHub Releases** on this repo (`app/github.py`) — there's no jar mirrored
 into the DB. To publish an update: attach a `.jar` asset to a GitHub release
-(`gh release create v0.7.0 OPLPOPS-Manager_0.7.0.jar`). Mark it a
+(`gh release create v0.7.0 PS2GM_0.7.0.jar`). Mark it a
 pre-release for the `beta` channel; anything else counts as `stable`. An
 unauthenticated client is capped at 60 req/hr by GitHub — the module caches
 responses for `OPLAPI_GITHUB_CACHE_SECONDS` (default 300s), and setting
@@ -49,7 +49,7 @@ responses for `OPLAPI_GITHUB_CACHE_SECONDS` (default 300s), and setting
 
 ```powershell
 docker compose up -d db                 # from repo root
-$env:OPLAPI_DATABASE_URL = "postgresql+psycopg://oplpops:oplpops@localhost:5432/oplpops"
+$env:OPLAPI_DATABASE_URL = "postgresql+psycopg://ps2gm:ps2gm@localhost:5432/ps2gm"
 pip install -e ".[postgres]"
 python -m alembic upgrade head
 ```

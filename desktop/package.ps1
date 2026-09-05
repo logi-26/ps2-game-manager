@@ -18,8 +18,8 @@
         pwsh ./package.ps1 -Icon path\to\icon.ico
         pwsh ./package.ps1 -Fresh                           # re-stage lib/ hdd/ POPSTARTER/ first
 
-    Output: build-local/release/windows/OPLPOPS-Manager/OPLPOPS-Manager.exe
-    (zip the OPLPOPS-Manager folder to hand it to someone else)
+    Output: build-local/release/windows/PS2GM/PS2GM.exe
+    (zip the PS2GM folder to hand it to someone else)
 #>
 param(
     [string]$AppVersion = '0.6.1',
@@ -39,7 +39,7 @@ $packageDir = Join-Path $buildLocal 'release\windows'
 #    all as siblings, matching what PopsGameManager.getCurrentDirectory() expects).
 #    Wipe build-local/run/ first: -Run leaves it live for interactive testing, and
 #    the app rewrites files next to its jar on every launch (settings.xml,
-#    READ ME.txt, start-oplpops.*, ...) - none of that belongs in a shipped image.
+#    READ ME.txt, start-ps2gm.*, ...) - none of that belongs in a shipped image.
 if (Test-Path $runDir) { Remove-Item -Recurse -Force $runDir }
 & (Join-Path $root 'build.ps1') -Stage -Fresh:$Fresh
 if ($LASTEXITCODE -ne 0) { throw "build.ps1 -Stage failed" }
@@ -55,7 +55,7 @@ $cp = @(
 
 Write-Host "==> Computing required JDK modules with jdeps"
 $modules = & jdeps --multi-release 11 --print-module-deps --ignore-missing-deps `
-    --class-path $cp (Join-Path $runDir 'OPLPOPS-Manager-local.jar')
+    --class-path $cp (Join-Path $runDir 'PS2GM-local.jar')
 if ($LASTEXITCODE -ne 0) { throw "jdeps failed" }
 $modules = ($modules | Select-Object -Last 1).Trim()
 Write-Host "    modules: $modules"
@@ -69,15 +69,15 @@ New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
 #    siblings there, exactly like build.ps1 -Run's build-local/run/.
 $jpackageArgs = @(
     '--type', 'app-image'
-    '--name', 'OPLPOPS-Manager'
+    '--name', 'PS2GM'
     '--app-version', $AppVersion
     '--vendor', $Vendor
     '--input', $runDir
-    '--main-jar', 'OPLPOPS-Manager-local.jar'
-    '--main-class', 'oplpops.game.manager.Main'
+    '--main-jar', 'PS2GM-local.jar'
+    '--main-class', 'ps2gm.game.manager.Main'
     '--add-modules', $modules
     '--dest', $packageDir
-    '--java-options', "-Doplpops.api.baseurl=$ApiBaseUrl"
+    '--java-options', "-Dps2gm.api.baseurl=$ApiBaseUrl"
 )
 if ($Icon) { $jpackageArgs += @('--icon', $Icon) }
 
@@ -85,7 +85,7 @@ Write-Host "==> Running jpackage (app-image, modules: $modules)"
 & jpackage @jpackageArgs
 if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 
-$exe = Join-Path $packageDir 'OPLPOPS-Manager\OPLPOPS-Manager.exe'
+$exe = Join-Path $packageDir 'PS2GM\PS2GM.exe'
 Write-Host "==> Packaged: $exe"
-Write-Host "    No separate Java install needed. Zip the OPLPOPS-Manager folder to share it."
+Write-Host "    No separate Java install needed. Zip the PS2GM folder to share it."
 Write-Host "    (Mac/Linux users: see bundle-jar.ps1 instead - jpackage doesn't cross-compile.)"

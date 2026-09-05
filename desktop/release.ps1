@@ -13,7 +13,7 @@
         pwsh ./release.ps1 -ApiBaseUrl http://10.0.0.5:8000/v1
         pwsh ./release.ps1 -Fresh
 
-    Output: build-local/release/windows/OPLPOPS-Manager/OPLPOPS-Manager.exe
+    Output: build-local/release/windows/PS2GM/PS2GM.exe
             build-local/release/jar/
 #>
 param(
@@ -39,5 +39,5 @@ if ($LASTEXITCODE -ne 0) { throw "bundle-jar.ps1 failed" }
 
 Write-Host ""
 Write-Host "===> Release built at $(Join-Path $root 'build-local\release')"
-Write-Host "     windows\OPLPOPS-Manager\OPLPOPS-Manager.exe  - zip, no Java needed"
+Write-Host "     windows\PS2GM\PS2GM.exe  - zip, no Java needed"
 Write-Host "     jar\                                          - zip, needs Java 11+"
