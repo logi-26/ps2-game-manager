@@ -7,11 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -37,17 +33,21 @@ public class HDLDumpManager {
     }
 
 
-    // Upload a PS2 game to the console using HDL_Dump
-    public void hdlDumpUploadGame(AddGameHDDScreenPS2 addGameScreen, String destination, String gameName, String gamePath) throws IOException, InterruptedException{
+    // Upload a PS2 game to the console using HDL_Dump (on a daemon thread; reports through FtpTransferProgress)
+    public void hdlDumpUploadGame(FtpTransferProgress progress, String destination, String gameName, String gamePath) throws IOException, InterruptedException{
         timeRemaining = "0:00";
-        new BackgroundWorker(destination, gameName, gamePath, addGameScreen).execute();
+        Thread worker = new Thread(() -> runUpload(progress, destination, gameName, gamePath), "hdl-dump-upload");
+        worker.setDaemon(true);
+        worker.start();
     }
-    
-    
-    // Batch upload PS2 games to the console using HDL_Dump
-    public void hdlDumpUploadGameBatch(AddGameHDDScreenPS2 addGameScreen, String destination, ArrayList<Path> gamePathList) throws IOException, InterruptedException{
+
+
+    // Batch upload PS2 games to the console using HDL_Dump (on a daemon thread; reports through FtpTransferProgress)
+    public void hdlDumpUploadGameBatch(FtpTransferProgress progress, String destination, ArrayList<Path> gamePathList) throws IOException, InterruptedException{
         timeRemaining = "0:00";
-        new BatchBackgroundWorker(destination, gamePathList, addGameScreen).execute();
+        Thread worker = new Thread(() -> runBatchUpload(progress, destination, gamePathList), "hdl-dump-upload-batch");
+        worker.setDaemon(true);
+        worker.start();
     }
     
 
@@ -214,39 +214,19 @@ public class HDLDumpManager {
     }
     
     
-    // Background worker thread: this uploads multiple games to the console and updates the progress bar in the GUI
-    public class BatchBackgroundWorker extends SwingWorker<Object, File> {
-    
-        String destination;
-        String name;
+    // Batch upload: multiple games to the console via hdl_dump, reporting through FtpTransferProgress.
+    // Was an inner SwingWorker (BatchBackgroundWorker); now a plain method run on a daemon thread.
+    private void runBatchUpload(FtpTransferProgress progress, String destination, ArrayList<Path> gamePathList) {
+
+        String name = null;
         String path;
         String downloadSpeed = null;
         boolean errorConnecting = false;
-        JLabel labelTimeRemaining; 
-        JLabel labelDownloadSpeed; 
-        JProgressBar progressBar;
-        JTextField gameNameDisplayText;
-        JTextField gameCounterDisplayText;
-        AddGameHDDScreenPS2 addGameScreen;
-        ArrayList<Path> gamePathList;
         String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
-        
-        public BatchBackgroundWorker(String destination, ArrayList<Path> gamePathList, AddGameHDDScreenPS2 addGameScreen) {
-            this.destination = destination;
-            this.labelTimeRemaining = addGameScreen.getTimeRemainingLabel();
-            this.labelDownloadSpeed = addGameScreen.getUploadSpeedLabel();
-            this.progressBar = addGameScreen.getProgressBar();
-            this.gameNameDisplayText = addGameScreen.getGameNameLabel();
-            this.gameCounterDisplayText = addGameScreen.getGameCounterLabel();
-            
-            this.addGameScreen = addGameScreen;
-            this.gamePathList = gamePathList;
-        }
 
-        @Override
-        protected Object doInBackground() throws Exception {
+        try {
 
-            // Check the users operating system to determine which version of the app to execute 
+            // Check the users operating system to determine which version of the app to execute
             String appFolder = "windows";
             String appName = "hdl_dump.exe";
 
@@ -270,10 +250,10 @@ public class HDLDumpManager {
                 if (name.length() > 4){for (String regionCode : REGION_CODES){if (name.substring(0, 5).equals(regionCode)) {name = name.substring(12, name.length());}}}
 
                 // Set the game name in the text field
-                gameNameDisplayText.setText(" " + name);
+                progress.setGameName(" " + name);
                 
                 // Set the game ptrocessed counter in the text field
-                gameCounterDisplayText.setText(count + "/" + gamePathList.size());
+                progress.setGameCounter(count + "/" + gamePathList.size());
                 
                 List<String> commands = new ArrayList<>();
                 commands.add(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "tools" + File.separator + appFolder + File.separator + appName);
@@ -366,12 +346,11 @@ public class HDLDumpManager {
                     }
 
                     if (downloadSpeed != null){
-                        labelTimeRemaining.setText(timeRemaining);
-                        labelDownloadSpeed.setText(downloadSpeed);
+                        progress.setTimeRemaining(timeRemaining);
+                        progress.setUploadSpeed(downloadSpeed);
                     }
 
-                    progressBar.setValue(percentDownloaded);
-                    progressBar.repaint();
+                    progress.setProgress(percentDownloaded);
                 }
 
                 // Wait for HDL_Dump
@@ -384,30 +363,28 @@ public class HDLDumpManager {
 
             // END OF LOOP!!
             }
-            
-            return null;
         }
+        catch (Exception ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+        }
+        finally {
 
-        @Override
-        protected void done(){
-            
             if (!errorConnecting) {
-                labelTimeRemaining.setText("00:00");
-                labelDownloadSpeed.setText("0MB/sec");
-                progressBar.setValue(100);
-                progressBar.repaint();
+                progress.setTimeRemaining("00:00");
+                progress.setUploadSpeed("0MB/sec");
+                progress.setProgress(100);
             }
-            
+
             uploadInProgress = false;
-            addGameScreen.setUploadInProgress(false);
-            addGameScreen.closeDialog();
-            
+            progress.setInProgress(false);
+            progress.closeWindow();
+
             List<Game> gameList = null;
 
             // Try and get the PS2 game list from the console, write the game list.dat file, callback to update the main gui
             HDLDumpManager hdlDump = new HDLDumpManager();
             try {
-                gameList = hdlDump.hdlDumpGetTOC(PopsGameManager.getPS2IP()); 
+                gameList = hdlDump.hdlDumpGetTOC(PopsGameManager.getPS2IP());
 
                 if (gameList != null && gameList.size() >0){
                     GameListManager.writeGameListFilePS2(gameList);
@@ -415,41 +392,24 @@ public class HDLDumpManager {
                     // Try and load the game data from the PS2 game list file
                     try {GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString());}
                 }
-            } 
+            }
             catch (IOException | InterruptedException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-            
+
             if (gameList != null && gameList.size()>0){PopsGameManager.callbackToUpdateGUIGameList(null, gameList.size()-1);}
         }
     }
-    
-    
-    // Background worker thread: this uploads a game to the console and updates the progress bar in the GUI
-    public class BackgroundWorker extends SwingWorker<Object, File> {
-    
-        String destination;
-        String name;
-        String path;
+
+
+    // Single upload: one game to the console via hdl_dump, reporting through FtpTransferProgress.
+    // Was an inner SwingWorker (BackgroundWorker); now a plain method run on a daemon thread.
+    private void runUpload(FtpTransferProgress progress, String destination, String name, String path) {
+
         String downloadSpeed = null;
         boolean errorConnecting = false;
-        JLabel labelTimeRemaining; 
-        JLabel labelDownloadSpeed; 
-        JProgressBar progressBar;
-        AddGameHDDScreenPS2 addGameScreen;
-        
-        public BackgroundWorker(String destination, String name, String path, AddGameHDDScreenPS2 addGameScreen) {
-            this.destination = destination;
-            this.name = name;
-            this.path = path;
-            this.labelTimeRemaining = addGameScreen.getTimeRemainingLabel();
-            this.labelDownloadSpeed = addGameScreen.getUploadSpeedLabel();
-            this.progressBar = addGameScreen.getProgressBar();
-            this.addGameScreen = addGameScreen;
-        }
 
-        @Override
-        protected Object doInBackground() throws Exception {
+        try {
 
-            // Check the users operating system to determine which version of the app to execute 
+            // Check the users operating system to determine which version of the app to execute
             String appFolder = "windows";
             String appName = "hdl_dump.exe";
 
@@ -549,12 +509,11 @@ public class HDLDumpManager {
                 }
 
                 if (downloadSpeed != null){
-                    labelTimeRemaining.setText(timeRemaining);
-                    labelDownloadSpeed.setText(downloadSpeed);
+                    progress.setTimeRemaining(timeRemaining);
+                    progress.setUploadSpeed(downloadSpeed);
                 }
 
-                progressBar.setValue(percentDownloaded);
-                progressBar.repaint();
+                progress.setProgress(percentDownloaded);
             }
 
             // Wait for HDL_Dump
@@ -564,29 +523,29 @@ public class HDLDumpManager {
             closeQuietly(stdInput, stdError);
 
             if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);
-
-            return null;
         }
+        catch (Exception ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+        }
+        finally {
 
-        @Override
-        protected void done(){
-            
             if (!errorConnecting) {
-                labelTimeRemaining.setText("00:00");
-                labelDownloadSpeed.setText("0MB/sec");
-                progressBar.setValue(100);
-                progressBar.repaint();
+                progress.setTimeRemaining("00:00");
+                progress.setUploadSpeed("0MB/sec");
+                progress.setProgress(100);
             }
-            
+
             uploadInProgress = false;
-            addGameScreen.setUploadInProgress(false);
-            
+            progress.setInProgress(false);
+            // NOTE: the single (non-batch) PS2 upload deliberately leaves its window open,
+            // matching the old SwingWorker.done() which called setUploadInProgress(false) only.
+
             List<Game> gameList = null;
-            
+
             // Try and get the PS2 game list from the console, write the game list.dat file, callback to update the main gui
             HDLDumpManager hdlDump = new HDLDumpManager();
             try {
-                gameList = hdlDump.hdlDumpGetTOC(PopsGameManager.getPS2IP()); 
+                gameList = hdlDump.hdlDumpGetTOC(PopsGameManager.getPS2IP());
 
                 if (gameList != null && gameList.size() >0){
                     GameListManager.writeGameListFilePS2(gameList);
@@ -594,13 +553,13 @@ public class HDLDumpManager {
                     // Try and load the game data from the PS2 game list file
                     try {GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString());}
                 }
-            } 
+            }
             catch (IOException | InterruptedException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-            
+
             if (gameList != null && gameList.size()>0){PopsGameManager.callbackToUpdateGUIGameList(null, gameList.size()-1);}
         }
     }
-    
+
 
 
     // This launches HDL_Dump for a locally connected USB drive

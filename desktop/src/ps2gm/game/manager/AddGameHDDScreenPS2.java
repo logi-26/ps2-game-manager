@@ -17,9 +17,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 
-public class AddGameHDDScreenPS2 extends javax.swing.JDialog {
+public class AddGameHDDScreenPS2 extends javax.swing.JDialog implements FtpTransferProgress {
 
     private boolean batchMode;
     private JTextField textFieldGamePath;
@@ -41,6 +42,17 @@ public class AddGameHDDScreenPS2 extends javax.swing.JDialog {
     
     public void setUploadInProgress(boolean uploading){uploadInProgress = uploading;}
     private String selectedPath;
+
+
+    // FtpTransferProgress - HDLDumpManager calls these from its upload thread; marshal to the EDT.
+    @Override public void setProgressRange(int max){ SwingUtilities.invokeLater(() -> { UPLOAD_STATUS_BAR.setMinimum(0); UPLOAD_STATUS_BAR.setMaximum(max); }); }
+    @Override public void setProgress(int value){ SwingUtilities.invokeLater(() -> UPLOAD_STATUS_BAR.setValue(value)); }
+    @Override public void setTimeRemaining(String text){ SwingUtilities.invokeLater(() -> jLabelTimeRemaining.setText(text)); }
+    @Override public void setUploadSpeed(String text){ SwingUtilities.invokeLater(() -> jLabelUploadSpeed.setText(text)); }
+    @Override public void setGameName(String text){ SwingUtilities.invokeLater(() -> textFieldGameName.setText(text)); }
+    @Override public void setGameCounter(String text){ SwingUtilities.invokeLater(() -> { if (textFieldGameCounter != null) textFieldGameCounter.setText(text); }); }
+    @Override public void setInProgress(boolean uploading){ uploadInProgress = uploading; }
+    @Override public void closeWindow(){ SwingUtilities.invokeLater(this::dispose); }
     
 
     public AddGameHDDScreenPS2(java.awt.Frame parent, boolean modal, boolean batchMode, String userSelectedPath, File selectedFile) {

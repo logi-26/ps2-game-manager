@@ -13,11 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -75,8 +71,10 @@ public class MyFTPClient {
     
     
     // This adds a PS1 game to the console using FTP in a background thread
-    public void addGameToPS2(AddGameHDDScreenPS1 addGameScreen, List<File> fileList){
-        new BackgroundWorker(addGameScreen, fileList).execute();
+    public void addGameToPS2(FtpTransferProgress progress, List<File> fileList, boolean includeElf){
+        Thread worker = new Thread(() -> runUpload(progress, fileList, includeElf), "ftp-add-game-ps1");
+        worker.setDaemon(true);
+        worker.start();
     }
     
     
@@ -363,44 +361,28 @@ public class MyFTPClient {
     
 
     
-    // Background worker thread: this uploads the file to the console and updates the progress bar in the GUI
-    public class BackgroundWorker extends SwingWorker<Object, File> {
+    // Background worker: uploads the file(s) to the console and reports through FtpTransferProgress.
+    // Was an inner SwingWorker (BackgroundWorker); now a plain method run on a daemon thread by
+    // addGameToPS2(), so the FTP upload no longer depends on Swing. localFileDirectory /
+    // localFileName track the last file processed, for the post-upload cleanup below.
+    private String localFileDirectory;
+    private String localFileName;
 
-        AddGameHDDScreenPS1 addGameScreen;
-        JProgressBar progressBar;
-        JLabel timeRemainingLabel;
-        JLabel uploadSpeedLabel;
-        JTextField textFieldGameName;
-        JTextField textFieldGameCounter;
-        String localFileDirectory;
-        String localFileName;
-        List<File> fileList;
-
-        public BackgroundWorker(AddGameHDDScreenPS1 addGameScreen, List<File> fileList) {
-
-            this.addGameScreen = addGameScreen;
-            this.progressBar = addGameScreen.getProgressBar();
-            this.timeRemainingLabel = addGameScreen.getTimeRemainingLabel();
-            this.uploadSpeedLabel = addGameScreen.getUploadSpeedLabel();
-            this.fileList = fileList;
-        }
-
-        @Override
-        protected Object doInBackground() throws Exception {
-
+    private void runUpload(FtpTransferProgress progress, List<File> fileList, boolean includeElf) {
+        try {
             String remoteDriveVCD = GameListManager.getFormattedVCDDrive();
-            String remotePartitionVCD = GameListManager.getFormattedVCDPartition(); 
+            String remotePartitionVCD = GameListManager.getFormattedVCDPartition();
             String remoteFolderVCD = GameListManager.getFormattedVCDFolder();
             String remoteDriveELF = GameListManager.getFormattedELFDrive();
             String remotePartitionELF = GameListManager.getFormattedELFPartition();
             String remoteFolderELF = GameListManager.getFormattedELFFolder();
-            
+
             String[] splitElfFolder = remoteFolderELF.split("/");
 
             String firstRemotePath = "";
             if (remoteDriveVCD.equals("hdd")) {firstRemotePath = "/pfs/" + remotePartitionVCD + "/";}
             else if (remoteDriveVCD.equals("mass")) {firstRemotePath = "/mass/" + remotePartitionVCD + "/POPS/";}
-            
+
             // Upload each game in the file list
             int count = 0;
             for (File currentFile : fileList){
@@ -408,17 +390,17 @@ public class MyFTPClient {
                 count++;
                 localFileDirectory = currentFile.getParent() + File.separator;
                 localFileName = currentFile.getName().substring(0, currentFile.getName().length()-4);
-                
+
                 // Display the current game name and game counter in the labels in the GUI
-                addGameScreen.getGameNameLabel().setText(" " + currentFile.getName());  
-                if (fileList.size() > 1){addGameScreen.getGameCounterLabel().setText(count + "/" + fileList.size());}
-                
+                progress.setGameName(" " + currentFile.getName());
+                if (fileList.size() > 1){progress.setGameCounter(count + "/" + fileList.size());}
+
                 // Upload file using an InputStream
                 File firstLocalFile = new File(localFileDirectory + localFileName + ".VCD");
                 String firstRemoteFile = firstRemotePath + localFileName + ".VCD";
                 String secondRemotePath = "";
                 String elfPath = "";
-                for (int i = 1; i < splitElfFolder.length; i++){elfPath = elfPath + "/" + splitElfFolder[i];} 
+                for (int i = 1; i < splitElfFolder.length; i++){elfPath = elfPath + "/" + splitElfFolder[i];}
 
                 if (remoteDriveELF.equals("hdd")) {secondRemotePath = "/pfs/" + remotePartitionELF + elfPath + "/";}
                 else if (remoteDriveELF.equals("mass")) {secondRemotePath = "/mass/" + remotePartitionELF + "/POPS/";}
@@ -439,48 +421,44 @@ public class MyFTPClient {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
                 // Upload the VCD file
-                uploadFileToConsole(firstLocalFile, firstRemoteFile, totalUploadedBytes, totalBytesToUpload, start, progressBar, timeRemainingLabel, uploadSpeedLabel);
+                uploadFileToConsole(firstLocalFile, firstRemoteFile, totalUploadedBytes, totalBytesToUpload, start, progress);
 
                 // *****************************************************************************************************************
                 // The easiest way to change between the _.POPS and +OPL partitions was to quickly disconnect and re-connect
                 disconnectFromConsole();
                 // *****************************************************************************************************************
-                
+
                 // If the user also wants to upload the ELF file with the VCD file
-                if (addGameScreen.includeElfFile()){
+                if (includeElf){
 
                     // Connect to the console
                     if (consoleIP != null) {connectToConsole(consoleIP);} else if (PopsGameManager.getPS2IP() != null) {connectToConsole(PopsGameManager.getPS2IP());}
-                    
+
                     // Change the remote directory and set the file type to binary
                     changeDirectory(remoteDriveELF + "/" + remotePartitionELF + "/" + remoteFolderELF);
                     ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
                     // Upload the ELF file
-                    uploadFileToConsole(secondLocalFile, secondRemoteFile, totalUploadedBytes, totalBytesToUpload, start, progressBar, timeRemainingLabel, uploadSpeedLabel);
+                    uploadFileToConsole(secondLocalFile, secondRemoteFile, totalUploadedBytes, totalBytesToUpload, start, progress);
                 }
-                
+
                 // Disconnect from console once the ELF file has been uploaded
                 disconnectFromConsole();
             }
-            
-            return null;
-        }
-
-        @Override
-        protected void done(){
-            
+        } catch (Exception ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+        } finally {
             // Ensure that the console is disconnected and close the dialog window
             disconnectFromConsole();
-            addGameScreen.setUploadInProgress(false);
-            addGameScreen.closeDialog();
+            progress.setInProgress(false);
+            progress.closeWindow();
 
             // Delete the .ELF and .VCD files after they have been fully transfered to the console (in non-batch mode)
-            if (fileList.size() == 1){
+            if (fileList.size() == 1 && localFileDirectory != null){
                 if (new File(localFileDirectory + localFileName + ".ELF").exists() && new File(localFileDirectory + localFileName + ".ELF").isFile()) {new File(localFileDirectory + localFileName + ".ELF").delete();}
                 if (new File(localFileDirectory + localFileName + ".VCD").exists() && new File(localFileDirectory + localFileName + ".VCD").isFile()) {new File(localFileDirectory + localFileName + ".VCD").delete();}
             }
-            
+
             // Try and get the PS1 game list from the console, write the game list.dat file, callback to update the main gui
             List<Game> gameList = GameListManager.getGameListFromConsolePS1();
             if (gameList != null && gameList.size() >0){
@@ -495,10 +473,10 @@ public class MyFTPClient {
             if (gameList != null && gameList.size()>0){PopsGameManager.callbackToUpdateGUIGameList(null, gameList.size()-1);}
         }
     }
-    
+
 
     // This upload a VCD or ELF file to the console
-    private void uploadFileToConsole(File localFile, String remoteFile, int totalUploadedBytes, long totalBytesToUpload, long start, JProgressBar progressBar, JLabel timeRemainingLabel, JLabel uploadSpeedLabel){
+    private void uploadFileToConsole(File localFile, String remoteFile, int totalUploadedBytes, long totalBytesToUpload, long start, FtpTransferProgress progress){
         
         final double NANOS_PER_SECOND = 1000000000.0;
         final double BYTES_PER_MIB = 1024 * 1024;
@@ -512,15 +490,13 @@ public class MyFTPClient {
                     byte[] bytesIn = new byte[4096];
                     int read = 0;
                     totalUploadedBytes = 0;
-                    progressBar.setMinimum(0);
-                    progressBar.setMaximum(toIntExact(totalBytesToUpload));
+                    progress.setProgressRange(toIntExact(totalBytesToUpload));
 
                     while (-1 != (read = inputStream.read(bytesIn))) {
 
                         outputStream.write(bytesIn, 0, read);
                         totalUploadedBytes += read;
-                        progressBar.setValue(totalUploadedBytes);
-                        progressBar.repaint();
+                        progress.setProgress(totalUploadedBytes);
 
                         downloadSpeed = NANOS_PER_SECOND / BYTES_PER_MIB * totalUploadedBytes / (System.nanoTime() - start + 1);
                         long remainingBytesToUpload = totalBytesToUpload - totalUploadedBytes;
@@ -546,8 +522,8 @@ public class MyFTPClient {
                         if (formattedDownloadSpeed.length()>5){formattedDownloadSpeed = formattedDownloadSpeed.substring(2, 5);}
 
                         if (timeRemaining.length() <= 4) {
-                            timeRemainingLabel.setText(getDurationString(Integer.parseInt(timeRemaining), false));
-                            uploadSpeedLabel.setText(formattedDownloadSpeed + "KB/sec");
+                            progress.setTimeRemaining(getDurationString(Integer.parseInt(timeRemaining), false));
+                            progress.setUploadSpeed(formattedDownloadSpeed + "KB/sec");
                         }
                     }
                     inputStream.close();

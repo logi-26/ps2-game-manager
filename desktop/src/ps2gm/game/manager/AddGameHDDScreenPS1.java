@@ -15,12 +15,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 // Form for adding PS1 or PS2 games to the consoles internal HDD
-public class AddGameHDDScreenPS1 extends javax.swing.JDialog {
+public class AddGameHDDScreenPS1 extends javax.swing.JDialog implements FtpTransferProgress {
     
     private final static String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
     private final static JProgressBar UPLOAD_STATUS_BAR = new JProgressBar(0, 100);
@@ -49,6 +50,17 @@ public class AddGameHDDScreenPS1 extends javax.swing.JDialog {
     public JTextField getGameNameLabel(){return textFieldGameName;}
     public JTextField getGameCounterLabel(){return textFieldGameCounter;}
     public void closeDialog(){dispose();}
+
+
+    // FtpTransferProgress - MyFTPClient calls these from its upload thread; marshal to the EDT.
+    @Override public void setProgressRange(int max){ SwingUtilities.invokeLater(() -> { UPLOAD_STATUS_BAR.setMinimum(0); UPLOAD_STATUS_BAR.setMaximum(max); }); }
+    @Override public void setProgress(int value){ SwingUtilities.invokeLater(() -> UPLOAD_STATUS_BAR.setValue(value)); }
+    @Override public void setTimeRemaining(String text){ SwingUtilities.invokeLater(() -> jLabelTimeRemaining.setText(text)); }
+    @Override public void setUploadSpeed(String text){ SwingUtilities.invokeLater(() -> jLabelUploadSpeed.setText(text)); }
+    @Override public void setGameName(String text){ SwingUtilities.invokeLater(() -> textFieldGameName.setText(text)); }
+    @Override public void setGameCounter(String text){ SwingUtilities.invokeLater(() -> { if (textFieldGameCounter != null) textFieldGameCounter.setText(text); }); }
+    @Override public void setInProgress(boolean uploading){ uploadInProgress = uploading; }
+    @Override public void closeWindow(){ SwingUtilities.invokeLater(this::dispose); }
     
     
     
@@ -341,7 +353,7 @@ public class AddGameHDDScreenPS1 extends javax.swing.JDialog {
                                 vcdFileList.add(new File(newVCDName));
                                 
                                 // Upload vcd file and elf file
-                                myFTP.addGameToPS2(this, vcdFileList);
+                                myFTP.addGameToPS2(this, vcdFileList, jCheckBoxIncludeElf.isSelected());
                             }
                             else {
                                 uploadInProgress = false;
@@ -378,7 +390,7 @@ public class AddGameHDDScreenPS1 extends javax.swing.JDialog {
                         vcdFileList.add(new File(newVCDName));
 
                         // Upload vcd file and elf file
-                        myFTP.addGameToPS2(this, vcdFileList);
+                        myFTP.addGameToPS2(this, vcdFileList, jCheckBoxIncludeElf.isSelected());
                     }
                 }
             } catch (Exception ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
@@ -460,7 +472,7 @@ public class AddGameHDDScreenPS1 extends javax.swing.JDialog {
         vcdFilesInDirectory.clear();
         File[] files = new File(selectedPath).listFiles();
         for (File file : files) {if (file.isFile() && file.getName().length() > 4 && file.getName().substring(file.getName().length()-3, file.getName().length()).toUpperCase().equals("VCD")) {vcdFilesInDirectory.add(file);}}
-        myFTP.addGameToPS2(this, vcdFilesInDirectory);
+        myFTP.addGameToPS2(this, vcdFilesInDirectory, jCheckBoxIncludeElf.isSelected());
         
         
     }
