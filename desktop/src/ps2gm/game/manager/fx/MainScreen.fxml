@@ -131,26 +131,36 @@
             </TitledPane>
 
             <HBox spacing="10.0" VBox.vgrow="ALWAYS">
-                <TitledPane collapsible="false" text="Front Cover">
-                    <StackPane minHeight="220.0" minWidth="160.0">
-                        <padding>
-                     <Insets bottom="6.0" left="6.0" right="6.0" top="2.0" />
-                  </padding>
-                        <ImageView fx:id="coverView" fitHeight="210.0" fitWidth="150.0" preserveRatio="true" />
-                    </StackPane>
-                </TitledPane>
-
-                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-                    <TitledPane collapsible="false" text="Game Tools">
-                        <HBox spacing="8.0">
-                            <padding><Insets bottom="8.0" left="8.0" right="8.0" top="2.0" /></padding>
-                            <Button fx:id="artButton" onAction="#onArt" prefWidth="70.0" text="ART" />
-                            <Button fx:id="cfgButton" onAction="#onCfg" prefWidth="70.0" text="CFG" />
-                            <Button fx:id="chtButton" onAction="#onCht" prefWidth="70.0" text="CHT" />
-                            <Button fx:id="vmcButton" onAction="#onVmc" prefWidth="70.0" text="VMC" />
-                        </HBox>
+                <VBox spacing="10.0">
+                    <TitledPane collapsible="false" text="Front Cover">
+                        <StackPane minHeight="220.0" minWidth="160.0">
+                            <padding>
+                         <Insets bottom="6.0" left="6.0" right="6.0" top="2.0" />
+                      </padding>
+                            <ImageView fx:id="coverView" fitHeight="210.0" fitWidth="150.0" preserveRatio="true" />
+                        </StackPane>
                     </TitledPane>
 
+                    <TitledPane collapsible="false" text="Game Tools">
+                        <GridPane hgap="8.0" vgap="8.0">
+                            <padding><Insets bottom="8.0" left="8.0" right="8.0" top="2.0" /></padding>
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" />
+                                <ColumnConstraints hgrow="ALWAYS" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                            <Button fx:id="artButton" maxWidth="Infinity" onAction="#onArt" text="ART" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button fx:id="cfgButton" maxWidth="Infinity" onAction="#onCfg" text="CFG" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Button fx:id="chtButton" maxWidth="Infinity" onAction="#onCht" text="CHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Button fx:id="vmcButton" maxWidth="Infinity" onAction="#onVmc" text="VMC" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        </GridPane>
+                    </TitledPane>
+                </VBox>
+
+                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
                     <TitledPane collapsible="false" text="Config Details" VBox.vgrow="ALWAYS">
                         <GridPane hgap="8.0" vgap="6.0">
                             <padding><Insets bottom="8.0" left="8.0" right="8.0" top="2.0" /></padding>
