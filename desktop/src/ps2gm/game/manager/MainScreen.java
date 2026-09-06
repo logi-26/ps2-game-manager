@@ -2275,14 +2275,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private void jButtonCreateConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCreateConfigActionPerformed
         
         if (jListGameList.getSelectedIndex() != -1) {
-            gameConfigScreen = new GameConfigScreen(this, true);
-            if (PopsGameManager.getCurrentConsole().equals("PS1")) {gameConfigScreen.initialiseGUI(jListGameList.getSelectedIndex(),configManager.gameConfigExists(GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameID(),GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameName()));}
-            else if (PopsGameManager.getCurrentConsole().equals("PS2")) {gameConfigScreen.initialiseGUI(jListGameList.getSelectedIndex(),configManager.gameConfigExists(GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGameID(),GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameName()));}            
-            gameConfigScreen.setLocationRelativeTo(this);
-            gameConfigScreen.setVisible(true); 
-            
-            // Update displayed config details incase they have been modified
-            displayGameDetails();
+            // Ported to JavaFX (Swing GameConfigScreen kept until the migration lands)
+            ps2gm.game.manager.fx.GameConfigScreen.open(jListGameList.getSelectedIndex());
         }
         else {JOptionPane.showMessageDialog(null,"You need to select a game before you can create/edit the config file."," No game selected!",JOptionPane.WARNING_MESSAGE);}
     }//GEN-LAST:event_jButtonCreateConfigActionPerformed
