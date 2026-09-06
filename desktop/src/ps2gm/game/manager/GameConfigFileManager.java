@@ -153,7 +153,7 @@ public class GameConfigFileManager {
     // them to match where they differ (the user may have named the game file slightly differently).
     // Shared by BatchDownloadScreenPS1/PS2 after a batch download finishes - identical for both consoles,
     // since it only touches the CFG files' own Title= line, not the console-specific ART naming.
-    static void renameConfigTitlesToMatch(List<Game> gameList){
+    public static void renameConfigTitlesToMatch(List<Game> gameList){
 
         try (Stream<Path> paths = Files.walk(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator))) {
             paths.forEach(filePath -> {

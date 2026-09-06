@@ -18,13 +18,13 @@ import java.util.List;
  * different existence-check behaviour and only use baseName() below, not
  * isMissing()/resolve().
  */
-final class GameArtFileManager {
+public final class GameArtFileManager {
 
     private GameArtFileManager() {}
 
     // The base OPL ART filename for a game's art of the given kind, without extension.
     // e.g. PS1: "<prefix><name>-<id>.ELF_COV", PS2: "<id>_COV"
-    static String baseName(Game game, String suffix) {
+    public static String baseName(Game game, String suffix) {
         if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
             return PopsGameManager.getFilePrefix() + game.getGameName() + "-" + game.getGameID() + ".ELF" + suffix;
         }
@@ -32,13 +32,13 @@ final class GameArtFileManager {
     }
 
     // True if neither the .jpg nor .png variant is present in a pre-listed filename set.
-    static boolean isMissing(List<String> artList, Game game, String suffix) {
+    public static boolean isMissing(List<String> artList, Game game, String suffix) {
         String base = baseName(game, suffix);
         return !artList.contains(base + ".jpg") && !artList.contains(base + ".png");
     }
 
     // Resolves the actual art file on disk for a game (checks .jpg then .png), or null if neither exists.
-    static File resolve(Game game, String suffix) {
+    public static File resolve(Game game, String suffix) {
         File file = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + baseName(game, suffix) + ".jpg");
         if (file.exists() && !file.isDirectory()) {return file;}
         file = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + baseName(game, suffix) + ".png");

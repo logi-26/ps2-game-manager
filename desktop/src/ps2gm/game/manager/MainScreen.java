@@ -2374,17 +2374,9 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
     private void jMenuBatchDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuBatchDownloadActionPerformed
 
-        // Display the batch download dialog screen
-        if (PopsGameManager.getCurrentConsole().equals("PS1")){
-            batchDownloadScreenPS1 = new BatchDownloadScreenPS1(this, true);
-            batchDownloadScreenPS1.setLocationRelativeTo(this);
-            batchDownloadScreenPS1.setVisible(true);    
-        }
-        else if (PopsGameManager.getCurrentConsole().equals("PS2")){
-            batchDownloadScreenPS2 = new BatchDownloadScreenPS2(this, true);
-            batchDownloadScreenPS2.setLocationRelativeTo(this);
-            batchDownloadScreenPS2.setVisible(true);    
-        }
+        // Display the batch download dialog screen (ported to JavaFX; Swing
+        // BatchDownloadScreenPS1/PS2 kept until the migration lands)
+        ps2gm.game.manager.fx.BatchDownloadScreen.open(PopsGameManager.getCurrentConsole());
     }//GEN-LAST:event_jMenuBatchDownloadActionPerformed
 
     private void jMenuItemPS2EmulatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPS2EmulatorActionPerformed
