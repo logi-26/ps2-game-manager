@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.AddGameHddPs1Controller"
+      spacing="10.0" prefWidth="560.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
+
+    <TitledPane text="Selected Game" collapsible="false">
+        <VBox spacing="8.0">
+            <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Path:" minWidth="80.0"/>
+                <TextField fx:id="gamePathField" editable="false" HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Name:" minWidth="80.0"/>
+                <TextField fx:id="gameNameField" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="gameCounterField" editable="false" alignment="CENTER" prefWidth="70.0" managed="false" visible="false"/>
+            </HBox>
+        </VBox>
+    </TitledPane>
+
+    <TitledPane text="Destination" collapsible="false">
+        <VBox spacing="8.0">
+            <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="VCD Folder:" minWidth="80.0"/>
+                <ComboBox fx:id="vcdDriveCombo" prefWidth="110.0"/>
+                <ComboBox fx:id="vcdFolderCombo" prefWidth="130.0"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="ELF Folder:" minWidth="80.0"/>
+                <ComboBox fx:id="elfFolderCombo" prefWidth="110.0"/>
+                <TextField fx:id="elfSubfolderField" prefWidth="130.0"/>
+                <CheckBox fx:id="includeElfCheck" text="Upload ELF"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Console IP:" minWidth="80.0"/>
+                <TextField fx:id="ipField" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="uploadButton" text="Upload" onAction="#onUpload" prefWidth="90.0"/>
+            </HBox>
+        </VBox>
+    </TitledPane>
+
+    <TitledPane text="Transfer Status" collapsible="false">
+        <VBox spacing="8.0">
+            <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+            <ProgressBar fx:id="progressBar" progress="0.0" maxWidth="Infinity"/>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Remaining:" minWidth="80.0"/>
+                <Label fx:id="timeRemainingLabel" text="00:00" minWidth="70.0"/>
+                <Label fx:id="uploadSpeedLabel" text="0MB/sec"/>
+            </HBox>
+        </VBox>
+    </TitledPane>
+</VBox>

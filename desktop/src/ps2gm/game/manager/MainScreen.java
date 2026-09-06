@@ -771,23 +771,13 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
                     //if (chooser.getSelectedFile().getName().length()-4 < 32 ){
                         AddGameSMBScreen addGameSMBScreen;
-                        AddGameHDDScreenPS1 addGameHDDScreen;
-                        AddGameHDDScreenPS2 addGameHDDScreenPS2;
 
                         switch (PopsGameManager.getCurrentMode()) {
                             case "HDD":
 
-                                if (PopsGameManager.getCurrentConsole().equals("PS1")){
-                                    addGameHDDScreen = new AddGameHDDScreenPS1(this, true, false, null, chooser.getSelectedFile());
-                                    addGameHDDScreen.setLocationRelativeTo(this);
-                                    addGameHDDScreen.setVisible(true);
-                                }
-                                else if (PopsGameManager.getCurrentConsole().equals("PS2")){
-                                    addGameHDDScreenPS2 = new AddGameHDDScreenPS2(this, true, false, null, chooser.getSelectedFile());
-                                    addGameHDDScreenPS2.setLocationRelativeTo(this);
-                                    addGameHDDScreenPS2.setVisible(true);
-                                }
-    
+                                // Ported to JavaFX (Swing AddGameHDDScreenPS1/PS2 kept until the migration lands)
+                                ps2gm.game.manager.fx.AddGameHddScreen.open(PopsGameManager.getCurrentConsole(), false, null, chooser.getSelectedFile());
+
                                 break;
                             case "HDD_USB":
                             case "SMB":
@@ -838,10 +828,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                 if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     selectedGameFolder = new File(chooser.getSelectedFile().toString());
 
-                    AddGameHDDScreenPS1 addGameHDDScreenPS1;
-                    AddGameHDDScreenPS2 addGameHDDScreenPS2;
                     AddGameSMBScreen addGameSMBScreen;
-                    
+
                     switch (PopsGameManager.getCurrentMode()) {
                         case "HDD":
 
@@ -854,9 +842,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                                 
                                 // Display the batch add PS1 game scrren
                                 if (folderContainsVCDFiles){
-                                    addGameHDDScreenPS1 = new AddGameHDDScreenPS1(this, true, true, chooser.getSelectedFile().getPath(),chooser.getSelectedFile());
-                                    addGameHDDScreenPS1.setLocationRelativeTo(this);
-                                    addGameHDDScreenPS1.setVisible(true);
+                                    ps2gm.game.manager.fx.AddGameHddScreen.open("PS1", true, chooser.getSelectedFile().getPath(), chooser.getSelectedFile());
                                 }
                                 else{JOptionPane.showMessageDialog(null,"This directory does not appear to contain any VCD files!"," No Games Detected!",JOptionPane.WARNING_MESSAGE);}
                             }
@@ -869,9 +855,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                                 
                                 // Display the batch add PS2 game scrren
                                 if (folderContainsISOFiles){
-                                    addGameHDDScreenPS2 = new AddGameHDDScreenPS2(this, true, true, chooser.getSelectedFile().getPath(),chooser.getSelectedFile());
-                                    addGameHDDScreenPS2.setLocationRelativeTo(this);
-                                    addGameHDDScreenPS2.setVisible(true);
+                                    ps2gm.game.manager.fx.AddGameHddScreen.open("PS2", true, chooser.getSelectedFile().getPath(), chooser.getSelectedFile());
                                 }
                                 else{JOptionPane.showMessageDialog(null,"This directory does not appear to contain any ISO files!"," No Games Detected!",JOptionPane.WARNING_MESSAGE);}
                             }
