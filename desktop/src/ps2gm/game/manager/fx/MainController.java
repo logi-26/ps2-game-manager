@@ -28,6 +28,8 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -40,6 +42,7 @@ import ps2gm.game.manager.BackendClient;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameConfigFileManager;
 import ps2gm.game.manager.GameListManager;
+import ps2gm.game.manager.GameLongNameRenamer;
 import ps2gm.game.manager.GenerateSpineART;
 import ps2gm.game.manager.HDLDumpManager;
 import ps2gm.game.manager.MyFTPClient;
@@ -721,11 +724,74 @@ public class MainController implements MyListener {
             if ("PS1".equals(PopsGameManager.getCurrentConsole())) { launchEmulatorPS1(); }
             else { launchEmulatorPS2(); }
         });
+        MenuItem rename = new MenuItem("Rename");
+        rename.setOnAction(e -> renameSelectedGame());
         MenuItem delete = new MenuItem("Delete");
         delete.setOnAction(e -> {
             if (gameList.getSelectionModel().getSelectedIndex() != -1) { deleteGame(); }
         });
-        return new ContextMenu(run, delete);
+        return new ContextMenu(run, rename, delete);
+    }
+
+    /** Prompt for a new (32-char capped) title and rename the selected game in place. */
+    private void renameSelectedGame() {
+        Game g = selectedGame();
+        if (g == null) { return; }
+        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        String mode = PopsGameManager.getCurrentMode();
+
+        if (!ps1 && "HDD".equals(mode)) {
+            error("Renaming a PS2 game in HDD mode is not supported.", " Rename Game");
+            return;
+        }
+
+        String oldName = g.getGameName();
+        String seed = oldName.length() > 32 ? oldName.substring(0, 32) : oldName;
+        TextInputDialog dialog = new TextInputDialog(seed);
+        dialog.setTitle(" Rename Game");
+        dialog.setHeaderText(null);
+        dialog.setContentText("New name (max 32 characters):");
+        if (stage != null) { dialog.initOwner(stage); }
+        dialog.getEditor().setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().length() <= 32 ? c : null));
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) { return; }
+        String newName = result.get().trim();
+        if (newName.isEmpty() || newName.equals(oldName)) { return; }
+
+        List<Game> list = ps1 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
+        if (list != null) {
+            for (Game other : list) {
+                if (other.getGameName().equals(newName)) {
+                    error("A game with that name is already in the list.", " Rename Game");
+                    return;
+                }
+            }
+        }
+
+        GameLongNameRenamer renamer = new GameLongNameRenamer(g, oldName, newName);
+        boolean regenerate = false;
+        if (ps1) {
+            switch (mode) {
+                case "SMB":     regenerate = renamer.renameLocalPS1("SB."); break;
+                case "HDD_USB": regenerate = renamer.renameLocalPS1("XX."); break;
+                case "HDD":     renamer.ftpRenamePS1(); break;   // async, refreshes itself
+                default: break;
+            }
+        } else {
+            regenerate = renamer.renameLocalPS2();               // SMB / HDD_USB
+        }
+
+        if (regenerate) {
+            if (ps1) {
+                GameListManager.createGameListsPS1();
+                GameListManager.writeConfigELM();
+            } else {
+                GameListManager.createGameListsPS2(false);
+            }
+            PopsGameManager.callbackToUpdateGUIGameList(null, -1);
+        }
     }
 
     // --------------------------------------------------------- delete game
