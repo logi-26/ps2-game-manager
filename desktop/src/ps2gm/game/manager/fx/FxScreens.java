@@ -21,20 +21,31 @@ final class FxScreens {
 
     private FxScreens() {}
 
+    /** Implemented by a controller that needs its own {@link Stage} (to veto close, set size, etc.). */
+    interface StageAware {
+        void stageReady(Stage stage);
+    }
+
     static <C> void open(String fxmlResource, String title, boolean resizable, Consumer<C> init) {
         FxRuntime.ensureStarted();
         Platform.runLater(() -> {
             try {
                 FXMLLoader loader = new FXMLLoader(FxScreens.class.getResource(fxmlResource));
                 Parent root = loader.load();
+                Object controller = loader.getController();
                 if (init != null) {
-                    init.accept(loader.getController());
+                    @SuppressWarnings("unchecked")
+                    C typed = (C) controller;
+                    init.accept(typed);
                 }
                 Stage stage = new Stage();
                 stage.setTitle(title);
                 stage.setResizable(resizable);
                 stage.setScene(new Scene(root));
                 stage.centerOnScreen();
+                if (controller instanceof StageAware sa) {
+                    sa.stageReady(stage);
+                }
                 stage.show();
             } catch (Exception ex) {
                 PopsGameManager.displayErrorMessageDebug("FX screen '" + fxmlResource + "' failed to open: " + ex);

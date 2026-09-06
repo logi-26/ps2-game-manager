@@ -2416,19 +2416,17 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         if (PopsGameManager.getCurrentConsole().equals("PS1")) {
             String selectedGame = GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameName();
             
-            if (new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + selectedGame + "-" + GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameID() + ".VCD").exists()){
-                HashCheckerScreen hashCheckScreen = new HashCheckerScreen(this, true, new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + selectedGame + "-" + GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameID() + ".VCD"));
-                hashCheckScreen.setLocationRelativeTo(this);
-                hashCheckScreen.setVisible(true);
-            }  
-        }          
+            File ps1File = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + selectedGame + "-" + GameListManager.getGamePS1(jListGameList.getSelectedIndex()).getGameID() + ".VCD");
+            if (ps1File.exists()){
+                // Ported to JavaFX (Swing ps2gm.game.manager.HashCheckerScreen kept until the migration lands).
+                ps2gm.game.manager.fx.HashCheckerScreen.open(ps1File);
+            }
+        }
         else if (PopsGameManager.getCurrentConsole().equals("PS2")) {
             File selectedGameFile = new File(GameListManager.getGamePS2(jListGameList.getSelectedIndex()).getGamePath());
 
             if (selectedGameFile.exists()){
-                HashCheckerScreen hashCheckScreen = new HashCheckerScreen(this, true, selectedGameFile);
-                hashCheckScreen.setLocationRelativeTo(this);
-                hashCheckScreen.setVisible(true);
+                ps2gm.game.manager.fx.HashCheckerScreen.open(selectedGameFile);
             }
         }
     }//GEN-LAST:event_jMenuItemMD5ActionPerformed
