@@ -128,282 +128,49 @@ public class GameLongNameScreen extends javax.swing.JDialog {
     }
     
     
-    // Rename a local PS1 VCD and ELF file (SMB or HDD_USB)
-    private void renameLocalGamePS1(String prefix){
-        
-        // Ensure that the VCD and ELF files still exists
-        File selectedGame = new File(longNameList.get(selectedIndex).getGamePath());
-        if (selectedGame.exists()){
-
-            boolean success;
-
-            // Rename the VCD file
-            success = selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + jTextFieldGameNewTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".VCD"));
-
-            // Rename the ELF file
-            File elfFile = new File(selectedGame.getParent() + File.separator + prefix + selectedGame.getName().substring(0, selectedGame.getName().length()-3) + "ELF");
-            if (elfFile.exists()){  
-                success = elfFile.renameTo(new File(selectedGame.getParentFile() + File.separator + prefix + jTextFieldGameNewTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".ELF"));
-            } 
-
-            // Rename the PS1 game art files
-            renameGameART();
-            
-            // Rename the PS1 config files
-            renameConfigFilesPS1();
-            
-            String gameID = longNameList.get(selectedIndex).getGameID();
-            
-            // If the game is a multi-disc game, modify the DISCS.TXT file with the new file name
-            if (longNameList.get(selectedIndex).getMultiDiscGame()) {renameMultiDiscPS1(longNameList.get(selectedIndex));}
-            else {
-                // Rename the game folder if it exists
-                File gameFolder = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + jTextFieldGameOldTitle.getText() + "-" + gameID);
-                if (gameFolder.exists() && gameFolder.isDirectory()){gameFolder.renameTo(new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + jTextFieldGameNewTitle.getText() + "-" + gameID));}
-            }
-            
-            // Remove the game from the list, update main game list and generate a new conf_elm.cfg file
-            if (success){updateGameList("PS1");}
-        }
-    }
-    
-    
-    // Rename a local PS2 ISO (SMB or HDD_USB)
-    private void renameLocalGamePS2(){
-
-        // Ensure that the ISO file still exists
-        File selectedGame = new File(longNameList.get(selectedIndex).getGamePath());
-        if (selectedGame.exists()){
-            
-            boolean success;
-            
-            // Rename the ISO/ZSO file, preserving whichever extension it actually has
-            String extension = selectedGame.getName().substring(selectedGame.getName().length() - 4);
-            success = selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + longNameList.get(selectedIndex).getGameID() + "." + jTextFieldGameNewTitle.getText() + extension));
-
-            // Remove the game from the list, update main game list and generate a new conf_elm.cfg file
-            if (success){updateGameList("PS2");}
-        }
-    }
-    
-    
-    // This renames the PS1 ART files if they exist (PS2 ART does not contain the game name)
-    private void renameGameART(){
-        
-        switch (PopsGameManager.getCurrentMode()) {
-            case "SMB":
-                renameArtPS1("SB.","COV");
-                renameArtPS1("SB.","COV2");
-                renameArtPS1("SB.","BG");
-                renameArtPS1("SB.","ICO");
-                renameArtPS1("SB.","SCR");
-                renameArtPS1("SB.","SCR2");
-                break;
-            case "HDD_USB":
-                renameArtPS1("XX.","COV");
-                renameArtPS1("XX.","COV2");
-                renameArtPS1("XX.","BG");
-                renameArtPS1("XX.","ICO");
-                renameArtPS1("XX.","SCR");
-                renameArtPS1("XX.","SCR2");
-                break;
-            case "HDD":
-
-                break;
-        }    
-    }
-    
-    
-    // This renames the ART
-    private void renameArtPS1(String prefix, String coverType){
-
-        String artFolder = PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator;
-        String gameID = longNameList.get(selectedIndex).getGameID();
-        
-        // Rename art file if it exists
-        if (coverType.equals("ICO")){
-            File frontCover = new File(artFolder + prefix + jTextFieldGameOldTitle.getText() + "-" + gameID + ".ELF_" + coverType + ".png");
-            if (frontCover.exists() && frontCover.isFile()){frontCover.renameTo(new File(artFolder + prefix + jTextFieldGameNewTitle.getText() + "-" + gameID + ".ELF_" + coverType + ".png"));}
-        }
-        else {
-            File frontCover = new File(artFolder + prefix + jTextFieldGameOldTitle.getText() + "-" + gameID + ".ELF_" + coverType + ".jpg");
-            if (frontCover.exists() && frontCover.isFile()){frontCover.renameTo(new File(artFolder + prefix + jTextFieldGameNewTitle.getText() + "-" + gameID + ".ELF_" + coverType + ".jpg"));}
-        }           
-    }
-    
-    
-    // Rename the PS1 config files
-    private void renameConfigFilesPS1(){
-        
-        String gameID = longNameList.get(selectedIndex).getGameID();
-        File folder = new File(PopsGameManager.getOPLFolder() + File.separator + "CFG");
-        File[] listOfFiles = folder.listFiles();
-
-        for (File file : listOfFiles) {
-            if (file.isFile()) {
-                if (file.getName().equals("SB." + jTextFieldGameOldTitle.getText() + "-" + gameID + ".ELF.cfg")){
-                    file.renameTo(new File(file.getParentFile() + File.separator + "SB." + jTextFieldGameNewTitle.getText() + "-" + gameID + ".ELF.cfg"));
-                }
-                
-                if (file.getName().equals("XX." + jTextFieldGameOldTitle.getText() + "-" + gameID + ".ELF.cfg")){
-                    file.renameTo(new File(file.getParentFile() + File.separator + "XX." + jTextFieldGameNewTitle.getText() + "-" + gameID + ".ELF.cfg"));
-                }
-            }
-        }
-    }
-    
-    
-    // Modify the DISCS.TXT file with the new file name
-    private void renameMultiDiscPS1(Game selectedGame){
-
-        File discsFolder = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + selectedGame.getGameName() + "-" + selectedGame.getGameID());
-        File discsFile = new File(discsFolder + File.separator + "DISCS.TXT");
-
-        ArrayList<File> otherFolderList = new ArrayList<>();
-        
-        // Check the DISCS.TXT file for the game that is being renamed
-        if (discsFile.exists() && discsFile.isFile()){
-
-            // Store each of the game names from the text file into a list
-            ArrayList<String> discsInFile = new ArrayList<>();
-            
-            // Replace the game name that is in the DISCS.TXT file
-            try (BufferedReader br = new BufferedReader(new FileReader(discsFile))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                   if (line.equals(selectedGame.getGameName() + "-" + selectedGame.getGameID() + ".VCD")){discsInFile.add(jTextFieldGameNewTitle.getText() + "-" + selectedGame.getGameID() + ".VCD");}
-                   else {discsInFile.add(line);}
-                }
-            } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-            
-            // Write the new modified text file using the data in the array list
-            if (!discsInFile.isEmpty()){try {Files.write(Paths.get(discsFile.getAbsolutePath()),discsInFile,Charset.defaultCharset());} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}}
-            
-            String gameID = longNameList.get(selectedIndex).getGameID();
-            
-            // Rename the folder that contains the DISCS.TXT file
-            discsFolder.renameTo(new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + jTextFieldGameNewTitle.getText() + "-" + gameID));
-            
-            // Using the DISCS.TXT file, determine if there are any other game folders for the other discs in this mult-disc collection
-            if (discsInFile.size() > 1){
-                discsInFile.stream().filter((arrayItem) -> (!arrayItem.equals(jTextFieldGameNewTitle.getText() + "-" + selectedGame.getGameID() + ".VCD"))).forEachOrdered((arrayItem) -> {
-                    otherFolderList.add(new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + arrayItem.substring(0, arrayItem.length()-16)));
-                });
-            }
-            
-            // Modify the DISC.TXT file in all of the other game folders so that they all contain the new game name and not the old game name
-            if (!otherFolderList.isEmpty()){
-                for (File folder : otherFolderList){
-                    File otherDiscsFile = new File(folder.getAbsolutePath() + File.separator + "DISCS.TXT");
-                    discsInFile.clear();
-
-                    // Replace the game name that is in the DISCS.TXT file
-                    try (BufferedReader br = new BufferedReader(new FileReader(otherDiscsFile))) {
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                           if (line.equals(selectedGame.getGameName() + "-" + selectedGame.getGameID() + ".VCD")){discsInFile.add(jTextFieldGameNewTitle.getText() + "-" + selectedGame.getGameID() + ".VCD");}
-                           else {discsInFile.add(line);}
-                        }
-                    } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-
-                    // Write the new modified text file using the data in the array list
-                    if (!discsInFile.isEmpty()){try {Files.write(Paths.get(otherDiscsFile.getAbsolutePath()),discsInFile,Charset.defaultCharset());} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}}
-                }
-            }
-        } 
-    }
-    
-    
-    // Rename the selected game
+    // Rename the selected game (file work delegated to GameLongNameRenamer)
     private void renameGame(){
 
+        String newTitle = jTextFieldGameNewTitle.getText();
+        if (newTitle.equals("")) { return; }
+
+        Game game = longNameList.get(selectedIndex);
+        GameLongNameRenamer renamer = new GameLongNameRenamer(game, jTextFieldGameOldTitle.getText(), newTitle);
+        String mode = PopsGameManager.getCurrentMode();
+
         if (currentConsole.equals("PS1")){
-            
-            if (!jTextFieldGameNewTitle.getText().equals("")){
-                
-                // ensure that a game with the same name is not already in the game list
-                boolean gameNameAlreadyUsed = false;
-                for (Game game : GameListManager.getGameListPS1()){if (game.getGameName().equals(jTextFieldGameNewTitle.getText())){gameNameAlreadyUsed = true;}}
-                
-                if (!gameNameAlreadyUsed){
-                    switch (PopsGameManager.getCurrentMode()) {
-                        case "SMB":
-                            renameLocalGamePS1("SB.");
-                            break;
-                        case "HDD_USB":
-                            renameLocalGamePS1("XX.");
-                            break;
-                        case "HDD":
-                            
-                            // FTP client
-                            MyFTPClient myFTP = new MyFTPClient();
 
-                            // Connect to the PS2 console to rename the VCD file
-                            if (myFTP.connectToConsole(PopsGameManager.getPS2IP())) {
-
-                                String remoteDrive = GameListManager.getFormattedVCDDrive();
-                                if (remoteDrive.equals("hdd")) {remoteDrive = "pfs";}
-
-                                // Check if the VCD file is still on the console
-                                List<String> remoteDirectoryList = myFTP.listRemoteDirectory("/pfs/0/", "__.POPS", true);
-                                boolean vcdOnConsole = false;
-                                for (String arrayItem : remoteDirectoryList){if (arrayItem.equals(jTextFieldGameOldTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".VCD")){vcdOnConsole = true;}}
-
-                                // Rename the VCD file on the console
-                                if (vcdOnConsole) {myFTP.renameFile("/pfs/0/" + jTextFieldGameOldTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".VCD", "/pfs/0/" + jTextFieldGameNewTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".VCD");}
-                                    
-                                // Disconnect the FTP connection with the console
-                                myFTP.disconnectFromConsole();
-                            } 
-                           
-                            // Connect to the PS2 console to rename the ELF file
-                            if (myFTP.connectToConsole(PopsGameManager.getPS2IP())) {
-
-                                String remoteDrive = GameListManager.getFormattedELFDrive();
-                                if (remoteDrive.equals("hdd")) {remoteDrive = "pfs";}
-                                
-                                // Check if the ELF file is still on the console
-                                List<String> remoteDirectoryList = myFTP.listRemoteDirectory("/pfs/0/APPS/", "+OPL", true);
-                                boolean elfOnConsole = false;
-                                for (String arrayItem : remoteDirectoryList){if (arrayItem.equals(jTextFieldGameOldTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".ELF")){elfOnConsole = true;}}
-
-                                // Rename the ELF file on the console
-                                if (elfOnConsole) {myFTP.renameFile("/pfs/0/" + jTextFieldGameOldTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".ELF", "/pfs/0/" + jTextFieldGameNewTitle.getText() + "-" + longNameList.get(selectedIndex).getGameID() + ".ELF");}
-   
-                                // Disconnect the FTP connection with the console
-                                myFTP.disconnectFromConsole();
-                            } 
-                            break;
-                    }    
-                } else {
-                    // Display a message that the name is already in the list
+            for (Game g : GameListManager.getGameListPS1()){
+                if (g.getGameName().equals(newTitle)){
                     JOptionPane.showMessageDialog(null,"A game with the same name is already in the game list!"," Game Rename Error",JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
+            }
+
+            switch (mode) {
+                case "SMB":     if (renamer.renameLocalPS1("SB.")) { updateGameList("PS1"); } break;
+                case "HDD_USB": if (renamer.renameLocalPS1("XX.")) { updateGameList("PS1"); } break;
+                case "HDD":     renamer.ftpRenamePS1(); break;
             }
         }
         else if (currentConsole.equals("PS2")){
-            
-            if (!jTextFieldGameNewTitle.getText().equals("")){
-                
-                // ensure that a game with the same name is not already in the game list
-                boolean gameNameAlreadyUsed = false;
-                for (Game game : GameListManager.getGameListPS2()){if (game.getGameName().equals(jTextFieldGameNewTitle.getText())){gameNameAlreadyUsed = true;}}
-                
-                if (!gameNameAlreadyUsed){
-                    switch (PopsGameManager.getCurrentMode()) {
-                        case "HDD_USB":
-                        case "SMB":
-                            renameLocalGamePS2();
-                            break;
-                        case "HDD":
-                            JOptionPane.showMessageDialog(null,"The application cannot currently rename a PS2 game in HDD mode!"," Unable To Rename Game",JOptionPane.ERROR_MESSAGE);
-                            break;
-                    }    
-                } else {
-                    // Display a message that the name is already in the list
+
+            for (Game g : GameListManager.getGameListPS2()){
+                if (g.getGameName().equals(newTitle)){
                     JOptionPane.showMessageDialog(null,"A game with the same name is already in the game list!"," Game Rename Error",JOptionPane.ERROR_MESSAGE);
-                } 
-            } 
+                    return;
+                }
+            }
+
+            switch (mode) {
+                case "HDD_USB":
+                case "SMB":
+                    if (renamer.renameLocalPS2()) { updateGameList("PS2"); }
+                    break;
+                case "HDD":
+                    JOptionPane.showMessageDialog(null,"The application cannot currently rename a PS2 game in HDD mode!"," Unable To Rename Game",JOptionPane.ERROR_MESSAGE);
+                    break;
+            }
         }
     }
  
