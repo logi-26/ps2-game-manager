@@ -95,10 +95,12 @@ public class GameVMCScreen extends javax.swing.JDialog {
         try (Scanner scanner = new Scanner(new File(fileName))) {
             while (scanner.hasNext()){
                 String line = scanner.nextLine();
-                
-                if (line.length() >= 23){
-                    serverVMCList.add(line.substring(0, 21));
-                    serverVMCDescriptionList.add(line.substring(22, line.length()));
+
+                // Each line is "<vmcLabel> <description>"; the label never contains a space.
+                int sep = line.indexOf(' ');
+                if (sep > 0){
+                    serverVMCList.add(line.substring(0, sep));
+                    serverVMCDescriptionList.add(sep + 1 < line.length() ? line.substring(sep + 1) : "");
                 }
             }
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}

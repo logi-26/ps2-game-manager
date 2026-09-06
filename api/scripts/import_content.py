@@ -11,7 +11,7 @@ Legacy layout
   Covers/<console>/<region>/<_KIND>/<gameId>/<gameId>_(<n>)<_KIND>.{jpg|png}
   Configs/<console>/<region>/<gameId>.cfg
   Cheats/<console>/<region>/<gameId>.cht
-  MemoryCards/<console>/<region>/<gameId>_oplpops_<n>.VMC  (+ .txt sidecar)
+  MemoryCards/<console>/<region>/<gameId>_ps2gm_<n>.VMC  (+ .txt sidecar)
   Application/cue2pops/<linux|windows>/<file>
 """
 
@@ -211,7 +211,7 @@ def import_vmcs(db: Session, root: Path, only_console: str | None) -> None:
         if only_console and console != only_console:
             continue
         label = vmc.stem
-        game_id = re.split(r"_oplpops_?\d*$", label)[0] or label
+        game_id = re.split(r"_ps2gm_?\d*$", label)[0] or label
         desc_path = vmc.with_suffix(".txt")
         description = (
             desc_path.read_text(encoding="utf-8", errors="replace").strip()

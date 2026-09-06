@@ -14,7 +14,7 @@ hs_err_pid*.log
 *.hprof
 
 # --- app-generated runtime churn (see desktop/build.ps1) ---
-desktop/oplpops-settings
+desktop/ps2gm-settings
 desktop/settings.xml
 desktop/READ ME.txt
 desktop/start-linux.sh

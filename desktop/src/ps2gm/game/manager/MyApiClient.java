@@ -277,8 +277,9 @@ public class MyApiClient implements BackendClient {
                 for (Map<String, Object> entry : fetchAllPages(endpoint, console)) {
                     String label = MiniJson.str(entry, "label");
                     String description = MiniJson.str(entry, "description");
-                    String padded = (label + "                     ").substring(0, 21); // fixed-width, matches GameVMCScreen.readVMCList
-                    outLines.add(padded + " " + (description == null ? "" : description));
+                    // "<label> <description>" - the label has no spaces, so GameVMCScreen.readVMCList
+                    // splits on the first space (no fixed-width assumption).
+                    outLines.add(label + " " + (description == null ? "" : description));
                 }
             } else {
                 LinkedHashSet<String> gameIds = new LinkedHashSet<>();
