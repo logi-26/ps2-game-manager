@@ -2290,10 +2290,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private void jButtonEditCheatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditCheatActionPerformed
 
         if (jListGameList.getSelectedIndex() != -1) {
-            cheatScreen = new GameCheatScreen(this, true);
-            cheatScreen.setLocationRelativeTo(this);
-            cheatScreen.initialisGUI(jListGameList.getSelectedIndex());
-            cheatScreen.setVisible(true);  
+            // Ported to JavaFX (Swing GameCheatScreen kept until the migration lands)
+            ps2gm.game.manager.fx.GameCheatScreen.open(jListGameList.getSelectedIndex());
         }
         else {JOptionPane.showMessageDialog(null,"You need to select a game before you can create/edit the cheat file."," No game selected!",JOptionPane.WARNING_MESSAGE);}
     }//GEN-LAST:event_jButtonEditCheatActionPerformed
