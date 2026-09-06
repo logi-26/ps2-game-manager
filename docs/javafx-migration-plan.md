@@ -1,12 +1,18 @@
 # JavaFX migration plan
 
-Branch: **`javafx-ui`** (off `main` at `2bc8f67`). Incremental — Swing stays the
-entry point and opens FX windows as separate `Stage`s in one process; merge back to
-`main` only when every screen is ported and tested.
+Branch: **`javafx-ui`** (off `main` at `2bc8f67`).
 
-**Decisions:** FXML + Scene Builder · Java 21 / JavaFX 21.0.5 (classpath, not module
-path) · dev JDK is Temurin 25 (`--enable-native-access=ALL-UNNAMED` mutes the
-warnings) · AtlantaFX considered later for FlatLaf-like theming.
+**STATUS: code-complete (`19e0952`).** Every screen is JavaFX, the app entry is
+`ps2gm.game.manager.fx.MainApp` (an `Application` subclass), Swing / FlatLaf /
+dead code is deleted, packaging is wired. What's left before merging to `main`:
+1. An interactive test pass on a real PS2 (Tier C + MainScreen's console paths
+   have only been build- + headless-smoke-tested).
+2. Vendor mac / mac-aarch64 / linux JavaFX native jars so `bundle-jar.ps1` isn't
+   Windows-only (jpackage / `build.ps1` are fine).
+
+**Decisions:** FXML + Scene Builder · Java 21 / JavaFX 21.0.5 + AtlantaFX 2.0.1
+(all on the classpath, not the module path) · dev JDK is Temurin 25
+(`--enable-native-access=ALL-UNNAMED` mutes the native-load warning).
 
 ---
 
@@ -110,26 +116,26 @@ Delete first, not ports:
 **Not yet verified against a real console** - built + FXML-load / field-inject
 smoke only. The FTP / hdl_dump paths need a live PS2.
 
-### Last
+### Last — DONE
 
-| Screen | LOC | Notes |
+| Screen | LOC | Outcome |
 |---|---|---|
-| **MainScreen** | 2785 | The shell: `JMenuBar`, game `JList`, detail panel, toolbar, `implements MyListener`. Port last — every child screen must be FX first (or still openable from an FX menu). When done, **retire `FxRuntime` / `FxScreens` coexistence glue**, make an `Application` subclass the real entry point, and update `Main.java` + `build.ps1` (`Application.launch`, module-path option revisited). |
+| ~~**MainScreen**~~ | 2731 | **DONE** (`598c435` port, `8ade8d1` Swing deletion). `MainScreen.fxml` + `MainController implements MyListener`; `ps2gm.game.manager.fx.MainApp` (an `Application` subclass) is the entry point. `Main.main` → `PopsGameManager.startApplication()` (headless setup) → `MainApp.run()`. FlatLaf gone → **AtlantaFX** (`PrimerLight`/`PrimerDark`, live toggle - Swing needed a restart). `updateGameList` / `displayGameDetails` cascade, console switching, compat-colour list cells, all ~50 menu actions ported. Blocking actions (emulator launch, update check, console refresh, FTP delete / ELF regen) now on daemon threads. `FxScreens.openModal` gained an FX-thread `showAndWait` path; `FxRuntime.markStarted()` for the `Application.launch` lifecycle. `FxRuntime` / `FxScreens` / the screen façades were **kept** - they're just an FXML-into-Stage helper, no coexistence cost. |
 
 ---
 
 ## Cross-cutting
 
-- **Packaging is broken on this branch.** `package.ps1` (jpackage) and
-  `bundle-jar.ps1` have no JavaFX: need `jlink` with the JavaFX `.jmods`
-  (or `jpackage --module-path <jmods>`), and **mac/Linux FX natives** added
-  alongside the current `-win` jars (or switch to the classified
-  `org.openjfx:*:{win,mac,linux}` set and pick per-OS in the scripts).
-  `release.ps1` calls both. Do this before any release off `javafx-ui`.
-- **Delete** `TestScreen`, `GameCheatScreenNew` (dead), and every Swing
-  `*Screen.java` once its FX replacement is merged.
-- **AtlantaFX**: add `atlantafx-base` to `lib/javafx/`, `Application.setUserAgentStylesheet(...)`
-  once MainScreen is FX; gives light/dark to match the current FlatLaf toggle.
+- **Packaging (`19e0952`):** `package.ps1` (jpackage app-image) works - the
+  JavaFX + AtlantaFX jars ride into `app/lib/javafx/` via the manifest
+  `Class-Path` and load off the classpath; verified the built `PS2GM.exe`
+  launches and boots the FX toolkit. `build.ps1` vendors
+  `atlantafx-base-2.0.1.jar`. **Still to do:** `bundle-jar.ps1` (plain jar) is
+  Windows-only - it carries the `-win`-classified JavaFX jars; add the
+  mac/mac-aarch64/linux native jars (or switch to base `javafx-*-21.0.5.jar` +
+  per-OS native jars) for cross-platform.
+- **Done:** deleted `TestScreen`, `GameCheatScreenNew`, `AppTheme`, `flatlaf`,
+  every replaced Swing `*Screen.java` (`8ade8d1`).
 
 ## Suggested order
 
@@ -141,5 +147,6 @@ smoke only. The FTP / hdl_dump paths need a live PS2.
 6. ~~`AddGameSMBScreen`, `SyncFileScreen`~~ — done (`5d04f88`, `1995af6`)
 7. ~~`GameCheatScreen` (Tier B)~~ — done (`90e9856`)
 8. ~~`GameConfigScreen` (Tier B monster)~~ — done (`79fdf23`)
-9. **`MainScreen` + retire coexistence glue + AtlantaFX — next**
-10. Packaging scripts, delete Swing classes, merge to `main`
+9. ~~`MainScreen` + entry-point flip + AtlantaFX~~ — done (`598c435`)
+10. ~~Packaging scripts, delete Swing classes~~ — done (`8ade8d1`, `19e0952`)
+11. **Left:** real-PS2 test pass · mac/linux JavaFX natives for `bundle-jar.ps1` · merge to `main`
