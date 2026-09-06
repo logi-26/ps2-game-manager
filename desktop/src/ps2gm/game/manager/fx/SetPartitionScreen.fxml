@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.SetPartitionController"
+      spacing="12.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding>
+        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+    </padding>
+
+    <TitledPane text="File Partitions" collapsible="false">
+        <GridPane hgap="12.0" vgap="10.0">
+            <padding><Insets top="10.0" right="10.0" bottom="10.0" left="6.0"/></padding>
+            <columnConstraints>
+                <ColumnConstraints minWidth="80.0" halignment="RIGHT"/>
+                <ColumnConstraints minWidth="110.0"/>
+                <ColumnConstraints minWidth="130.0" hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <Label text="OPL Folder:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="oplCombo" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+            <Label text="VCD Folder:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="vcd1Combo" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <ComboBox fx:id="vcd2Combo" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+
+            <Label text="ELF Folder:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="elf1Combo" maxWidth="Infinity" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <TextField fx:id="elf2Field" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+
+            <Label text="Console IP:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="ipField" alignment="CENTER" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+        </GridPane>
+    </TitledPane>
+
+    <HBox spacing="18.0" alignment="CENTER_RIGHT">
+        <Button fx:id="setButton" text="Set" prefWidth="80.0" onAction="#onSet"/>
+        <Button fx:id="cancelButton" text="Cancel" prefWidth="80.0" onAction="#onCancel"/>
+    </HBox>
+</VBox>

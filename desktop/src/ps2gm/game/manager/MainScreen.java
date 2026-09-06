@@ -2510,12 +2510,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemDeleteUnusedCheatActionPerformed
 
     private void jMenuItemConsolePartitionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemConsolePartitionsActionPerformed
-
-        SetPartitionScreen setPartitionScreen = new SetPartitionScreen(this, true);
-        setPartitionScreen.initialiseGUI();
-        setPartitionScreen.setLocationRelativeTo(this);
-        setPartitionScreen.setVisible(true);
-        
+        // Ported to JavaFX (Swing ps2gm.game.manager.SetPartitionScreen kept until the migration lands).
+        ps2gm.game.manager.fx.SetPartitionScreen.open();
     }//GEN-LAST:event_jMenuItemConsolePartitionsActionPerformed
 
     private void jMenuItemRefreshGameListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemRefreshGameListActionPerformed
