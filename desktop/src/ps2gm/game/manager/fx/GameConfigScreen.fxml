@@ -85,27 +85,11 @@
                         <ComboBox fx:id="ratingSystemCombo" onAction="#onRatingSystemChanged" />
                         <Button fx:id="ratingDecreaseButton" onAction="#onRatingDecrease" prefWidth="34.0" text="-" />
                         <Button fx:id="ratingIncreaseButton" onAction="#onRatingIncrease" prefWidth="34.0" text="+" />
-                        <ImageView fx:id="ratingImageView" fitHeight="52.0" preserveRatio="true" />
+                        <ImageView fx:id="ratingImageView" fitHeight="78.0" preserveRatio="true">
+                            <HBox.margin><Insets left="100.0" /></HBox.margin>
+                        </ImageView>
                     </HBox>
                 </VBox>
-            </TitledPane>
-
-            <TitledPane collapsible="false" text="Virtual Memory Card">
-                <GridPane hgap="8.0" vgap="6.0">
-                    <padding><Insets bottom="8.0" left="8.0" right="8.0" top="2.0" /></padding>
-                    <columnConstraints>
-                        <ColumnConstraints minWidth="70.0" />
-                        <ColumnConstraints hgrow="ALWAYS" />
-                    </columnConstraints>
-                    <CheckBox fx:id="vmc0Check" onAction="#onVmc0" text="VMC 0" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                    <TextField fx:id="vmc0Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                    <CheckBox fx:id="vmc1Check" onAction="#onVmc1" text="VMC 1" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                    <TextField fx:id="vmc1Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-                </GridPane>
             </TitledPane>
 
             <TitledPane collapsible="false" text="Game Settings">
@@ -228,6 +212,24 @@
                     </GridPane>
                 </TitledPane>
             </GridPane>
+
+            <TitledPane collapsible="false" text="Virtual Memory Card">
+                <GridPane hgap="8.0" vgap="6.0">
+                    <padding><Insets bottom="8.0" left="8.0" right="8.0" top="2.0" /></padding>
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="70.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
+                    <CheckBox fx:id="vmc0Check" onAction="#onVmc0" text="VMC 0" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <TextField fx:id="vmc0Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <CheckBox fx:id="vmc1Check" onAction="#onVmc1" text="VMC 1" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <TextField fx:id="vmc1Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+            </TitledPane>
         </VBox>
     </ScrollPane>
 
