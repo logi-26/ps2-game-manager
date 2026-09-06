@@ -79,7 +79,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
     void init(String console, int gameIndex) {
         this.console = console;
         boolean ps1 = "PS1".equals(console);
-        this.coverPreview = ps1 ? new int[] {160, 160} : new int[] {160, 210};
+        this.coverPreview = ps1 ? new int[] {130, 160} : new int[] {130, 210};
         // Spine sits between the two cover panes; cap its preview height at the
         // cover height so preserveRatio keeps it a narrow strip. The Spine pane's
         // overall height is pinned to the Front Cover pane below (its stacked
