@@ -39,6 +39,11 @@ $javafxJars = @('javafx-base', 'javafx-graphics', 'javafx-controls', 'javafx-fxm
     ForEach-Object { "javafx/$_-$javafxVersion-win.jar" }
 # AtlantaFX supplies the light/dark JavaFX theme (replaces FlatLaf's Swing light/dark).
 $javafxJars += 'javafx/atlantafx-base-2.0.1.jar'
+# Ikonli = theme-aware font icons (Feather pack). AtlantaFX styles .ikonli-font-icon
+# per theme, so the glyphs recolour automatically. Classpath (not module path).
+$javafxJars += 'javafx/ikonli-core-12.3.1.jar'
+$javafxJars += 'javafx/ikonli-javafx-12.3.1.jar'
+$javafxJars += 'javafx/ikonli-feather-pack-12.3.1.jar'
 
 $libJars = @(
     'commons-net-3.5.jar'

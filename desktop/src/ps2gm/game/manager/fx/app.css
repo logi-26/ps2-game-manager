@@ -36,3 +36,19 @@
 .menu-bar {
     -fx-padding: 1 4 1 4;
 }
+
+/* Ikonli (Feather) icons on icon-buttons - recolour with the theme. AtlantaFX
+   already carries equivalent rules; repeat them here so app.css (scene-level,
+   higher priority than the user-agent theme) is the single source of truth and
+   the icons are never left at the raw black default. */
+.button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 18px;
+}
+.button:hover .ikonli-font-icon,
+.button:focused .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+.button:armed .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
