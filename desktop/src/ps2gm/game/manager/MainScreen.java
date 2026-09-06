@@ -119,10 +119,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
         this.setTitle(PopsGameManager.getFormTitle());
 
         if (PopsGameManager.getFisrtLaunch()){
-            SetModeScreen setModeScreen = new SetModeScreen(this, true);
-            setModeScreen.initialiseGUI();
-            setModeScreen.setLocationRelativeTo(this);
-            setModeScreen.setVisible(true);
+            // Ported to JavaFX (blocks until the user picks a mode or exits, like the old modal dialog)
+            ps2gm.game.manager.fx.SetModeScreen.open();
         }
         else {
             try {
@@ -2318,10 +2316,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jButtonVMCActionPerformed
 
     private void jMenuItemChangeModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemChangeModeActionPerformed
-        SetModeScreen setModeScreen = new SetModeScreen(this, true);
-        setModeScreen.initialiseGUI();
-        setModeScreen.setLocationRelativeTo(this);
-        setModeScreen.setVisible(true);
+        // Ported to JavaFX (Swing SetModeScreen kept until the migration lands)
+        ps2gm.game.manager.fx.SetModeScreen.open();
     }//GEN-LAST:event_jMenuItemChangeModeActionPerformed
 
     private void jMenuItemGenerateConfElmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemGenerateConfElmActionPerformed
