@@ -14,8 +14,12 @@
 .titled-pane > .title {
     -fx-background-radius: 6 6 0 0;
 }
-.titled-pane > *.content {
+/* The theme gives .content a chunky (~15px) padding, which reads as a big gap
+   between the title bar and the first control. Tighten it - each pane's inner
+   container keeps its own small padding on top of this. */
+.titled-pane > .content {
     -fx-background-radius: 0 0 6 6;
+    -fx-padding: 4 8 8 8;
 }
 
 /* Borderless "card" container: styleClass="card" on a VBox/HBox/Region. */

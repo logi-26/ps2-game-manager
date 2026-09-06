@@ -39,7 +39,7 @@
 
             <TitledPane text="Game Details" collapsible="false">
                 <GridPane hgap="8.0" vgap="6.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <columnConstraints>
                         <ColumnConstraints minWidth="90.0"/>
                         <ColumnConstraints hgrow="ALWAYS"/>
@@ -59,14 +59,14 @@
 
             <TitledPane text="Description" collapsible="false">
                 <VBox>
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <TextArea fx:id="descriptionArea" prefRowCount="3" wrapText="true"/>
                 </VBox>
             </TitledPane>
 
             <TitledPane text="Rating" collapsible="false">
                 <VBox spacing="8.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <HBox spacing="4.0" alignment="CENTER_LEFT">
                         <ImageView fx:id="star1" fitWidth="22.0" fitHeight="22.0" preserveRatio="true"/>
                         <ImageView fx:id="star2" fitWidth="22.0" fitHeight="22.0" preserveRatio="true"/>
@@ -89,7 +89,7 @@
 
             <TitledPane text="Virtual Memory Card" collapsible="false">
                 <GridPane hgap="8.0" vgap="6.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <columnConstraints>
                         <ColumnConstraints minWidth="70.0"/>
                         <ColumnConstraints hgrow="ALWAYS"/>
@@ -103,7 +103,7 @@
 
             <TitledPane text="Game Settings" collapsible="false">
                 <GridPane hgap="8.0" vgap="6.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <columnConstraints>
                         <ColumnConstraints minWidth="90.0"/>
                         <ColumnConstraints hgrow="ALWAYS"/>
@@ -122,7 +122,7 @@
 
             <TitledPane text="Compatible Devices" collapsible="false">
                 <HBox spacing="16.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <CheckBox fx:id="usbCheck" text="USB"/>
                     <CheckBox fx:id="ethCheck" text="ETH"/>
                     <CheckBox fx:id="hddCheck" text="HDD"/>
@@ -131,7 +131,7 @@
 
             <TitledPane text="Compatibility Mode" collapsible="false">
                 <FlowPane hgap="14.0" vgap="4.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <CheckBox fx:id="mode1Check" text="Mode 1"/>
                     <CheckBox fx:id="mode2Check" text="Mode 2"/>
                     <CheckBox fx:id="mode3Check" text="Mode 3"/>
@@ -145,7 +145,7 @@
 
             <TitledPane text="GSM" collapsible="false">
                 <GridPane hgap="8.0" vgap="6.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <columnConstraints>
                         <ColumnConstraints minWidth="90.0"/>
                         <ColumnConstraints hgrow="ALWAYS"/>
@@ -163,7 +163,7 @@
 
             <TitledPane text="Settings Source (per-game overrides global)" collapsible="false">
                 <GridPane hgap="10.0" vgap="6.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <padding><Insets top="2.0" right="8.0" bottom="8.0" left="8.0"/></padding>
                     <Label text="GSM:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                     <RadioButton fx:id="gsmPerGameRadio" text="Per-game" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                     <RadioButton fx:id="gsmGlobalRadio" text="Global" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
