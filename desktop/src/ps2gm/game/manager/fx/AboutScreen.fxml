@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.AboutController"
+      spacing="12.0" style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding>
+        <Insets top="16.0" right="24.0" bottom="16.0" left="24.0"/>
+    </padding>
+
+    <Label fx:id="titleLabel" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+    <Label text="Tool for managing PS1 and PS2 games with POPStarter and/or OPL"/>
+
+    <GridPane hgap="12.0" vgap="6.0">
+        <columnConstraints>
+            <ColumnConstraints minWidth="80.0"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <Label text="Developer:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label text="Logi26" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Compiled:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label fx:id="compiledLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Contact:" style="-fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Hyperlink fx:id="contactLink" text="ps2gm.manager@gmail.com" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    </GridPane>
+</VBox>

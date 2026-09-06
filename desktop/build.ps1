@@ -32,23 +32,31 @@ $outDir     = Join-Path $buildLocal 'classes'
 $jarPath    = Join-Path $buildLocal 'PS2GM-local.jar'
 $runDir     = Join-Path $buildLocal 'run'
 
-$cp = @(
-    (Join-Path $libDir 'commons-net-3.5.jar')
-    (Join-Path $libDir 'sevenzipjbinding.jar')
-    (Join-Path $libDir 'sevenzipjbinding-AllPlatforms.jar')
-    (Join-Path $libDir 'flatlaf-3.7.2.jar')
-) -join ';'
+# JavaFX (Windows dev bundle) - the "-win" classified jars carry the native DLLs.
+# The UI is mid-migration from Swing to JavaFX; both toolkits run in one process.
+$javafxVersion = '21.0.5'
+$javafxJars = @('javafx-base', 'javafx-graphics', 'javafx-controls', 'javafx-fxml') |
+    ForEach-Object { "javafx/$_-$javafxVersion-win.jar" }
+
+$libJars = @(
+    'commons-net-3.5.jar'
+    'sevenzipjbinding.jar'
+    'sevenzipjbinding-AllPlatforms.jar'
+    'flatlaf-3.7.2.jar'
+) + $javafxJars
+
+$cp = ($libJars | ForEach-Object { Join-Path $libDir $_ }) -join ';'
 
 Write-Host "==> Cleaning build-local\classes"
 if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 $sources = Get-ChildItem -Recurse -Path $srcRoot -Filter *.java | ForEach-Object { $_.FullName }
-Write-Host "==> Compiling $($sources.Count) source file(s) with --release 11"
-& javac --release 11 -encoding UTF-8 -cp $cp -d $outDir @sources
+Write-Host "==> Compiling $($sources.Count) source file(s) with --release 21"
+& javac --release 21 -encoding UTF-8 -cp $cp -d $outDir @sources
 if ($LASTEXITCODE -ne 0) { throw "javac failed" }
 
-Write-Host "==> Copying resources (png / txt, skipping .java and .form)"
+Write-Host "==> Copying resources (png / txt / fxml / css, skipping .java and .form)"
 Get-ChildItem -Recurse -Path $srcRoot -File |
     Where-Object { $_.Extension -notin '.java', '.form' } |
     ForEach-Object {
@@ -60,9 +68,10 @@ Get-ChildItem -Recurse -Path $srcRoot -File |
 
 Write-Host "==> Packaging $jarPath"
 $manifest = Join-Path $outDir 'manifest.txt'
+$classPathLine = 'Class-Path: ' + (($libJars | ForEach-Object { "lib/$_" }) -join ' ')
 @(
     'Main-Class: ps2gm.game.manager.Main'
-    'Class-Path: lib/commons-net-3.5.jar lib/sevenzipjbinding.jar lib/sevenzipjbinding-AllPlatforms.jar lib/flatlaf-3.7.2.jar'
+    $classPathLine
     ''
 ) -join "`n" | Set-Content -Encoding ascii $manifest
 
@@ -91,12 +100,16 @@ if ($Run -or $Stage) {
     Copy-Item (Join-Path $libDir 'sevenzipjbinding.jar')            (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'sevenzipjbinding-AllPlatforms.jar') (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'flatlaf-3.7.2.jar')                (Join-Path $runDir 'lib') -Force
+    New-Item -ItemType Directory -Force -Path (Join-Path $runDir 'lib\javafx') | Out-Null
+    Copy-Item (Join-Path $libDir 'javafx\*.jar')                     (Join-Path $runDir 'lib\javafx') -Force
     Copy-Item $jarPath (Join-Path $runDir 'PS2GM-local.jar') -Force
     Write-Host "==> Staged $runDir"
 }
 
 if ($Run) {
-    $jvmArgs = @("-Dps2gm.api.baseurl=$ApiBaseUrl")
+    # --enable-native-access silences the JDK 21+ warning from JavaFX's native lib load
+    # (JavaFX rides on the classpath, not the module path, during the Swing->FX migration).
+    $jvmArgs = @('--enable-native-access=ALL-UNNAMED', "-Dps2gm.api.baseurl=$ApiBaseUrl")
     $jvmArgs += @('-jar', (Join-Path $runDir 'PS2GM-local.jar'))
     if ($Debug) { $jvmArgs += '-DEBUG' }   # consumed by Main.main(args)
 

@@ -2557,9 +2557,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemRefreshGameListActionPerformed
 
     private void jMenuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAboutActionPerformed
-        AboutScreen aboutScreen = new AboutScreen(this, true, PopsGameManager.getFormTitle(), PopsGameManager.getApplicationReleaseDate());
-        aboutScreen.setLocationRelativeTo(this);
-        aboutScreen.setVisible(true);   
+        // Ported to JavaFX (Swing ps2gm.game.manager.AboutScreen kept until the migration lands).
+        ps2gm.game.manager.fx.AboutScreen.show(PopsGameManager.getFormTitle(), PopsGameManager.getApplicationReleaseDate());
     }//GEN-LAST:event_jMenuItemAboutActionPerformed
 
     private void jMenuItemBatchAddPS1GameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBatchAddPS1GameActionPerformed
