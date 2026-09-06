@@ -47,38 +47,40 @@ Every ported screen is a triple in `ps2gm.game.manager.fx`:
 
 **Screens:** About · Changelog · HashChecker · SetPartition · EmulatorSettings ·
 GameVMC · SplitMerge · GameLongName · **GameRenamingPS1/PS2** ·
-**BatchDownloadPS1/PS2**.
+**BatchDownloadPS1/PS2** · **GameImagePS1/PS2 + GameImageSelectorPS1/PS2**.
 **Infra:** `FxRuntime`, `FxScreens.open` + `openModal` + `StageAware`.
 **Decouples:** `SplitMergeProgress` (USBUtil), `GameLongNameRenamer`.
 **Made public for the `fx` subpackage:** `GameLongNameRenamer`,
-`GameArtFileManager` (+ `isMissing`/`resolve`/`baseName`),
+`GameArtFileManager` (+ `isMissing`/`resolve`/`baseName`/`deleteAll`),
 `GameConfigFileManager.renameConfigTitlesToMatch`.
 
-Tier A is done bar `GameImageSelectorScreen*` (paired with the GameImage
-screens, below).
+Tier A is done. `GameImageScreen` / `GameImageSelectorScreen` (Tier B) are done
+too — one `GameImageController` / `GameImageSelectorController` pair for both
+consoles; File button runs the Swing `manualImageSelection` on the EDT then
+re-reads `ART/` (no `javafx-swing`); Auto / next-image on daemon threads.
 
 ---
 
-## Remaining — 14 screen classes
+## Remaining — 10 screen classes
 
 Delete first, not ports:
 - **`TestScreen`** (96) — dead code.
 - **`GameCheatScreenNew`** (176) — no references anywhere; dead code.
 
-### Tier A — DONE except GameImageSelector* (do with the GameImage screens)
+### Tier A — DONE
 
 | Screen | LOC | Notes / plan |
 |---|---|---|
 | **GameRenamingScreenPS1 / PS2** | 575 / 484 | Batch-fix invalidly-named VCD/ISO files: a list of bad files + target-name field + Rename; `File.renameTo` then `GameListManager.addToGameListsPS1/2`, leftovers go to `stillInvalidGameList…`. Self-contained. FX: `ListView` + `TextField` + button; same list-refresh + `callbackToUpdateGUIGameList` pattern as GameLongName. **Do these next.** |
-| **GameImageSelectorScreenPS1 / PS2** | 295 / 298 | "pick an alternative image from the server": one preview `ImageView`, ◄ ► to cycle, Save. Talks to its parent `GameImageScreen` via `ImageChangedListener` / `ImageSelectListener` (already interfaces — the FX controller just implements/holds them). Fixed scale dims already in the Swing code. Small port; do together with the GameImage screens. |
+| ~~**GameImageSelectorScreenPS1 / PS2**~~ | 295 / 298 | **DONE** (`cdec299`, with the GameImage screens). `GameImageSelectorController` — one preview `ImageView`, arrows to cycle, "Use this image". Parent passes itself as both `ImageChangedListener` / `ImageSelectListener` and gets the live controller back through a `Consumer` so it can push the next downloaded file in. |
 | **BatchDownloadScreenPS1 / PS2** | 814 / 812 | Batch art/config download. Big because of the 8 image-preview panels (already resized during earlier bug-fix work) + an inner `BackgroundWorker` whose callbacks are **all internal** (`jTextFieldGameName`, `createList`, `displayGameImages`) — no manager coupling, so no decouple. FX: `GridPane` of preview panes, checkboxes per art type, a `ProgressBar`, and one `Task` per file (reuse the HashChecker `Task` pattern). Medium-large, mechanical. |
 
 ### Tier B — large, self-contained
 
 | Screen | LOC | Notes / plan |
 |---|---|---|
-| **GameImageScreenPS1 / PS2** | 1124 / 1125 | ART manager: 8 preview panes, each with Manual / Auto / Delete. Auto opens `GameImageSelectorScreen`. Reads/writes files via `GameArtFileManager`; no worker, no manager callback. This is where the earlier Swing bug-fixes live (the `addGap` crash, the grow-on-arrow-click, the dark-mode icons) — **carry those fixes into the FX version** (fixed scale dims, no live `getWidth()/getHeight()`). Large but mostly layout. Port PS1+PS2 together (near-identical). |
-| **GameCheatScreen** | 810 | Cheat-code editor: game list + a big editable text area of codes + Save + server fetch (download shared cheats). No `SwingWorker`; server calls are synchronous today (move them to a `Task`). `GameConfigFileManager` / server for read/write. Self-contained. Medium-large. |
+| ~~**GameImageScreenPS1 / PS2**~~ | 1124 / 1125 | **DONE** (`cdec299`). `GameImageController` + `GameImageSelectorController`, one pair for both consoles (differ only in game list, cover aspect ratio, "no image" cover placeholder). FXML `FlowPane` of 8 `TitledPane`s, each `ImageView` + File/Auto/Del `Button`s carrying the cover type in `userData`. Fixed preview dims carried across (no live node size → no window creep). File button = `manualImageSelection` on the EDT via `SwingUtilities.invokeAndWait`, then re-read `ART/`. Auto/next backend calls on daemon threads + `Platform.runLater`. Selector close-without-save deletes the file + fires `imageSelected` so the parent falls back to its placeholder. |
+| **GameCheatScreen** | 810 | Cheat-code editor: game list + a big editable text area of codes + Save + server fetch (download shared cheats). No `SwingWorker`; server calls are synchronous today (move them to a `Task`). `GameConfigFileManager` / server for read/write. Self-contained. Medium-large. **Do this next.** |
 | **GameConfigScreen** | 2975 | **The monster.** Per-game OPL `.cfg` editor — compatibility flags, GSM, cheats, VMC slots, PADEMU, a 5-star rating widget (custom mouse-hover handlers → an FX star control or a `Rating` from ControlsFX/AtlantaFX), ~11 `JOptionPane`. Reads/writes via `GameConfigFileManager` (`readGameConfigFormatted` / `writeGameConfigFile`, index-mapped `NEW_CONFIG_DATA` array) — **that mapping stays; only the widgets change.** No worker. Break the FXML into `TitledPane` sections. Budget a whole session; consider sub-tasking (layout, then per-section binding, then save round-trip). |
 
 ### Tier C — needs a backend decouple first
@@ -117,7 +119,7 @@ Delete first, not ports:
 ## Suggested order
 
 1. `GameRenamingScreenPS1/PS2` (Tier A, quick win)
-2. `GameImageSelectorScreenPS1/PS2` + `GameImageScreenPS1/PS2` (Tier A+B together)
+2. ~~`GameImageSelectorScreenPS1/PS2` + `GameImageScreenPS1/PS2`~~ — done (`cdec299`)
 3. `BatchDownloadScreenPS1/PS2` (Tier A)
 4. `GameCheatScreen` (Tier B)
 5. `FtpTransferProgress` decouple → `AddGameHDDScreenPS1/PS2` (Tier C)
