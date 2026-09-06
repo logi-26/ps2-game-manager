@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
@@ -41,9 +42,9 @@ import ps2gm.game.manager.PopsGameManager;
  */
 public class GameImageController implements FxScreens.StageAware, ImageSelectListener, ImageChangedListener {
 
-    private static final int[] BG_PREVIEW    = {300, 170};
+    private static final int[] BG_PREVIEW    = {380, 170};
     private static final int[] DISC_PREVIEW  = {70, 70};
-    private static final int[] SCR_PREVIEW   = {225, 170};
+    private static final int[] SCR_PREVIEW   = {300, 170};
     private static final int[] SPINE_PREVIEW = {20, 260};
     private static final int[] LOGO_PREVIEW  = {195, 93};
 
@@ -57,6 +58,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
 
     @FXML private ImageView covView, cov2View, spineView, logoView, discView, scr1View, scr2View, bgView;
     @FXML private TextField gameNameField, gameNumberField;
+    @FXML private TitledPane frontCoverTitledPane, spineTitledPane;
 
     private Stage stage;
     private String console;
@@ -78,9 +80,10 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         this.console = console;
         boolean ps1 = "PS1".equals(console);
         this.coverPreview = ps1 ? new int[] {160, 160} : new int[] {160, 210};
-        // Spine sits between the two cover panes and must be exactly as tall as
-        // them - cap its preview height at the cover height (preserveRatio then
-        // keeps it as a narrow strip) instead of the taller stand-alone default.
+        // Spine sits between the two cover panes; cap its preview height at the
+        // cover height so preserveRatio keeps it a narrow strip. The Spine pane's
+        // overall height is pinned to the Front Cover pane below (its stacked
+        // button column would otherwise make it taller).
         this.spinePreview = new int[] {SPINE_PREVIEW[0], coverPreview[1]};
         this.noImageCover = imagesDir() + (ps1 ? "No Image Cover.png" : "No Image Cover PS2.png");
         this.currentListIndex = gameIndex;
@@ -98,6 +101,17 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         applyFit(scr1View, SCR_PREVIEW);
         applyFit(scr2View, SCR_PREVIEW);
         applyFit(bgView, BG_PREVIEW);
+
+        // Pin the Spine pane's height to the Front Cover pane it sits beside. Its
+        // stacked button column makes its natural height a little different, and
+        // the delta isn't a constant (it moves with the button font / console
+        // cover size). Bind after the first layout pass so the source height is
+        // real - binding it while still 0 collapses the pane for good.
+        Platform.runLater(() -> {
+            spineTitledPane.minHeightProperty().bind(frontCoverTitledPane.heightProperty());
+            spineTitledPane.prefHeightProperty().bind(frontCoverTitledPane.heightProperty());
+            spineTitledPane.maxHeightProperty().bind(frontCoverTitledPane.heightProperty());
+        });
 
         refresh();
     }
