@@ -3,11 +3,10 @@
       - Windows: a jpackage app-image with a bundled JRE (package.ps1)
       - plain jar bundle, recipient needs their own Java (bundle-jar.ps1)
 
-    jpackage never cross-compiles, so this always builds the Windows app-image
-    from wherever it's run (it needs to run on Windows anyway - that's the only
-    platform available here). The jar bundle has no native launcher to compile,
-    but since the JavaFX migration it carries the Windows-classified JavaFX jars,
-    so it too is Windows-only for now (see bundle-jar.ps1's header).
+    jpackage never cross-compiles, so the app-image is always Windows (it needs
+    to run on Windows anyway - that's the only platform here). The jar bundle has
+    no native launcher to compile and now ships all four JavaFX classifiers, so
+    it runs on Windows, macOS and Linux (recipient supplies Java 17+).
 
     Usage:
         pwsh ./release.ps1
@@ -34,11 +33,11 @@ Write-Host "===> Building Windows app-image (package.ps1)"
 if ($LASTEXITCODE -ne 0) { throw "package.ps1 failed" }
 
 Write-Host ""
-Write-Host "===> Building cross-platform jar bundle (bundle-jar.ps1)"
+Write-Host "===> Building cross-platform jar bundle (bundle-jar.ps1)  [win + mac + linux]"
 & (Join-Path $root 'bundle-jar.ps1') -AppVersion $AppVersion -ApiBaseUrl $ApiBaseUrl -Fresh:$Fresh
 if ($LASTEXITCODE -ne 0) { throw "bundle-jar.ps1 failed" }
 
 Write-Host ""
 Write-Host "===> Release built at $(Join-Path $root 'build-local\release')"
 Write-Host "     windows\PS2GM\PS2GM.exe  - zip, no Java needed"
-Write-Host "     jar\                                          - zip, needs Java 17+ (Windows-only for now)"
+Write-Host "     jar\                                          - zip, needs Java 17+ (Windows / macOS / Linux)"

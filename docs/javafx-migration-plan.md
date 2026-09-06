@@ -7,8 +7,11 @@ Branch: **`javafx-ui`** (off `main` at `2bc8f67`).
 dead code is deleted, packaging is wired. What's left before merging to `main`:
 1. An interactive test pass on a real PS2 (Tier C + MainScreen's console paths
    have only been build- + headless-smoke-tested).
-2. Vendor mac / mac-aarch64 / linux JavaFX native jars so `bundle-jar.ps1` isn't
-   Windows-only (jpackage / `build.ps1` are fine).
+2. ~~Vendor mac / mac-aarch64 / linux JavaFX native jars so `bundle-jar.ps1`
+   isn't Windows-only.~~ **Done:** all four JavaFX classifiers are vendored under
+   `lib/javafx/`; `build.ps1 -AllPlatformFx` stages them and `bundle-jar.ps1`'s
+   generated `run.sh` / `run.cmd` pick the host set at launch (via an explicit
+   `-cp`, since the jar manifest's `Class-Path` still hard-codes `-win`).
 
 **Decisions:** FXML + Scene Builder · Java 21 / JavaFX 21.0.5 + AtlantaFX 2.0.1
 (all on the classpath, not the module path) · dev JDK is Temurin 25
@@ -130,10 +133,11 @@ smoke only. The FTP / hdl_dump paths need a live PS2.
   JavaFX + AtlantaFX jars ride into `app/lib/javafx/` via the manifest
   `Class-Path` and load off the classpath; verified the built `PS2GM.exe`
   launches and boots the FX toolkit. `build.ps1` vendors
-  `atlantafx-base-2.0.1.jar`. **Still to do:** `bundle-jar.ps1` (plain jar) is
-  Windows-only - it carries the `-win`-classified JavaFX jars; add the
-  mac/mac-aarch64/linux native jars (or switch to base `javafx-*-21.0.5.jar` +
-  per-OS native jars) for cross-platform.
+  `atlantafx-base-2.0.1.jar` + Ikonli. `bundle-jar.ps1` (plain jar) is now
+  cross-platform: `lib/javafx/` carries all four JavaFX classifiers,
+  `build.ps1 -AllPlatformFx` stages them, and the generated `run.sh` / `run.cmd`
+  select the host's set on an explicit `-cp` (the manifest `Class-Path` still
+  points at `-win`, so `java -jar` alone stays Windows-only).
 - **Done:** deleted `TestScreen`, `GameCheatScreenNew`, `AppTheme`, `flatlaf`,
   every replaced Swing `*Screen.java` (`8ade8d1`).
 
@@ -149,4 +153,5 @@ smoke only. The FTP / hdl_dump paths need a live PS2.
 8. ~~`GameConfigScreen` (Tier B monster)~~ — done (`79fdf23`)
 9. ~~`MainScreen` + entry-point flip + AtlantaFX~~ — done (`598c435`)
 10. ~~Packaging scripts, delete Swing classes~~ — done (`8ade8d1`, `19e0952`)
-11. **Left:** real-PS2 test pass · mac/linux JavaFX natives for `bundle-jar.ps1` · merge to `main`
+11. ~~mac/linux JavaFX natives for `bundle-jar.ps1`~~ — done
+12. **Left:** real-PS2 test pass · merge to `main`

@@ -5,13 +5,12 @@
     to lib/, hdd/ and POPSTARTER/ - the layout PopsGameManager.getCurrentDirectory()
     expects - plus a run.sh / run.cmd so they don't have to type the java command.
 
-    sevenzipjbinding-AllPlatforms.jar and lib/data/tools/{windows,linux} carry the
-    native code / tool binaries for every OS, BUT the vendored JavaFX jars are the
-    Windows-classified ('-win') builds - they only carry the Windows native libs.
-    So this bundle is currently WINDOWS-ONLY. Mac/Linux support needs the
-    mac/mac-aarch64/linux-classified JavaFX jars vendored alongside (or a switch
-    to the base javafx-*-21.0.5.jar + per-OS native jars). Until then, macOS /
-    Linux users need to run from source (build.ps1).
+    Cross-platform: sevenzipjbinding-AllPlatforms.jar and lib/data/tools/{windows,
+    linux} carry the native code / tool binaries for every OS, and the bundle now
+    ships all four JavaFX classifiers (win / mac / mac-aarch64 / linux, staged via
+    build.ps1 -AllPlatformFx). The generated run.sh detects the host OS + arch and
+    puts only the matching JavaFX jars on the classpath; run.cmd does the Windows
+    equivalent. Recipient still needs their own Java 17+ on PATH.
 
     Usage:
         pwsh ./bundle-jar.ps1                          # defaults (127.0.0.1:8000/v1)
@@ -36,7 +35,7 @@ $jarName    = "PS2GM_$AppVersion.jar"   # must match PopsGameManager.CURRENT_APP
 # 1. Compile + stage jar + lib/ + hdd/ + POPSTARTER/ as siblings (same clean
 #    staging package.ps1 uses - see build.ps1 for why it's wiped first).
 if (Test-Path $runDir) { Remove-Item -Recurse -Force $runDir }
-& (Join-Path $root 'build.ps1') -Stage -Fresh:$Fresh
+& (Join-Path $root 'build.ps1') -Stage -AllPlatformFx -Fresh:$Fresh
 if ($LASTEXITCODE -ne 0) { throw "build.ps1 -Stage failed" }
 
 # 2. Copy the staged tree into the bundle. The jar is renamed to match
@@ -56,26 +55,56 @@ Copy-Item (Join-Path $runDir 'PS2GM-local.jar') (Join-Path $bundleDir $jarName)
 #    `java -jar <jar>`, no backend flags, so anything baked in there only
 #    survives the first launch. run.sh/run.cmd are left alone by the app and
 #    set the API base URL on every launch via the env var PopsGameManager
-#    also checks (see getApiBaseUrl()) - equivalent to package.ps1's
-#    --java-options, just via env instead of a native launcher config.
-$envLines = @(
-    "PS2GM_API_BASEURL=$ApiBaseUrl"
-)
+#    also checks (see getApiBaseUrl()).
+#
+#    They launch with an explicit -cp (not -jar): the jar's manifest Class-Path
+#    hard-codes the -win JavaFX jars, so -jar only works on Windows. Instead each
+#    script builds the classpath from lib/ + lib/javafx/, keeping every non-fx
+#    jar and only the JavaFX jars for the host OS/arch, then runs the Main class.
 
-$sh = "#!/bin/sh`n" +
-      "cd `"`$(dirname `"`$0`")`"`n" +
-      "chmod +x lib/data/tools/linux/* 2>/dev/null`n" +
-      (($envLines | ForEach-Object { "export $_" }) -join "`n") + "`n" +
-      "exec java --enable-native-access=ALL-UNNAMED -jar $jarName `"`$@`"`n"
+$sh = @'
+#!/bin/sh
+cd "$(dirname "$0")"
+chmod +x lib/data/tools/linux/* 2>/dev/null
+
+case "$(uname -s)" in
+    Darwin) case "$(uname -m)" in arm64|aarch64) FXCLS=mac-aarch64 ;; *) FXCLS=mac ;; esac ;;
+    Linux)  FXCLS=linux ;;
+    *)      FXCLS=win ;;
+esac
+
+CP="__JAR__"
+for j in lib/*.jar lib/javafx/*.jar; do
+    b=${j##*/}
+    case "$b" in
+        javafx-*-"$FXCLS".jar) CP="$CP:$j" ;;
+        javafx-*-win.jar|javafx-*-mac.jar|javafx-*-mac-aarch64.jar|javafx-*-linux.jar) ;;
+        *) CP="$CP:$j" ;;
+    esac
+done
+
+export PS2GM_API_BASEURL=__URL__
+exec java --enable-native-access=ALL-UNNAMED -cp "$CP" ps2gm.game.manager.Main "$@"
+'@ -replace '__JAR__', $jarName -replace '__URL__', $ApiBaseUrl -replace "`r`n", "`n"
 [IO.File]::WriteAllText((Join-Path $bundleDir 'run.sh'), $sh, [Text.UTF8Encoding]::new($false))
 
-$cmd = "@echo off`r`n" +
-       "cd /d %~dp0`r`n" +
-       (($envLines | ForEach-Object { "set $_" }) -join "`r`n") + "`r`n" +
-       "java --enable-native-access=ALL-UNNAMED -jar $jarName %*`r`n"
+$cmd = @'
+@echo off
+setlocal enabledelayedexpansion
+cd /d %~dp0
+
+set "CP=__JAR__"
+for %%f in (lib\*.jar lib\javafx\*.jar) do (
+    echo %%~nxf| findstr /R /C:"javafx-.*-mac\.jar" /C:"javafx-.*-mac-aarch64\.jar" /C:"javafx-.*-linux\.jar" >nul
+    if errorlevel 1 set "CP=!CP!;%%f"
+)
+
+set PS2GM_API_BASEURL=__URL__
+java --enable-native-access=ALL-UNNAMED -cp "!CP!" ps2gm.game.manager.Main %*
+'@ -replace '__JAR__', $jarName -replace '__URL__', $ApiBaseUrl -replace "`r?`n", "`r`n"
 Set-Content -Path (Join-Path $bundleDir 'run.cmd') -Value $cmd -Encoding ascii -NoNewline
 
-Write-Host "==> Bundled at $bundleDir"
-Write-Host "    Mac/Linux: chmod +x run.sh && ./run.sh   (needs Java 11+ on PATH)"
+Write-Host "==> Bundled at $bundleDir  (all JavaFX platforms)"
+Write-Host "    Mac/Linux: chmod +x run.sh && ./run.sh   (needs Java 17+ on PATH)"
 Write-Host "    Windows:   run.cmd"
 Write-Host "    Zip the 'jar' folder (rename it e.g. PS2GM-$AppVersion) to hand it out."
