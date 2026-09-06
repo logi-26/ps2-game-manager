@@ -2337,10 +2337,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private void jButtonVMCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonVMCActionPerformed
 
         if (jListGameList.getSelectedIndex() != -1) {
-            GameVMCScreen vmcScreen = new GameVMCScreen(this, true);
-            vmcScreen.setLocationRelativeTo(this);
-            vmcScreen.initialisGUI(jListGameList.getSelectedIndex());
-            vmcScreen.setVisible(true);  
+            // Ported to JavaFX (Swing ps2gm.game.manager.GameVMCScreen kept until the migration lands).
+            ps2gm.game.manager.fx.GameVmcScreen.open(jListGameList.getSelectedIndex());
         }
         else {JOptionPane.showMessageDialog(null,"You need to select a game before you can download any VMC files."," No game selected!",JOptionPane.WARNING_MESSAGE);}
 

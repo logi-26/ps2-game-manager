@@ -9,6 +9,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -288,7 +289,11 @@ public class MyApiClient implements BackendClient {
                 }
                 outLines.addAll(gameIds);
             }
-            Files.write(Paths.get(localPath), outLines, StandardCharsets.UTF_8);
+            Path outPath = Paths.get(localPath);
+            if (outPath.getParent() != null) {
+                Files.createDirectories(outPath.getParent());
+            }
+            Files.write(outPath, outLines, StandardCharsets.UTF_8);
         } catch (IOException | InterruptedException ex) {
             PopsGameManager.displayErrorMessageDebug(ex.toString());
         }

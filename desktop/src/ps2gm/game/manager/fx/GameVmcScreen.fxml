@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.GameVmcController"
+      spacing="10.0" prefWidth="820.0" prefHeight="470.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding>
+        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+    </padding>
+
+    <TitledPane text="Game List" collapsible="false" prefWidth="360.0">
+        <ListView fx:id="gameListView"/>
+    </TitledPane>
+
+    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+        <TitledPane text="Game Information" collapsible="false">
+            <VBox spacing="8.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <Label text="Title:" style="-fx-font-weight: bold;" minWidth="40.0"/>
+                    <TextField fx:id="titleField" editable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                </HBox>
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <Label text="ID:" style="-fx-font-weight: bold;" minWidth="40.0"/>
+                    <TextField fx:id="idField" editable="false" alignment="CENTER" prefWidth="120.0"/>
+                </HBox>
+            </VBox>
+        </TitledPane>
+
+        <TitledPane text="VMC Files on Server" collapsible="false" VBox.vgrow="ALWAYS">
+            <VBox spacing="8.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                <ListView fx:id="vmcListView" prefHeight="150.0"/>
+                <Label text="Description"/>
+                <TextArea fx:id="descriptionArea" editable="false" wrapText="true" prefHeight="120.0" VBox.vgrow="ALWAYS"/>
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="downloadButton" text="Download" prefWidth="100.0" disable="true" onAction="#onDownload"/>
+                </HBox>
+            </VBox>
+        </TitledPane>
+    </VBox>
+</HBox>
