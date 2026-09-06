@@ -14,7 +14,6 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -22,7 +21,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="640.0" prefWidth="900.0" stylesheets="@MainScreen.css" style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.MainController">
+<VBox prefHeight="640.0" prefWidth="900.0" style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;" stylesheets="@MainScreen.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.MainController">
 
     <MenuBar>
         <Menu text="File">
@@ -100,7 +99,7 @@
         </Menu>
     </MenuBar>
 
-    <HBox minHeight="-Infinity" minWidth="-Infinity" prefHeight="750.0" prefWidth="1050.0" spacing="10.0" VBox.vgrow="ALWAYS">
+    <HBox minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1050.0" spacing="10.0" VBox.vgrow="ALWAYS">
         <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
 
         <VBox prefWidth="300.0" spacing="6.0">
@@ -108,7 +107,7 @@
             <ListView fx:id="gameList" minWidth="-Infinity" prefHeight="513.0" prefWidth="400.0" VBox.vgrow="ALWAYS" />
         </VBox>
 
-        <VBox prefHeight="595.0" prefWidth="381.0" spacing="10.0" HBox.hgrow="ALWAYS">
+        <VBox prefHeight="580.0" prefWidth="381.0" spacing="10.0" HBox.hgrow="ALWAYS">
             <TitledPane collapsible="false" prefHeight="92.0" prefWidth="508.0" text="Game Information">
                 <GridPane hgap="8.0" vgap="6.0">
                     <padding><Insets bottom="8.0" left="8.0" right="8.0" top="2.0" /></padding>
@@ -168,22 +167,19 @@
                                 <ColumnConstraints minWidth="100.0" />
                                 <ColumnConstraints hgrow="ALWAYS" />
                             </columnConstraints>
-                            <Label text="Genre:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <TextField fx:id="genreField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Label text="Developer:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <TextField fx:id="developerField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                             <Label text="Release Date:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                             <TextField fx:id="releaseDateField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                            <Label text="Developer:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                            <TextField fx:id="developerField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                            <Label text="No of Players:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <TextField fx:id="playersField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                            <Label text="Compatibility:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                            <TextField fx:id="deviceCompatField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                            <Label text="VMC0:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                            <TextField fx:id="vmc0Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                            <Label text="VMC1:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                            <TextField fx:id="vmc1Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                            <Label text="No of Players:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <TextField fx:id="playersField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            <Label text="Compatibility:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <TextField fx:id="deviceCompatField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            <Label text="VMC0:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <TextField fx:id="vmc0Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                            <Label text="VMC1:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                            <TextField fx:id="vmc1Field" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                      <rowConstraints>
-                        <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />

@@ -78,7 +78,7 @@ public class MainController implements MyListener {
     @FXML private TextField gameTitleField, gameNumberField, gameIdField, gameSizeField;
     @FXML private ImageView coverView;
     @FXML private Button artButton, cfgButton, chtButton, vmcButton;
-    @FXML private TextField genreField, releaseDateField, developerField, playersField, deviceCompatField, vmc0Field, vmc1Field;
+    @FXML private TextField releaseDateField, developerField, playersField, deviceCompatField, vmc0Field, vmc1Field;
 
     @FXML private CheckMenuItem cmiPs1Compat, cmiPs2UlHighlight, cmiDarkMode;
     @FXML private RadioMenuItem rmiPlaystation1, rmiPlaystation2,
@@ -312,7 +312,6 @@ public class MainController implements MyListener {
     }
 
     private void displayGameConfigDetails(String[] configData) {
-        genreField.setText(configData[2] != null ? configData[2] : "");
         developerField.setText(configData[3] != null ? configData[3] : "");
         releaseDateField.setText(configData[4] != null ? configData[4] : "");
         playersField.setText(configData[5] != null ? configData[5] : "");
@@ -336,7 +335,7 @@ public class MainController implements MyListener {
     }
 
     private void clearGameConfigDetails() {
-        for (TextField f : new TextField[] {genreField, developerField, releaseDateField, playersField, deviceCompatField, vmc0Field, vmc1Field}) {
+        for (TextField f : new TextField[] {developerField, releaseDateField, playersField, deviceCompatField, vmc0Field, vmc1Field}) {
             f.setText("");
         }
     }
