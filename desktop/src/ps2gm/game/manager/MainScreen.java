@@ -2570,9 +2570,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemBatchAddPS2GameActionPerformed
 
     private void jMenuItemChangeLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemChangeLogActionPerformed
-        ChangelogScreen changelogScreen = new ChangelogScreen(this, true);
-        changelogScreen.setLocationRelativeTo(this);
-        changelogScreen.setVisible(true);   
+        // Ported to JavaFX (Swing ps2gm.game.manager.ChangelogScreen kept until the migration lands).
+        ps2gm.game.manager.fx.ChangelogScreen.show();
     }//GEN-LAST:event_jMenuItemChangeLogActionPerformed
 
     private void jCheckBoxMenuPS1CompatabilityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuPS1CompatabilityActionPerformed
