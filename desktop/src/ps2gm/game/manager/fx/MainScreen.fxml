@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckMenuItem?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.MainController"
+      prefWidth="900.0" prefHeight="640.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+
+    <fx:define>
+        <ToggleGroup fx:id="consoleGroup"/>
+        <ToggleGroup fx:id="idPosPs1Group"/>
+        <ToggleGroup fx:id="idPosPs2Group"/>
+    </fx:define>
+
+    <MenuBar>
+        <Menu text="File">
+            <MenuItem fx:id="miOpenOplDir" text="Open OPL Directory" onAction="#onOpenOplDirectory"/>
+            <MenuItem fx:id="miAbout" text="About" onAction="#onAbout"/>
+            <MenuItem fx:id="miChangelog" text="Changelog" onAction="#onChangelog"/>
+            <Menu text="Settings">
+                <CheckMenuItem fx:id="cmiPs1Compat" text="Display PS1 Compatability" onAction="#onPs1CompatToggle"/>
+                <CheckMenuItem fx:id="cmiPs2UlHighlight" text="Highlight PS2 UL Games" onAction="#onPs2UlToggle"/>
+                <CheckMenuItem fx:id="cmiDarkMode" text="Dark Mode" onAction="#onDarkModeToggle"/>
+                <Menu text="PS1 Game ID Position">
+                    <RadioMenuItem fx:id="rmiIdPosPs1Start" text="Before Game Name" toggleGroup="$idPosPs1Group" onAction="#onIdPosPs1Start"/>
+                    <RadioMenuItem fx:id="rmiIdPosPs1End" text="After Game Name" toggleGroup="$idPosPs1Group" onAction="#onIdPosPs1End"/>
+                </Menu>
+                <Menu text="PS2 Game ID Position">
+                    <RadioMenuItem fx:id="rmiIdPosPs2Start" text="Before Game Name" toggleGroup="$idPosPs2Group" onAction="#onIdPosPs2Start"/>
+                    <RadioMenuItem fx:id="rmiIdPosPs2End" text="After Game Name" toggleGroup="$idPosPs2Group" onAction="#onIdPosPs2End"/>
+                </Menu>
+            </Menu>
+            <SeparatorMenuItem/>
+            <MenuItem text="Exit" onAction="#onExit"/>
+        </Menu>
+
+        <Menu text="Tools">
+            <MenuItem fx:id="miAddPs1Game" text="Add PS1 Game" onAction="#onAddGame"/>
+            <MenuItem fx:id="miAddPs2Game" text="Add PS2 Game" onAction="#onAddGame"/>
+            <MenuItem fx:id="miGenerateConfElm" text="Generate conf_apps.cfg" onAction="#onGenerateConfElm"/>
+            <MenuItem fx:id="miGenerateUlConf" text="Generate ul.cfg" onAction="#onGenerateUlConf"/>
+            <MenuItem fx:id="miSplitPs2Game" text="Convert ISO to UL Format" onAction="#onSplitPs2Game"/>
+            <MenuItem fx:id="miMergePs2Game" text="Convert UL Format to ISO" onAction="#onMergePs2Game"/>
+            <MenuItem fx:id="miPs1Emulator" text="PS1 Emulator Settings" onAction="#onPs1EmulatorSettings"/>
+            <MenuItem fx:id="miPs2Emulator" text="PS2 Emulator Settings" onAction="#onPs2EmulatorSettings"/>
+            <MenuItem fx:id="miMd5" text="Perform MD5 Hash" onAction="#onMd5"/>
+            <MenuItem fx:id="miRefreshGameList" text="Refresh Game List" onAction="#onRefreshGameList"/>
+            <MenuItem fx:id="miCheckUpdate" text="Check for Updates" onAction="#onCheckUpdate"/>
+        </Menu>
+
+        <Menu text="Batch Tools">
+            <MenuItem fx:id="miBatchAddPs1Game" text="Add PS1 Games" onAction="#onBatchAddGame"/>
+            <MenuItem fx:id="miBatchAddPs2Game" text="Add PS2 Games" onAction="#onBatchAddGame"/>
+            <MenuItem text="Batch Download" onAction="#onBatchDownload"/>
+            <MenuItem text="Check Long Game Names" onAction="#onCheckGameNames"/>
+            <MenuItem fx:id="miBatchPs1Elf" text="Generate PS1 ELF Files" onAction="#onGeneratePs1Elf"/>
+            <MenuItem text="Generate Spine ART" onAction="#onGenerateSpine"/>
+        </Menu>
+
+        <Menu text="Delete Files">
+            <MenuItem text="Delete Unused ART Files" onAction="#onDeleteUnusedArt"/>
+            <MenuItem text="Delete Unused CFG Files" onAction="#onDeleteUnusedConfig"/>
+            <MenuItem text="Delete Unused CHT Files" onAction="#onDeleteUnusedCheat"/>
+            <SeparatorMenuItem/>
+            <MenuItem text="Delete All ART Files" onAction="#onDeleteAllArt"/>
+            <MenuItem text="Delete All CFG Files" onAction="#onDeleteAllConfig"/>
+            <MenuItem text="Delete All CHT Files" onAction="#onDeleteAllCheat"/>
+            <MenuItem fx:id="miDeleteAllElf" text="Delete All ELF Files" onAction="#onDeleteAllElf"/>
+            <MenuItem text="Delete All Spine ART" onAction="#onDeleteAllSpineArt"/>
+        </Menu>
+
+        <Menu text="Console">
+            <RadioMenuItem fx:id="rmiPlaystation1" text="PlayStation 1" toggleGroup="$consoleGroup" onAction="#onSelectPs1"/>
+            <RadioMenuItem fx:id="rmiPlaystation2" text="PlayStation 2" toggleGroup="$consoleGroup" onAction="#onSelectPs2"/>
+            <Menu text="Mode">
+                <MenuItem text="Set Mode" onAction="#onChangeMode"/>
+            </Menu>
+            <Menu fx:id="menuConsoleFileTransfer" text="Transfer Files">
+                <MenuItem text="Set Remote File Locations" onAction="#onConsolePartitions"/>
+                <MenuItem text="Transfer Files to Console" onAction="#onTransferFiles"/>
+            </Menu>
+        </Menu>
+    </MenuBar>
+
+    <HBox spacing="10.0" VBox.vgrow="ALWAYS">
+        <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
+
+        <VBox spacing="6.0" prefWidth="300.0">
+            <Label fx:id="consoleLabel" text="Console" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <ListView fx:id="gameList" VBox.vgrow="ALWAYS"/>
+            <TextField fx:id="ps1CountField" editable="false"/>
+            <TextField fx:id="ps2CountField" editable="false"/>
+        </VBox>
+
+        <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+            <TitledPane text="Game Information" collapsible="false">
+                <GridPane hgap="8.0" vgap="6.0">
+                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="50.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints minWidth="90.0"/>
+                    </columnConstraints>
+                    <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="gameTitleField" editable="false" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <TextField fx:id="gameNumberField" editable="false" alignment="CENTER" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                    <Label text="ID:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="gameIdField" editable="false" alignment="CENTER" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <TextField fx:id="gameSizeField" editable="false" alignment="CENTER" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                </GridPane>
+            </TitledPane>
+
+            <HBox spacing="10.0" VBox.vgrow="ALWAYS">
+                <TitledPane text="Front Cover" collapsible="false">
+                    <StackPane minWidth="160.0" minHeight="220.0">
+                        <padding><Insets top="6.0" right="6.0" bottom="6.0" left="6.0"/></padding>
+                        <ImageView fx:id="coverView" preserveRatio="true" fitWidth="150.0" fitHeight="210.0"/>
+                    </StackPane>
+                </TitledPane>
+
+                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                    <TitledPane text="Game Tools" collapsible="false">
+                        <HBox spacing="8.0">
+                            <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                            <Button fx:id="artButton" text="ART" prefWidth="70.0" onAction="#onArt"/>
+                            <Button fx:id="cfgButton" text="CFG" prefWidth="70.0" onAction="#onCfg"/>
+                            <Button fx:id="chtButton" text="CHT" prefWidth="70.0" onAction="#onCht"/>
+                            <Button fx:id="vmcButton" text="VMC" prefWidth="70.0" onAction="#onVmc"/>
+                        </HBox>
+                    </TitledPane>
+
+                    <TitledPane text="Config Details" collapsible="false" VBox.vgrow="ALWAYS">
+                        <GridPane hgap="8.0" vgap="6.0">
+                            <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="100.0"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <Label text="Genre:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <TextField fx:id="genreField" editable="false" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            <Label text="Release Date:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                            <TextField fx:id="releaseDateField" editable="false" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            <Label text="Developer:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <TextField fx:id="developerField" editable="false" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            <Label text="No of Players:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                            <TextField fx:id="playersField" editable="false" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <Label text="Compatibility:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                            <TextField fx:id="deviceCompatField" editable="false" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                            <Label text="VMC0:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                            <TextField fx:id="vmc0Field" editable="false" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                            <Label text="VMC1:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                            <TextField fx:id="vmc1Field" editable="false" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                        </GridPane>
+                    </TitledPane>
+                </VBox>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>

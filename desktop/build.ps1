@@ -33,10 +33,12 @@ $jarPath    = Join-Path $buildLocal 'PS2GM-local.jar'
 $runDir     = Join-Path $buildLocal 'run'
 
 # JavaFX (Windows dev bundle) - the "-win" classified jars carry the native DLLs.
-# The UI is mid-migration from Swing to JavaFX; both toolkits run in one process.
+# The UI has been migrated Swing -> JavaFX; the app entry is now an Application subclass.
 $javafxVersion = '21.0.5'
 $javafxJars = @('javafx-base', 'javafx-graphics', 'javafx-controls', 'javafx-fxml') |
     ForEach-Object { "javafx/$_-$javafxVersion-win.jar" }
+# AtlantaFX supplies the light/dark JavaFX theme (replaces FlatLaf's Swing light/dark).
+$javafxJars += 'javafx/atlantafx-base-2.0.1.jar'
 
 $libJars = @(
     'commons-net-3.5.jar'

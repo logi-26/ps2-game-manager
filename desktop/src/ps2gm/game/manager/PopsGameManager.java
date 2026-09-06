@@ -1,6 +1,5 @@
 package ps2gm.game.manager;
 
-import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Desktop;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -648,11 +647,6 @@ public class PopsGameManager {
             PopsGameManager.checkCue2Pops();
             PopsGameManager.loadSettings();
 
-            // Main.java already set the light theme as a safe default before any settings
-            // could be known; switch to dark here, now that the persisted preference is
-            // loaded, but still before MainScreen (the first Swing component) is created.
-            if (PopsGameManager.getDarkMode()) {FlatDarkLaf.setup();}
-
             if (PopsGameManager.isOPLFolderSet()) {
                 try {
                     GameListManager.createGameListsPS1();
@@ -661,9 +655,9 @@ public class PopsGameManager {
                 } catch(NullPointerException ex){displayErrorMessageDebug(ex.toString());}
             }
 
-            MainScreen gui = new MainScreen();
-            gui.setLocationRelativeTo(null);
-            gui.setVisible(true);
+            // Hand off to the JavaFX Application - blocks until the UI exits.
+            // (Theme, light/dark, is chosen inside MainApp from getDarkMode().)
+            ps2gm.game.manager.fx.MainApp.run(new String[0]);
         }
     }
 }

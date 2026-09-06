@@ -4,13 +4,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 
 /**
- * Boots the JavaFX toolkit once, on demand, from the still-Swing app.
+ * Owns the one-time JavaFX toolkit bootstrap.
  *
- * The UI is being migrated Swing -> JavaFX one screen at a time, so for now both
- * toolkits run in the same process: the Swing MainScreen stays the entry point and
- * opens JavaFX windows as separate {@code Stage}s. This class owns that one-time
- * {@code Platform.startup()} and keeps the FX runtime alive after its last window
- * closes.
+ * The app now boots through {@link MainApp} ({@code Application.launch}), which
+ * starts the toolkit itself and calls {@link #markStarted()} - after that
+ * {@link #ensureStarted()} is a no-op. The lazy {@code Platform.startup()} path is
+ * only still here as a fallback for the throwaway {@code scratchpad/FxSmoke*}
+ * harnesses that drive a screen façade without an {@code Application}.
  */
 final class FxRuntime {
 
@@ -18,12 +18,22 @@ final class FxRuntime {
 
     private FxRuntime() {}
 
+    /** Called by {@link MainApp}: the toolkit is already up, don't start it again. */
+    static void markStarted() {
+        STARTED.set(true);
+    }
+
     /** Ensure the FX toolkit is running. Safe to call repeatedly, from any thread. */
     static void ensureStarted() {
         if (STARTED.compareAndSet(false, true)) {
-            Platform.startup(() -> { });
-            // Without this the FX runtime shuts down when the last Stage closes, and
-            // the next screen we open would fail.
+            try {
+                Platform.startup(() -> { });
+            } catch (IllegalStateException alreadyRunning) {
+                // Already started elsewhere (e.g. an Application.launch we didn't see) - fine.
+            }
+            // Keep the runtime alive between windows when there's no always-open main
+            // Stage (the smoke harnesses). MainApp leaves implicitExit at its default
+            // so closing the real main window exits the app.
             Platform.setImplicitExit(false);
         }
     }

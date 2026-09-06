@@ -29,21 +29,31 @@ final class FxScreens {
 
     static <C> void open(String fxmlResource, String title, boolean resizable, Consumer<C> init) {
         FxRuntime.ensureStarted();
-        Platform.runLater(() -> build(fxmlResource, title, resizable, init, null));
+        if (Platform.isFxApplicationThread()) {
+            build(fxmlResource, title, resizable, init, null, false);
+        } else {
+            Platform.runLater(() -> build(fxmlResource, title, resizable, init, null, false));
+        }
     }
 
     /**
-     * Like {@link #open} but blocks the calling thread until the window is closed -
-     * for the few flows that were modal against the whole app (a manager pausing a
-     * scan to let the user fix things). Must NOT be called from the FX thread.
+     * Like {@link #open} but blocks until the window is closed - for the few flows
+     * that were modal against the whole app (first-launch mode picker, a manager
+     * pausing a scan to let the user fix things).
+     *
+     * On the FX thread it uses an application-modal {@code showAndWait()} (a nested
+     * event loop); off it, it hops to the FX thread and blocks the caller on a latch.
      */
     static <C> void openModal(String fxmlResource, String title, boolean resizable, Consumer<C> init) {
-        if (Platform.isFxApplicationThread()) {
-            throw new IllegalStateException("openModal must not be called from the FX thread");
-        }
         FxRuntime.ensureStarted();
+
+        if (Platform.isFxApplicationThread()) {
+            build(fxmlResource, title, resizable, init, null, true);
+            return;
+        }
+
         CountDownLatch closed = new CountDownLatch(1);
-        Platform.runLater(() -> build(fxmlResource, title, resizable, init, closed));
+        Platform.runLater(() -> build(fxmlResource, title, resizable, init, closed, false));
         try {
             closed.await();
         } catch (InterruptedException ex) {
@@ -51,7 +61,8 @@ final class FxScreens {
         }
     }
 
-    private static <C> void build(String fxmlResource, String title, boolean resizable, Consumer<C> init, CountDownLatch closed) {
+    private static <C> void build(String fxmlResource, String title, boolean resizable, Consumer<C> init,
+                                  CountDownLatch closed, boolean modalAndWait) {
         try {
             FXMLLoader loader = new FXMLLoader(FxScreens.class.getResource(fxmlResource));
             Parent root = loader.load();
@@ -69,10 +80,17 @@ final class FxScreens {
             if (closed != null) {
                 stage.setOnHidden(e -> closed.countDown());
             }
+            if (modalAndWait) {
+                stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            }
             if (controller instanceof StageAware sa) {
                 sa.stageReady(stage);
             }
-            stage.show();
+            if (modalAndWait) {
+                stage.showAndWait();
+            } else {
+                stage.show();
+            }
         } catch (Exception ex) {
             PopsGameManager.displayErrorMessageDebug("FX screen '" + fxmlResource + "' failed to open: " + ex);
             if (closed != null) {
