@@ -1,6 +1,5 @@
 package ps2gm.game.manager;
 
-import static java.lang.Math.toIntExact;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.SwingWorker;
 
 public final class USBUtil {
 
@@ -50,14 +48,18 @@ public final class USBUtil {
     
     
     // This joins the split files back into a single ISO file using a background worker task
-    public static void joinFiles(SplitMergeScreen splitMergeScreen, String gameID) throws Exception {
-        new BackgroundWorkerMergeGame(splitMergeScreen, gameID).execute();  
+    public static void joinFiles(SplitMergeProgress ui, String gameID) throws Exception {
+        Thread t = new Thread(new BackgroundWorkerMergeGame(ui, gameID), "usbutil-merge");
+        t.setDaemon(true);
+        t.start();
     }
-    
-    
+
+
     // This splits the file into 1GB chunks using a background worker task
-    public static void splitFile(SplitMergeScreen SplitMergeScreen, Game game) throws Exception{
-        new BackgroundWorkerSplitGame(SplitMergeScreen, game).execute();
+    public static void splitFile(SplitMergeProgress ui, Game game) throws Exception{
+        Thread t = new Thread(new BackgroundWorkerSplitGame(ui, game), "usbutil-split");
+        t.setDaemon(true);
+        t.start();
     }
     
     
@@ -339,17 +341,22 @@ public final class USBUtil {
     
     
     // Background worker thread which split the PS2 ISO
-    public static class BackgroundWorkerSplitGame extends SwingWorker<Object, File> {
-        SplitMergeScreen SplitMergeScreen;
+    public static class BackgroundWorkerSplitGame implements Runnable {
+        SplitMergeProgress ui;
         Game selectedGame;
 
-        public BackgroundWorkerSplitGame(SplitMergeScreen SplitMergeScreen, Game selectedGame) {
-            this.SplitMergeScreen = SplitMergeScreen;
+        public BackgroundWorkerSplitGame(SplitMergeProgress ui, Game selectedGame) {
+            this.ui = ui;
             this.selectedGame = selectedGame;
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
+        public void run() {
+            try { doInBackground(); } catch (Exception ex) { PopsGameManager.displayErrorMessageDebug(ex.toString()); }
+            done();
+        }
+
+        private Object doInBackground() throws Exception {
 
             // Rename the ISO file and game path to remove the game ID
             File selectedISO = new File(selectedGame.getGamePath());
@@ -372,22 +379,20 @@ public final class USBUtil {
                 long totalBytesProcessed = 0;
                 
                 for (int destIx = 1; destIx <= numberOfOutputFiles; destIx++) {
-                    
-                    SplitMergeScreen.setGamePartsText(String.valueOf(destIx) + "/" + String.valueOf(numberOfOutputFiles));
-                    
+
+                    ui.setPartsText(destIx + "/" + numberOfOutputFiles);
+
                     try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(PopsGameManager.getOPLFolder() + File.separator + "ul." + gameNameToULHex(selectedGame.getGameName().getBytes()) + "." + selectedGame.getGameID() + "." + "0" + (destIx-1)))) {
                         if (bytesPerSplit > maxReadBufferSize) {
                             long numReads = bytesPerSplit / maxReadBufferSize;
                             long numRemainingRead = bytesPerSplit % maxReadBufferSize;
 
-                            SplitMergeScreen.getProgressBar().setMinimum(0);
-                            SplitMergeScreen.getProgressBar().setMaximum(toIntExact(numReads*numberOfOutputFiles));
+                            ui.setProgressRange(0, numReads * numberOfOutputFiles);
 
                             for (int i = 0; i < numReads; i++) {
                                 readWrite(randomAccessFile, bufferedOutputStream, maxReadBufferSize);
                                 totalBytesProcessed++;
-                                SplitMergeScreen.getProgressBar().setValue(toIntExact(totalBytesProcessed));
-                                SplitMergeScreen.getProgressBar().repaint();
+                                ui.setProgress(totalBytesProcessed);
                             }
 
                             if (numRemainingRead > 0) {readWrite(randomAccessFile, bufferedOutputStream, numRemainingRead);}
@@ -413,39 +418,43 @@ public final class USBUtil {
             
             return null;
         }
-        
-        @Override
-        protected void done(){
+
+        private void done(){
 
             // Delete the original ISO file
             File file = new File(selectedGame.getGamePath());
-            file.delete();  
+            file.delete();
 
             // Create the ul.cfg file
             ArrayList<Game> ulGameList = new ArrayList<>();
             GameListManager.getGameListPS2().stream().filter((ps2Game) -> (ps2Game.getULGame())).forEachOrdered((ps2Game) -> {ulGameList.add(ps2Game);});
             writeULCFG(ulGameList);
-            
+
             // update the main game list in the GUI and close the split/merge dialog screen
             GameListManager.createGameListsPS2(false);
-            PopsGameManager.callbackToUpdateGUIGameList(selectedGame.getGameID(), -1); 
-            SplitMergeScreen.closeDialog();
+            PopsGameManager.callbackToUpdateGUIGameList(selectedGame.getGameID(), -1);
+            ui.finished();
         }
-    }   
+    }
     
     
     // Background worker thread which merges the PS2 ISO
-    public static class BackgroundWorkerMergeGame extends SwingWorker<Object, File> {
-        SplitMergeScreen SplitMergeScreen;
+    public static class BackgroundWorkerMergeGame implements Runnable {
+        SplitMergeProgress ui;
         String gameID;
 
-        public BackgroundWorkerMergeGame(SplitMergeScreen SplitMergeScreen, String gameID) {
-            this.SplitMergeScreen = SplitMergeScreen;
+        public BackgroundWorkerMergeGame(SplitMergeProgress ui, String gameID) {
+            this.ui = ui;
             this.gameID = gameID;
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
+        public void run() {
+            try { doInBackground(); } catch (Exception ex) { PopsGameManager.displayErrorMessageDebug(ex.toString()); }
+            done();
+        }
+
+        private Object doInBackground() throws Exception {
 
             int maxReadBufferSize = 8 * 1024;
             String gameName = gameID + ".GAMENAME";
@@ -467,20 +476,18 @@ public final class USBUtil {
                 for (File file : splitFiles) {
 
                     fileCount++;
-                    SplitMergeScreen.setGamePartsText(String.valueOf(fileCount) + "/" + splitFiles.size());
+                    ui.setPartsText(fileCount + "/" + splitFiles.size());
 
                     randomAccessFile = new RandomAccessFile(file, "r");
                     long numReads = randomAccessFile.length() / maxReadBufferSize;
                     long numRemainingRead = randomAccessFile.length() % maxReadBufferSize;
 
-                    SplitMergeScreen.getProgressBar().setMinimum(0);
-                    SplitMergeScreen.getProgressBar().setMaximum(toIntExact(numReads*splitFiles.size()));
+                    ui.setProgressRange(0, numReads * splitFiles.size());
 
                     for (int i = 0; i < numReads; i++) {
                         readWrite(randomAccessFile, bufferedOutputStream, maxReadBufferSize);
                         totalBytesProcessed++;
-                        SplitMergeScreen.getProgressBar().setValue(toIntExact(totalBytesProcessed));
-                        SplitMergeScreen.getProgressBar().repaint();
+                        ui.setProgress(totalBytesProcessed);
                     }
 
                     if (numRemainingRead > 0) {readWrite(randomAccessFile, bufferedOutputStream, numRemainingRead);}
@@ -500,19 +507,18 @@ public final class USBUtil {
             
             return null;
         }
-        
-        @Override
-        protected void done(){
+
+        private void done(){
 
             // Create the ul.cfg file
             ArrayList<Game> ulGameList = new ArrayList<>();
             GameListManager.getGameListPS2().stream().filter((ps2Game) -> (ps2Game.getULGame())).forEachOrdered((ps2Game) -> {ulGameList.add(ps2Game);});
             writeULCFG(ulGameList);
-            
+
             // update the main game list in the GUI and close the split/merge dialog screen
             GameListManager.createGameListsPS2(false);
-            PopsGameManager.callbackToUpdateGUIGameList(gameID, -1); 
-            SplitMergeScreen.closeDialog();
+            PopsGameManager.callbackToUpdateGUIGameList(gameID, -1);
+            ui.finished();
         }
-    }   
+    }
 }

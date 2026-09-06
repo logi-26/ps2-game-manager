@@ -4,9 +4,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 
-public class SplitMergeScreen extends javax.swing.JDialog {
+public class SplitMergeScreen extends javax.swing.JDialog implements SplitMergeProgress {
 
     private final static JProgressBar PROGRESS_BAR = new JProgressBar(0, 100);
     private final Game selectedGame;
@@ -56,15 +57,19 @@ public class SplitMergeScreen extends javax.swing.JDialog {
     }
     
     
-    // Set the label text for the number of game parts
-    public void setGamePartsText(String text){jLabelGameParts.setText(text);}
-    
-    // Close the dialog window
-    public void closeDialog(){dispose();}
-    
-    // This returns the progress bar
-    public JProgressBar getProgressBar(){return PROGRESS_BAR;}
-    
+    // ---- SplitMergeProgress: USBUtil reports here from its worker thread; marshal onto the EDT ----
+    @Override
+    public void setPartsText(String text){SwingUtilities.invokeLater(() -> jLabelGameParts.setText(text));}
+
+    @Override
+    public void setProgressRange(long min, long max){SwingUtilities.invokeLater(() -> {PROGRESS_BAR.setMinimum((int) min); PROGRESS_BAR.setMaximum((int) max);});}
+
+    @Override
+    public void setProgress(long value){SwingUtilities.invokeLater(() -> PROGRESS_BAR.setValue((int) value));}
+
+    @Override
+    public void finished(){SwingUtilities.invokeLater(this::dispose);}
+
     // Split the selected game file using the USBUtil class
     public void splitFile(){try {USBUtil.splitFile(this, selectedGame);} catch (Exception ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}}
     
