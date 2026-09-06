@@ -49,7 +49,7 @@ Every ported screen is a triple in `ps2gm.game.manager.fx`:
 GameVMC · SplitMerge · GameLongName · **GameRenamingPS1/PS2** ·
 **BatchDownloadPS1/PS2** · **GameImagePS1/PS2 + GameImageSelectorPS1/PS2** ·
 **AddGameHDDPS1/PS2** · **SetModeScreen** · **AddGameSMBScreen** ·
-**SyncFileScreen**.
+**SyncFileScreen** · **GameCheatScreen**.
 **Infra:** `FxRuntime`, `FxScreens.open` + `openModal` + `StageAware`.
 **Decouples:** `SplitMergeProgress` (USBUtil), `GameLongNameRenamer`,
 `FtpTransferProgress` (MyFTPClient + HDLDumpManager).
@@ -76,7 +76,7 @@ overlap with GameCheat/GameConfig (still Tier B):
 
 ---
 
-## Remaining — 5 screen classes (GameCheat, GameConfig, MainScreen + 2 dead)
+## Remaining — 4 screen classes (GameConfig, MainScreen + 2 dead)
 
 Delete first, not ports:
 - **`TestScreen`** (96) — dead code.
@@ -95,8 +95,8 @@ Delete first, not ports:
 | Screen | LOC | Notes / plan |
 |---|---|---|
 | ~~**GameImageScreenPS1 / PS2**~~ | 1124 / 1125 | **DONE** (`cdec299`). `GameImageController` + `GameImageSelectorController`, one pair for both consoles (differ only in game list, cover aspect ratio, "no image" cover placeholder). FXML `FlowPane` of 8 `TitledPane`s, each `ImageView` + File/Auto/Del `Button`s carrying the cover type in `userData`. Fixed preview dims carried across (no live node size → no window creep). File button = `manualImageSelection` on the EDT via `SwingUtilities.invokeAndWait`, then re-read `ART/`. Auto/next backend calls on daemon threads + `Platform.runLater`. Selector close-without-save deletes the file + fires `imageSelected` so the parent falls back to its placeholder. |
-| **GameCheatScreen** | 810 | Cheat-code editor: game list + a big editable text area of codes + Save + server fetch (download shared cheats). No `SwingWorker`; server calls are synchronous today (move them to a `Task`). `GameConfigFileManager` / server for read/write. Self-contained. Medium-large. **Do this next.** |
-| **GameConfigScreen** | 2975 | **The monster.** Per-game OPL `.cfg` editor — compatibility flags, GSM, cheats, VMC slots, PADEMU, a 5-star rating widget (custom mouse-hover handlers → an FX star control or a `Rating` from ControlsFX/AtlantaFX), ~11 `JOptionPane`. Reads/writes via `GameConfigFileManager` (`readGameConfigFormatted` / `writeGameConfigFile`, index-mapped `NEW_CONFIG_DATA` array) — **that mapping stays; only the widgets change.** No worker. Break the FXML into `TitledPane` sections. Budget a whole session; consider sub-tasking (layout, then per-section binding, then save round-trip). |
+| ~~**GameCheatScreen**~~ | 810 | **DONE** (`90e9856`). `GameCheatController` - editable `TextArea` (local cheat file) + a colour-coded `ListView` of server cheats (styling via a cell factory + `styleFor()`, replacing the `JTextPane` `StyledDocument`). Server fetch (index + per-game cheats + widescreen resource scan) on a daemon thread. Swing's drag-select + right-click-append → multi-select `ListView` + "<< Add" button; the PS1 `$`-prefix transform kept. `compareCheatFile` still prompts to save on nav / close. |
+| **GameConfigScreen** | 2975 | **The monster. Do this next.** Per-game OPL `.cfg` editor — compatibility flags, GSM, cheats, VMC slots, PADEMU, a 5-star rating widget (custom mouse-hover handlers → an FX star control or a `Rating` from ControlsFX/AtlantaFX), ~11 `JOptionPane`. Reads/writes via `GameConfigFileManager` (`readGameConfigFormatted` / `writeGameConfigFile`, index-mapped `NEW_CONFIG_DATA` array) — **that mapping stays; only the widgets change.** No worker. Break the FXML into `TitledPane` sections. Budget a whole session; consider sub-tasking (layout, then per-section binding, then save round-trip). |
 
 ### Tier C — DONE (`eef4a05` decouple, `b45bf0e` `50df44e` `5d04f88` `1995af6`)
 
@@ -139,7 +139,7 @@ smoke only. The FTP / hdl_dump paths need a live PS2.
 4. ~~`FtpTransferProgress` decouple → `AddGameHDDScreenPS1/PS2`~~ — done (`eef4a05`, `b45bf0e`)
 5. ~~`SetModeScreen`~~ — done (`50df44e`)
 6. ~~`AddGameSMBScreen`, `SyncFileScreen`~~ — done (`5d04f88`, `1995af6`)
-7. **`GameCheatScreen` (Tier B) — next**
-8. `GameConfigScreen` (Tier B monster — own session)
+7. ~~`GameCheatScreen` (Tier B)~~ — done (`90e9856`)
+8. **`GameConfigScreen` (Tier B monster — own session) — next**
 9. `MainScreen` + retire coexistence glue + AtlantaFX
 10. Packaging scripts, delete Swing classes, merge to `main`
