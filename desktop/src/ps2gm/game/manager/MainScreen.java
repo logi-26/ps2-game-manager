@@ -1319,9 +1319,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
 
         // If the list is not empty, display the game long name screen
         if (!longNameList.isEmpty()){
-            GameLongNameScreen longNameScreen = new GameLongNameScreen(this, true, PopsGameManager.getCurrentConsole() ,longNameList);
-            longNameScreen.setLocationRelativeTo(this);
-            longNameScreen.setVisible(true);
+            // Ported to JavaFX (Swing ps2gm.game.manager.GameLongNameScreen kept until the migration lands).
+            ps2gm.game.manager.fx.GameLongNameScreen.open(PopsGameManager.getCurrentConsole(), longNameList);
         }
         else {
             JOptionPane.showMessageDialog(null,"You do not have any " + PopsGameManager.getCurrentConsole() + " games with names greater than 32 characters in length."," No Games To Rename",JOptionPane.PLAIN_MESSAGE);
@@ -2631,9 +2630,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private void jMenuItemSplitPS2GameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSplitPS2GameActionPerformed
 
         if (GameListManager.getGameListPS2().get(jListGameList.getSelectedIndex()).getGameName().length()<=32){
-            SplitMergeScreen splitMergerScreen = new SplitMergeScreen(this, true, GameListManager.getGameListPS2().get(jListGameList.getSelectedIndex()), "Split");
-            splitMergerScreen.setLocationRelativeTo(this);
-            splitMergerScreen.setVisible(true);
+            // Ported to JavaFX (Swing ps2gm.game.manager.SplitMergeScreen kept until the migration lands).
+            ps2gm.game.manager.fx.SplitMergeScreen.open(GameListManager.getGameListPS2().get(jListGameList.getSelectedIndex()), "Split");
         }
         else {
             JOptionPane.showMessageDialog(null,"You cannot split games that have names greater than 32 characters in length."," Game Name is Too Long!",JOptionPane.WARNING_MESSAGE);
@@ -2641,9 +2639,7 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemSplitPS2GameActionPerformed
 
     private void jMenuItemMergePS2GameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemMergePS2GameActionPerformed
-        SplitMergeScreen splitMergerScreen = new SplitMergeScreen(this, true, GameListManager.getGameListPS2().get(jListGameList.getSelectedIndex()), "Merge");
-        splitMergerScreen.setLocationRelativeTo(this);
-        splitMergerScreen.setVisible(true);
+        ps2gm.game.manager.fx.SplitMergeScreen.open(GameListManager.getGameListPS2().get(jListGameList.getSelectedIndex()), "Merge");
     }//GEN-LAST:event_jMenuItemMergePS2GameActionPerformed
 
     private void jCheckBoxMenuItemPS2ULCFGActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuItemPS2ULCFGActionPerformed

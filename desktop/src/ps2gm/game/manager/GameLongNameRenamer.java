@@ -19,20 +19,20 @@ import java.util.List;
  * now, JavaFX later) only owns the UI: the "name already used" check, calling one of
  * these methods, and refreshing its lists on success.
  */
-final class GameLongNameRenamer {
+public final class GameLongNameRenamer {
 
     private final Game game;
     private final String oldTitle;
     private final String newTitle;
 
-    GameLongNameRenamer(Game game, String oldTitle, String newTitle) {
+    public GameLongNameRenamer(Game game, String oldTitle, String newTitle) {
         this.game = game;
         this.oldTitle = oldTitle;
         this.newTitle = newTitle;
     }
 
     // Rename a local PS1 VCD and ELF file (SMB or HDD_USB). @return true if the VCD/ELF rename succeeded.
-    boolean renameLocalPS1(String prefix) {
+    public boolean renameLocalPS1(String prefix) {
 
         File selectedGame = new File(game.getGamePath());
         if (!selectedGame.exists()) {
@@ -73,7 +73,7 @@ final class GameLongNameRenamer {
     }
 
     // Rename a local PS2 ISO (SMB or HDD_USB). @return true if the ISO rename succeeded.
-    boolean renameLocalPS2() {
+    public boolean renameLocalPS2() {
 
         File selectedGame = new File(game.getGamePath());
         if (!selectedGame.exists()) {
@@ -86,7 +86,7 @@ final class GameLongNameRenamer {
     }
 
     // HDD mode (PS1): rename the VCD and ELF on the console over FTP. Fire and forget.
-    void ftpRenamePS1() {
+    public void ftpRenamePS1() {
 
         MyFTPClient myFTP = new MyFTPClient();
 
