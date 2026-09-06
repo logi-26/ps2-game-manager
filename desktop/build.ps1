@@ -44,7 +44,6 @@ $libJars = @(
     'commons-net-3.5.jar'
     'sevenzipjbinding.jar'
     'sevenzipjbinding-AllPlatforms.jar'
-    'flatlaf-3.7.2.jar'
 ) + $javafxJars
 
 $cp = ($libJars | ForEach-Object { Join-Path $libDir $_ }) -join ';'
@@ -101,7 +100,6 @@ if ($Run -or $Stage) {
     Copy-Item (Join-Path $libDir 'commons-net-3.5.jar')              (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'sevenzipjbinding.jar')            (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'sevenzipjbinding-AllPlatforms.jar') (Join-Path $runDir 'lib') -Force
-    Copy-Item (Join-Path $libDir 'flatlaf-3.7.2.jar')                (Join-Path $runDir 'lib') -Force
     New-Item -ItemType Directory -Force -Path (Join-Path $runDir 'lib\javafx') | Out-Null
     Copy-Item (Join-Path $libDir 'javafx\*.jar')                     (Join-Path $runDir 'lib\javafx') -Force
     Copy-Item $jarPath (Join-Path $runDir 'PS2GM-local.jar') -Force
