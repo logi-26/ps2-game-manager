@@ -2391,9 +2391,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuBatchDownloadActionPerformed
 
     private void jMenuItemPS2EmulatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPS2EmulatorActionPerformed
-        emulatorSettingsScreen = new EmulatorSettingsScreen(this, true, "PS2");
-        emulatorSettingsScreen.setLocationRelativeTo(this);
-        emulatorSettingsScreen.setVisible(true);    
+        // Ported to JavaFX (Swing ps2gm.game.manager.EmulatorSettingsScreen kept until the migration lands).
+        ps2gm.game.manager.fx.EmulatorSettingsScreen.open("PS2");    
     }//GEN-LAST:event_jMenuItemPS2EmulatorActionPerformed
 
     private void jMenuItemCheckUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCheckUpdateActionPerformed
@@ -2405,9 +2404,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuBatchPS1ElfActionPerformed
 
     private void jMenuItemPS1EmulatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPS1EmulatorActionPerformed
-        emulatorSettingsScreen = new EmulatorSettingsScreen(this, true, "PS1");
-        emulatorSettingsScreen.setLocationRelativeTo(this);
-        emulatorSettingsScreen.setVisible(true);
+        // Ported to JavaFX (Swing ps2gm.game.manager.EmulatorSettingsScreen kept until the migration lands).
+        ps2gm.game.manager.fx.EmulatorSettingsScreen.open("PS1");
     }//GEN-LAST:event_jMenuItemPS1EmulatorActionPerformed
 
     private void jMenuItemMD5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemMD5ActionPerformed

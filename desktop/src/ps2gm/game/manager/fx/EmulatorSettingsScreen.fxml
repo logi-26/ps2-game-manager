@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.EmulatorSettingsController"
+      spacing="12.0" prefWidth="470.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding>
+        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+    </padding>
+
+    <TitledPane text="Emulator Settings" collapsible="false">
+        <VBox spacing="10.0">
+            <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
+
+            <CheckBox fx:id="useEmulatorCheck" text="Use PCSX2" onAction="#onUseEmulatorToggled"/>
+            <CheckBox fx:id="fullscreenCheck" text="Fullscreen Mode"/>
+
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Path:" minWidth="40.0"/>
+                <TextField fx:id="pathField" alignment="CENTER" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT">
+                <Button fx:id="browseButton" text="Browse" prefWidth="90.0" onAction="#onBrowse"/>
+            </HBox>
+        </VBox>
+    </TitledPane>
+
+    <HBox spacing="24.0" alignment="CENTER">
+        <Button fx:id="saveButton" text="Save" prefWidth="90.0" onAction="#onSave"/>
+        <Button fx:id="cancelButton" text="Cancel" prefWidth="90.0" onAction="#onCancel"/>
+    </HBox>
+</VBox>
