@@ -43,21 +43,29 @@ Every ported screen is a triple in `ps2gm.game.manager.fx`:
 
 ---
 
-## Done (9 commits)
+## Done
 
-About · Changelog · HashChecker · SetPartition · EmulatorSettings · GameVMC ·
-SplitMerge · GameLongName. Plus decouples: `SplitMergeProgress` (USBUtil),
-`GameLongNameRenamer`.
+**Screens:** About · Changelog · HashChecker · SetPartition · EmulatorSettings ·
+GameVMC · SplitMerge · GameLongName · **GameRenamingPS1/PS2** ·
+**BatchDownloadPS1/PS2**.
+**Infra:** `FxRuntime`, `FxScreens.open` + `openModal` + `StageAware`.
+**Decouples:** `SplitMergeProgress` (USBUtil), `GameLongNameRenamer`.
+**Made public for the `fx` subpackage:** `GameLongNameRenamer`,
+`GameArtFileManager` (+ `isMissing`/`resolve`/`baseName`),
+`GameConfigFileManager.renameConfigTitlesToMatch`.
+
+Tier A is done bar `GameImageSelectorScreen*` (paired with the GameImage
+screens, below).
 
 ---
 
-## Remaining — 18 screen classes
+## Remaining — 14 screen classes
 
 Delete first, not ports:
 - **`TestScreen`** (96) — dead code.
 - **`GameCheatScreenNew`** (176) — no references anywhere; dead code.
 
-### Tier A — medium, self-contained (no decouple)
+### Tier A — DONE except GameImageSelector* (do with the GameImage screens)
 
 | Screen | LOC | Notes / plan |
 |---|---|---|
