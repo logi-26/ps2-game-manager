@@ -20,6 +20,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -99,13 +100,23 @@ public class MainController implements MyListener {
 
     @FXML
     private void initialize() {
-        gameList.setCellFactory(v -> new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty ? null : item);
-                setStyle(empty ? "" : rowStyle(getIndex()));
-            }
+        ContextMenu rowMenu = buildGameListContextMenu();
+        gameList.setCellFactory(v -> {
+            ListCell<String> cell = new ListCell<>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty ? null : item);
+                    setStyle(empty ? "" : rowStyle(getIndex()));
+                    setContextMenu(empty ? null : rowMenu);
+                }
+            };
+            // Right-click selects the row under the cursor before the menu opens,
+            // so Delete / Run in Emulator act on the game that was clicked.
+            cell.setOnContextMenuRequested(e -> {
+                if (!cell.isEmpty()) { gameList.getSelectionModel().select(cell.getIndex()); }
+            });
+            return cell;
         });
         gameList.getSelectionModel().selectedIndexProperty().addListener((o, ov, nv) -> {
             if (!suppressSelectionEvents && nv.intValue() >= 0) {
@@ -698,6 +709,23 @@ public class MainController implements MyListener {
             default:
                 break;
         }
+    }
+
+    // ------------------------------------------------ game-list context menu
+
+    /** Right-click menu shared by every game-list row (see the cell factory). */
+    private ContextMenu buildGameListContextMenu() {
+        MenuItem run = new MenuItem("Run in Emulator");
+        run.setOnAction(e -> {
+            if (gameList.getSelectionModel().getSelectedIndex() == -1) { return; }
+            if ("PS1".equals(PopsGameManager.getCurrentConsole())) { launchEmulatorPS1(); }
+            else { launchEmulatorPS2(); }
+        });
+        MenuItem delete = new MenuItem("Delete");
+        delete.setOnAction(e -> {
+            if (gameList.getSelectionModel().getSelectedIndex() != -1) { deleteGame(); }
+        });
+        return new ContextMenu(run, delete);
     }
 
     // --------------------------------------------------------- delete game
