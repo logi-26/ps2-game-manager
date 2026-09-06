@@ -100,7 +100,7 @@
         </Menu>
     </MenuBar>
 
-    <HBox prefHeight="615.0" prefWidth="959.0" spacing="10.0" VBox.vgrow="ALWAYS">
+    <HBox minHeight="-Infinity" minWidth="-Infinity" prefHeight="750.0" prefWidth="1050.0" spacing="10.0" VBox.vgrow="ALWAYS">
         <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
 
         <VBox prefWidth="300.0" spacing="6.0">
@@ -183,7 +183,7 @@
                      </rowConstraints>
                         </GridPane>
                     </TitledPane>
-               <TitledPane animated="false" text="Stats">
+               <TitledPane animated="false" collapsible="false" text="Stats">
                  <content>
                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                         <children>
