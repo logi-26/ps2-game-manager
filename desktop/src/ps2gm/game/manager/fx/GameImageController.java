@@ -61,6 +61,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
     private Stage stage;
     private String console;
     private int[] coverPreview;
+    private int[] spinePreview;
     private String noImageCover;
     private final List<Game> gameList = new ArrayList<>();
     private int currentListIndex;
@@ -77,6 +78,10 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         this.console = console;
         boolean ps1 = "PS1".equals(console);
         this.coverPreview = ps1 ? new int[] {160, 160} : new int[] {160, 210};
+        // Spine sits between the two cover panes and must be exactly as tall as
+        // them - cap its preview height at the cover height (preserveRatio then
+        // keeps it as a narrow strip) instead of the taller stand-alone default.
+        this.spinePreview = new int[] {SPINE_PREVIEW[0], coverPreview[1]};
         this.noImageCover = imagesDir() + (ps1 ? "No Image Cover.png" : "No Image Cover PS2.png");
         this.currentListIndex = gameIndex;
 
@@ -87,7 +92,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
 
         applyFit(covView, coverPreview);
         applyFit(cov2View, coverPreview);
-        applyFit(spineView, SPINE_PREVIEW);
+        applyFit(spineView, spinePreview);
         applyFit(logoView, LOGO_PREVIEW);
         applyFit(discView, DISC_PREVIEW);
         applyFit(scr1View, SCR_PREVIEW);
@@ -113,7 +118,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         setView(scr1View, GameArtFileManager.resolve(game, "_SCR"),  NO_IMAGE_SCREENSHOT, SCR_PREVIEW);
         setView(scr2View, GameArtFileManager.resolve(game, "_SCR2"), NO_IMAGE_SCREENSHOT, SCR_PREVIEW);
         // Spine (LAB) / Logo (LGO): no placeholder art, so clear the view when absent.
-        setView(spineView, GameArtFileManager.resolve(game, "_LAB"), null, SPINE_PREVIEW);
+        setView(spineView, GameArtFileManager.resolve(game, "_LAB"), null, spinePreview);
         setView(logoView,  GameArtFileManager.resolve(game, "_LGO"), null, LOGO_PREVIEW);
     }
 
