@@ -256,8 +256,13 @@ public class MainController implements MyListener {
 
     private void updateCoverLayout() {
         boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        // Lock the cover to a fixed width and let height follow the aspect ratio
+        // (fitHeight 0 = unconstrained). If both dimensions were set, a taller PS2
+        // cover would become height-limited and render narrower than a PS1 cover,
+        // making the Front Cover pane change width when switching console. PS2
+        // covers just render taller now - the pane has the vertical room.
         coverView.setFitWidth(150);
-        coverView.setFitHeight(ps1 ? 150 : 210);
+        coverView.setFitHeight(0);
         setCover(ps1 ? NO_IMAGE_PS1_COVER : NO_IMAGE_PS2_COVER);
     }
 

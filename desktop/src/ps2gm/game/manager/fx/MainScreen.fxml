@@ -137,6 +137,9 @@
                   <RowConstraints />
                </rowConstraints>
                 </GridPane>
+            <VBox.margin>
+               <Insets top="25.0" />
+            </VBox.margin>
             </TitledPane>
 
             <HBox spacing="10.0" VBox.vgrow="ALWAYS">
@@ -146,7 +149,7 @@
                             <padding>
                          <Insets bottom="6.0" left="6.0" right="6.0" top="2.0" />
                       </padding>
-                            <ImageView fx:id="coverView" fitHeight="210.0" fitWidth="150.0" preserveRatio="true" />
+                            <ImageView fx:id="coverView" fitHeight="0.0" fitWidth="150.0" preserveRatio="true" />
                         </StackPane>
                     </TitledPane>
 
@@ -161,10 +164,10 @@
                                 <RowConstraints />
                                 <RowConstraints />
                             </rowConstraints>
-                            <Button fx:id="artButton" styleClass="accent" maxWidth="Infinity" onAction="#onArt" text="ART" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Button fx:id="cfgButton" styleClass="accent" maxWidth="Infinity" onAction="#onCfg" text="CFG" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Button fx:id="chtButton" styleClass="accent" maxWidth="Infinity" onAction="#onCht" text="CHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                            <Button fx:id="vmcButton" styleClass="accent" maxWidth="Infinity" onAction="#onVmc" text="VMC" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Button fx:id="artButton" maxWidth="Infinity" onAction="#onArt" styleClass="accent" text="ART" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button fx:id="cfgButton" maxWidth="Infinity" onAction="#onCfg" styleClass="accent" text="CFG" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Button fx:id="chtButton" maxWidth="Infinity" onAction="#onCht" styleClass="accent" text="CHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Button fx:id="vmcButton" maxWidth="Infinity" onAction="#onVmc" styleClass="accent" text="VMC" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         </GridPane>
                     </TitledPane>
                 </VBox>
