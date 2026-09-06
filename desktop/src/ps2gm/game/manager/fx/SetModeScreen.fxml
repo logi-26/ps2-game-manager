@@ -17,14 +17,12 @@
       style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
     <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
 
-    <fx:define>
-        <ToggleGroup fx:id="modeGroup"/>
-    </fx:define>
-
     <TitledPane text="SMB Mode" collapsible="false">
         <VBox spacing="8.0">
             <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-            <RadioButton fx:id="smbRadio" text="OPL folder is on this PC." toggleGroup="$modeGroup"/>
+            <RadioButton fx:id="smbRadio" text="OPL folder is on this PC.">
+                <toggleGroup><ToggleGroup fx:id="modeGroup"/></toggleGroup>
+            </RadioButton>
             <HBox spacing="8.0" alignment="CENTER_LEFT">
                 <Label fx:id="smbPathLabel" text="Path:" minWidth="45.0"/>
                 <TextField fx:id="smbPathField" alignment="CENTER" HBox.hgrow="ALWAYS"/>

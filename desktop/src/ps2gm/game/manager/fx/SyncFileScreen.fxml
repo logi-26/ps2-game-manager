@@ -20,7 +20,6 @@
       style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
     <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
 
-    <fx:define><ToggleGroup fx:id="fileTypeGroup"/></fx:define>
 
     <VBox spacing="10.0" prefWidth="220.0">
         <TitledPane text="Console Settings" collapsible="false">
@@ -37,7 +36,9 @@
         <TitledPane text="Files" collapsible="false">
             <VBox spacing="4.0">
                 <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-                <RadioButton fx:id="artRadio" text="ART" toggleGroup="$fileTypeGroup" onAction="#onArt"/>
+                <RadioButton fx:id="artRadio" text="ART" onAction="#onArt">
+                    <toggleGroup><ToggleGroup fx:id="fileTypeGroup"/></toggleGroup>
+                </RadioButton>
                 <RadioButton fx:id="cfgRadio" text="CFG" toggleGroup="$fileTypeGroup" onAction="#onCfg"/>
                 <RadioButton fx:id="chtRadio" text="CHT" toggleGroup="$fileTypeGroup" onAction="#onCht"/>
                 <RadioButton fx:id="vmcRadio" text="VMC" toggleGroup="$fileTypeGroup" onAction="#onVmc"/>

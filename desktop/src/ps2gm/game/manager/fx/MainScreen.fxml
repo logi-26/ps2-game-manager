@@ -26,12 +26,6 @@
       prefWidth="900.0" prefHeight="640.0"
       style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
 
-    <fx:define>
-        <ToggleGroup fx:id="consoleGroup"/>
-        <ToggleGroup fx:id="idPosPs1Group"/>
-        <ToggleGroup fx:id="idPosPs2Group"/>
-    </fx:define>
-
     <MenuBar>
         <Menu text="File">
             <MenuItem fx:id="miOpenOplDir" text="Open OPL Directory" onAction="#onOpenOplDirectory"/>
@@ -42,11 +36,15 @@
                 <CheckMenuItem fx:id="cmiPs2UlHighlight" text="Highlight PS2 UL Games" onAction="#onPs2UlToggle"/>
                 <CheckMenuItem fx:id="cmiDarkMode" text="Dark Mode" onAction="#onDarkModeToggle"/>
                 <Menu text="PS1 Game ID Position">
-                    <RadioMenuItem fx:id="rmiIdPosPs1Start" text="Before Game Name" toggleGroup="$idPosPs1Group" onAction="#onIdPosPs1Start"/>
+                    <RadioMenuItem fx:id="rmiIdPosPs1Start" text="Before Game Name" onAction="#onIdPosPs1Start">
+                        <toggleGroup><ToggleGroup fx:id="idPosPs1Group"/></toggleGroup>
+                    </RadioMenuItem>
                     <RadioMenuItem fx:id="rmiIdPosPs1End" text="After Game Name" toggleGroup="$idPosPs1Group" onAction="#onIdPosPs1End"/>
                 </Menu>
                 <Menu text="PS2 Game ID Position">
-                    <RadioMenuItem fx:id="rmiIdPosPs2Start" text="Before Game Name" toggleGroup="$idPosPs2Group" onAction="#onIdPosPs2Start"/>
+                    <RadioMenuItem fx:id="rmiIdPosPs2Start" text="Before Game Name" onAction="#onIdPosPs2Start">
+                        <toggleGroup><ToggleGroup fx:id="idPosPs2Group"/></toggleGroup>
+                    </RadioMenuItem>
                     <RadioMenuItem fx:id="rmiIdPosPs2End" text="After Game Name" toggleGroup="$idPosPs2Group" onAction="#onIdPosPs2End"/>
                 </Menu>
             </Menu>
@@ -90,7 +88,9 @@
         </Menu>
 
         <Menu text="Console">
-            <RadioMenuItem fx:id="rmiPlaystation1" text="PlayStation 1" toggleGroup="$consoleGroup" onAction="#onSelectPs1"/>
+            <RadioMenuItem fx:id="rmiPlaystation1" text="PlayStation 1" onAction="#onSelectPs1">
+                <toggleGroup><ToggleGroup fx:id="consoleGroup"/></toggleGroup>
+            </RadioMenuItem>
             <RadioMenuItem fx:id="rmiPlaystation2" text="PlayStation 2" toggleGroup="$consoleGroup" onAction="#onSelectPs2"/>
             <Menu text="Mode">
                 <MenuItem text="Set Mode" onAction="#onChangeMode"/>
