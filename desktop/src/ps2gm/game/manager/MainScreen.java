@@ -2326,9 +2326,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     }//GEN-LAST:event_jMenuItemAddPS1GameActionPerformed
 
     private void jMenuItemTransferFilesToConsoleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemTransferFilesToConsoleActionPerformed
-        syncFileScreen = new SyncFileScreen(this, true);
-        syncFileScreen.setLocationRelativeTo(this);
-        syncFileScreen.setVisible(true);
+        // Ported to JavaFX (Swing SyncFileScreen kept until the migration lands)
+        ps2gm.game.manager.fx.SyncFileScreen.open();
     }//GEN-LAST:event_jMenuItemTransferFilesToConsoleActionPerformed
 
     private void jMenuItemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemExitActionPerformed

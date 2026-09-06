@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.SyncFileController"
+      spacing="10.0" prefWidth="880.0" prefHeight="470.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
+
+    <fx:define><ToggleGroup fx:id="fileTypeGroup"/></fx:define>
+
+    <VBox spacing="10.0" prefWidth="220.0">
+        <TitledPane text="Console Settings" collapsible="false">
+            <VBox spacing="6.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                <Label text="Partition:"/>
+                <ComboBox fx:id="partitionCombo" maxWidth="Infinity"/>
+                <Label text="IP:"/>
+                <TextField fx:id="ipField" alignment="CENTER"/>
+                <Button fx:id="connectButton" text="Connect" onAction="#onConnect" maxWidth="Infinity"/>
+            </VBox>
+        </TitledPane>
+
+        <TitledPane text="Files" collapsible="false">
+            <VBox spacing="4.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                <RadioButton fx:id="artRadio" text="ART" toggleGroup="$fileTypeGroup" onAction="#onArt"/>
+                <RadioButton fx:id="cfgRadio" text="CFG" toggleGroup="$fileTypeGroup" onAction="#onCfg"/>
+                <RadioButton fx:id="chtRadio" text="CHT" toggleGroup="$fileTypeGroup" onAction="#onCht"/>
+                <RadioButton fx:id="vmcRadio" text="VMC" toggleGroup="$fileTypeGroup" onAction="#onVmc"/>
+            </VBox>
+        </TitledPane>
+
+        <TitledPane text="Transfer Status" collapsible="false">
+            <VBox spacing="6.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                <ProgressBar fx:id="progressBar" progress="0.0" maxWidth="Infinity"/>
+            </VBox>
+        </TitledPane>
+    </VBox>
+
+    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+        <Label text="Files on PC"/>
+        <ListView fx:id="localList" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <VBox spacing="8.0" alignment="CENTER">
+        <Button fx:id="fromConsoleButton" text="&lt;&lt;" onAction="#onFromConsole" prefWidth="45.0"/>
+        <Button fx:id="toConsoleButton" text="&gt;&gt;" onAction="#onToConsole" prefWidth="45.0"/>
+        <Button fx:id="deleteButton" text="Delete" onAction="#onDelete" prefWidth="80.0"/>
+    </VBox>
+
+    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+        <Label text="Files on PS2"/>
+        <ListView fx:id="remoteList" VBox.vgrow="ALWAYS"/>
+    </VBox>
+</HBox>
