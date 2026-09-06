@@ -9,7 +9,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
@@ -58,7 +57,6 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
 
     @FXML private ImageView covView, cov2View, spineView, logoView, discView, scr1View, scr2View, bgView;
     @FXML private TextField gameNameField, gameNumberField;
-    @FXML private TitledPane frontCoverTitledPane, spineTitledPane;
 
     private Stage stage;
     private String console;
@@ -80,10 +78,8 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         this.console = console;
         boolean ps1 = "PS1".equals(console);
         this.coverPreview = ps1 ? new int[] {130, 160} : new int[] {130, 210};
-        // Spine sits between the two cover panes; cap its preview height at the
-        // cover height so preserveRatio keeps it a narrow strip. The Spine pane's
-        // overall height is pinned to the Front Cover pane below (its stacked
-        // button column would otherwise make it taller).
+        // Decode hint only - the on-screen size of every preview comes from the
+        // fixed pane box in the FXML (the ImageView fit is bound to it there).
         this.spinePreview = new int[] {SPINE_PREVIEW[0], coverPreview[1]};
         this.noImageCover = imagesDir() + (ps1 ? "No Image Cover.png" : "No Image Cover PS2.png");
         this.currentListIndex = gameIndex;
@@ -92,26 +88,6 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         if (src != null) {
             gameList.addAll(src);
         }
-
-        applyFit(covView, coverPreview);
-        applyFit(cov2View, coverPreview);
-        applyFit(spineView, spinePreview);
-        applyFit(logoView, LOGO_PREVIEW);
-        applyFit(discView, DISC_PREVIEW);
-        applyFit(scr1View, SCR_PREVIEW);
-        applyFit(scr2View, SCR_PREVIEW);
-        applyFit(bgView, BG_PREVIEW);
-
-        // Pin the Spine pane's height to the Front Cover pane it sits beside. Its
-        // stacked button column makes its natural height a little different, and
-        // the delta isn't a constant (it moves with the button font / console
-        // cover size). Bind after the first layout pass so the source height is
-        // real - binding it while still 0 collapses the pane for good.
-        Platform.runLater(() -> {
-            spineTitledPane.minHeightProperty().bind(frontCoverTitledPane.heightProperty());
-            spineTitledPane.prefHeightProperty().bind(frontCoverTitledPane.heightProperty());
-            spineTitledPane.maxHeightProperty().bind(frontCoverTitledPane.heightProperty());
-        });
 
         refresh();
     }
@@ -134,11 +110,6 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         // Spine (LAB) / Logo (LGO): no placeholder art, so clear the view when absent.
         setView(spineView, GameArtFileManager.resolve(game, "_LAB"), null, spinePreview);
         setView(logoView,  GameArtFileManager.resolve(game, "_LGO"), null, LOGO_PREVIEW);
-    }
-
-    private static void applyFit(ImageView view, int[] size) {
-        view.setFitWidth(size[0]);
-        view.setFitHeight(size[1]);
     }
 
     private static void setView(ImageView view, File file, String fallbackPath, int[] size) {
