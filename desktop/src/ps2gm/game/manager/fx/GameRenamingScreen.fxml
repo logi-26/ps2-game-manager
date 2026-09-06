@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.GameRenamingController"
+      spacing="10.0" prefWidth="820.0" prefHeight="380.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding>
+        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+    </padding>
+
+    <TitledPane text="Game List" collapsible="false" prefWidth="360.0">
+        <ListView fx:id="gameListView"/>
+    </TitledPane>
+
+    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+        <TitledPane text="Game Information" collapsible="false">
+            <GridPane hgap="10.0" vgap="8.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="6.0"/></padding>
+                <columnConstraints>
+                    <ColumnConstraints minWidth="45.0" halignment="RIGHT"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="40.0" halignment="RIGHT"/>
+                    <ColumnConstraints minWidth="90.0"/>
+                </columnConstraints>
+                <Label text="Title:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="titleField" editable="false" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="No:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                <TextField fx:id="numberField" editable="false" alignment="CENTER" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+                <Label text="ID:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="idField" editable="false" alignment="CENTER" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Size:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                <TextField fx:id="sizeField" editable="false" alignment="CENTER" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+            </GridPane>
+        </TitledPane>
+
+        <TitledPane text="Rename Games" collapsible="false" VBox.vgrow="ALWAYS">
+            <VBox spacing="10.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="6.0"/></padding>
+                <GridPane hgap="10.0" vgap="8.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="70.0" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <Label text="Old Title:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="oldTitleField" editable="false" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="New Title:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="newTitleField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label fx:id="elfLabel" text="ELF Name:" style="-fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <TextField fx:id="elfNameField" editable="false" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                </GridPane>
+                <HBox spacing="14.0" alignment="CENTER_RIGHT">
+                    <Button fx:id="renameButton" text="Rename" prefWidth="90.0" onAction="#onRename"/>
+                    <Button fx:id="renameAllButton" text="Rename All" prefWidth="90.0" onAction="#onRenameAll"/>
+                    <Button fx:id="exitButton" text="Exit" prefWidth="90.0" onAction="#onExit"/>
+                </HBox>
+            </VBox>
+        </TitledPane>
+    </VBox>
+</HBox>

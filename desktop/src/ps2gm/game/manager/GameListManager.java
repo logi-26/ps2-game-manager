@@ -1008,9 +1008,8 @@ public class GameListManager {
         // Ask the user if they want to try and rename the game files
         int dialogResult = JOptionPane.showConfirmDialog (null, "Some of your PS1 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names",JOptionPane.YES_NO_OPTION);
         if(dialogResult == JOptionPane.YES_OPTION){
-            GameRenamingScreenPS1 gameRenamingScreen = new GameRenamingScreenPS1(null, true, invalidGameListPS1);
-            gameRenamingScreen.setLocationRelativeTo(null);
-            gameRenamingScreen.setVisible(true);  
+            // Ported to JavaFX (Swing GameRenamingScreenPS1 kept until the migration lands).
+            ps2gm.game.manager.fx.GameRenamingScreen.openPS1(invalidGameListPS1);
         }
         else {
             /*
@@ -1152,9 +1151,8 @@ public class GameListManager {
         // Ask the user if they want to try and rename the game files
         int dialogResult = JOptionPane.showConfirmDialog (null, "Some of your PS2 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names",JOptionPane.YES_NO_OPTION);
         if(dialogResult == JOptionPane.YES_OPTION){
-            GameRenamingScreenPS2 gameRenamingScreen = new GameRenamingScreenPS2(null, true, invalidGameListPS2);
-            gameRenamingScreen.setLocationRelativeTo(null);
-            gameRenamingScreen.setVisible(true);  
+            // Ported to JavaFX (Swing GameRenamingScreenPS2 kept until the migration lands).
+            ps2gm.game.manager.fx.GameRenamingScreen.openPS2(invalidGameListPS2);
         }
         else {
 
