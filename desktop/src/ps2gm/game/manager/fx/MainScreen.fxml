@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="640.0" prefWidth="900.0" style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;" stylesheets="@MainScreen.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.MainController">
+<VBox prefHeight="640.0" prefWidth="900.0" stylesheets="@MainScreen.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.MainController">
 
     <MenuBar>
         <Menu text="File">
@@ -31,7 +31,17 @@
             <Menu text="Settings">
                 <CheckMenuItem fx:id="cmiPs1Compat" onAction="#onPs1CompatToggle" text="Display PS1 Compatability" />
                 <CheckMenuItem fx:id="cmiPs2UlHighlight" onAction="#onPs2UlToggle" text="Highlight PS2 UL Games" />
-                <CheckMenuItem fx:id="cmiDarkMode" onAction="#onDarkModeToggle" text="Dark Mode" />
+                <Menu fx:id="menuTheme" text="Theme">
+                    <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Light" userData="Cupertino Light">
+                        <toggleGroup><ToggleGroup fx:id="themeGroup" /></toggleGroup>
+                    </RadioMenuItem>
+                    <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Dark" toggleGroup="$themeGroup" userData="Cupertino Dark" />
+                    <RadioMenuItem onAction="#onThemeChosen" text="Primer Light" toggleGroup="$themeGroup" userData="Primer Light" />
+                    <RadioMenuItem onAction="#onThemeChosen" text="Primer Dark" toggleGroup="$themeGroup" userData="Primer Dark" />
+                    <RadioMenuItem onAction="#onThemeChosen" text="Nord Light" toggleGroup="$themeGroup" userData="Nord Light" />
+                    <RadioMenuItem onAction="#onThemeChosen" text="Nord Dark" toggleGroup="$themeGroup" userData="Nord Dark" />
+                    <RadioMenuItem onAction="#onThemeChosen" text="Dracula" toggleGroup="$themeGroup" userData="Dracula" />
+                </Menu>
                 <Menu text="PS1 Game ID Position">
                     <RadioMenuItem fx:id="rmiIdPosPs1Start" onAction="#onIdPosPs1Start" text="Before Game Name">
                         <toggleGroup><ToggleGroup fx:id="idPosPs1Group" /></toggleGroup>
@@ -151,10 +161,10 @@
                                 <RowConstraints />
                                 <RowConstraints />
                             </rowConstraints>
-                            <Button fx:id="artButton" maxWidth="Infinity" onAction="#onArt" text="ART" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Button fx:id="cfgButton" maxWidth="Infinity" onAction="#onCfg" text="CFG" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Button fx:id="chtButton" maxWidth="Infinity" onAction="#onCht" text="CHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                            <Button fx:id="vmcButton" maxWidth="Infinity" onAction="#onVmc" text="VMC" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Button fx:id="artButton" styleClass="accent" maxWidth="Infinity" onAction="#onArt" text="ART" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Button fx:id="cfgButton" styleClass="accent" maxWidth="Infinity" onAction="#onCfg" text="CFG" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Button fx:id="chtButton" styleClass="accent" maxWidth="Infinity" onAction="#onCht" text="CHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Button fx:id="vmcButton" styleClass="accent" maxWidth="Infinity" onAction="#onVmc" text="VMC" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         </GridPane>
                     </TitledPane>
                 </VBox>

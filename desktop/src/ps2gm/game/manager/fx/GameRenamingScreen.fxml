@@ -13,8 +13,7 @@
 
 <HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ps2gm.game.manager.fx.GameRenamingController"
-      spacing="10.0" prefWidth="820.0" prefHeight="380.0"
-      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+      spacing="10.0" prefWidth="820.0" prefHeight="380.0">
     <padding>
         <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
     </padding>

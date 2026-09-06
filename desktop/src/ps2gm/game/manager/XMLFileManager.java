@@ -127,10 +127,15 @@ public class XMLFileManager {
         ulGamePS2.appendChild(doc.createTextNode(PopsGameManager.getSplitGameDisplayPS2().toString()));
         rootElement.appendChild(ulGamePS2);
 
-        // Dark mode
+        // Dark mode (kept for older builds that still read it)
         Element darkMode = doc.createElement("darkmode");
         darkMode.appendChild(doc.createTextNode(PopsGameManager.getDarkMode().toString()));
         rootElement.appendChild(darkMode);
+
+        // Theme
+        Element theme = doc.createElement("theme");
+        theme.appendChild(doc.createTextNode(PopsGameManager.getThemeName()));
+        rootElement.appendChild(theme);
 
         // Write the contents to the xml file
         try {
@@ -216,6 +221,16 @@ public class XMLFileManager {
                                     if (darkModeNode != null) {
                                         if (darkModeNode.getTextContent().equals("false")) {PopsGameManager.setDarkMode(false);}
                                         else if (darkModeNode.getTextContent().equals("true")) {PopsGameManager.setDarkMode(true);}
+                                    }
+
+                                    // Theme (optional - superseded the darkmode flag). If absent: a
+                                    // previously dark-mode user stays dark (Primer Dark, closest to the
+                                    // old look); everyone else gets the new default (Cupertino Light).
+                                    Node themeNode = eElement.getElementsByTagName("theme").item(0);
+                                    if (themeNode != null && !themeNode.getTextContent().isBlank()) {
+                                        PopsGameManager.setThemeName(themeNode.getTextContent());
+                                    } else if (PopsGameManager.getDarkMode()) {
+                                        PopsGameManager.setThemeName("Primer Dark");
                                     }
                                 }
                                 catch(NullPointerException ex){

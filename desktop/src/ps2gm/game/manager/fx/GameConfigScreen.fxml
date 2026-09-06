@@ -22,8 +22,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ps2gm.game.manager.fx.GameConfigController"
-      spacing="8.0" prefWidth="720.0" prefHeight="640.0"
-      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+      spacing="8.0" prefWidth="720.0" prefHeight="640.0">
     <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
 
     <HBox spacing="8.0" alignment="CENTER_LEFT">
@@ -182,7 +181,7 @@
     <HBox spacing="10.0" alignment="CENTER">
         <Button fx:id="newConfigButton" text="New Config" onAction="#onNewConfig" prefWidth="110.0"/>
         <Button fx:id="downloadConfigButton" text="Download" onAction="#onDownloadConfig" prefWidth="110.0"/>
-        <Button fx:id="saveConfigButton" text="Save" onAction="#onSaveConfig" prefWidth="110.0"/>
+        <Button fx:id="saveConfigButton" styleClass="accent" text="Save" onAction="#onSaveConfig" prefWidth="110.0"/>
         <Button fx:id="deleteConfigButton" text="Delete" onAction="#onDeleteConfig" prefWidth="110.0"/>
     </HBox>
 </VBox>

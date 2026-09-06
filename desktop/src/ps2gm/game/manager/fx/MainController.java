@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -82,13 +82,13 @@ public class MainController implements MyListener {
     @FXML private Button artButton, cfgButton, chtButton, vmcButton;
     @FXML private TextField releaseDateField, developerField, playersField, deviceCompatField, vmc0Field, vmc1Field;
 
-    @FXML private CheckMenuItem cmiPs1Compat, cmiPs2UlHighlight, cmiDarkMode;
+    @FXML private CheckMenuItem cmiPs1Compat, cmiPs2UlHighlight;
     @FXML private RadioMenuItem rmiPlaystation1, rmiPlaystation2,
             rmiIdPosPs1Start, rmiIdPosPs1End, rmiIdPosPs2Start, rmiIdPosPs2End;
     @FXML private MenuItem miAddPs1Game, miAddPs2Game, miGenerateConfElm, miGenerateUlConf, miSplitPs2Game,
             miMergePs2Game, miPs1Emulator, miPs2Emulator, miMd5, miRefreshGameList, miBatchAddPs1Game,
             miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miChangelog, miCheckUpdate;
-    @FXML private Menu menuConsoleFileTransfer;
+    @FXML private Menu menuConsoleFileTransfer, menuTheme;
 
     private Stage stage;
     private final GameConfigFileManager configManager = new GameConfigFileManager();
@@ -140,7 +140,12 @@ public class MainController implements MyListener {
         suppressSelectionEvents = true;
         cmiPs1Compat.setSelected(PopsGameManager.getGameCompatabilityPS1());
         cmiPs2UlHighlight.setSelected(PopsGameManager.getSplitGameDisplayPS2());
-        cmiDarkMode.setSelected(PopsGameManager.getDarkMode());
+        String currentTheme = PopsGameManager.getThemeName();
+        for (MenuItem item : menuTheme.getItems()) {
+            if (item instanceof RadioMenuItem radio) {
+                radio.setSelected(currentTheme.equals(radio.getUserData()));
+            }
+        }
         suppressSelectionEvents = false;
         initialiseGUI(0);
     }
@@ -499,11 +504,12 @@ public class MainController implements MyListener {
         gameList.refresh();
         saveSettings();
     }
-    @FXML private void onDarkModeToggle() {
-        PopsGameManager.setDarkMode(cmiDarkMode.isSelected());
-        Application.setUserAgentStylesheet(cmiDarkMode.isSelected()
-                ? new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet()
-                : new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
+    @FXML private void onThemeChosen(ActionEvent e) {
+        if (suppressSelectionEvents) { return; }
+        Object name = ((RadioMenuItem) e.getSource()).getUserData();
+        if (name == null) { return; }
+        PopsGameManager.setThemeName(name.toString());
+        Themes.apply(PopsGameManager.getThemeName());   // re-styles every open window
         saveSettings();
     }
     @FXML private void onIdPosPs1Start() { if (rmiIdPosPs1Start.isSelected() && !suppressSelectionEvents) { PopsGameManager.setGameIDPositionPS1("start"); } }

@@ -14,8 +14,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ps2gm.game.manager.fx.AddGameHddPs1Controller"
-      spacing="10.0" prefWidth="560.0"
-      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+      spacing="10.0" prefWidth="560.0">
     <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
 
     <TitledPane text="Selected Game" collapsible="false">

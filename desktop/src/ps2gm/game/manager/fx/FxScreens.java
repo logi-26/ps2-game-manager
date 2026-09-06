@@ -75,7 +75,9 @@ final class FxScreens {
             Stage stage = new Stage();
             stage.setTitle(title);
             stage.setResizable(resizable);
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root);
+            Themes.decorate(scene);
+            stage.setScene(scene);
             stage.centerOnScreen();
             if (closed != null) {
                 stage.setOnHidden(e -> closed.countDown());

@@ -1,7 +1,5 @@
 package ps2gm.game.manager.fx;
 
-import atlantafx.base.theme.PrimerDark;
-import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,7 +13,8 @@ import ps2gm.game.manager.PopsGameManager;
  * {@link Application#launch}, which lands here.
  *
  * Replaces the Swing {@code MainScreen} + FlatLaf setup. Theme comes from AtlantaFX
- * ({@link PrimerLight} / {@link PrimerDark}), toggled live by the Dark Mode menu.
+ * via {@link Themes}; the choice is a name persisted in settings.xml and switched
+ * live by the Theme menu.
  */
 public final class MainApp extends Application {
 
@@ -23,16 +22,16 @@ public final class MainApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         FxRuntime.markStarted();
 
-        Application.setUserAgentStylesheet(PopsGameManager.getDarkMode()
-                ? new PrimerDark().getUserAgentStylesheet()
-                : new PrimerLight().getUserAgentStylesheet());
+        Themes.apply(PopsGameManager.getThemeName());
 
         FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("MainScreen.fxml"));
         Parent root = loader.load();
         MainController controller = loader.getController();
 
         primaryStage.setTitle(PopsGameManager.getFormTitle());
-        primaryStage.setScene(new Scene(root));
+        Scene scene = new Scene(root);
+        Themes.decorate(scene);
+        primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.centerOnScreen();
         controller.init(primaryStage);
