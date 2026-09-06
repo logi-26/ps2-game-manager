@@ -46,15 +46,15 @@ if ($LASTEXITCODE -ne 0) { throw "build.ps1 -Stage failed" }
 
 # 2. Compute the minimal set of JDK modules the app actually needs, instead of
 #    bundling the entire JDK (jpackage's default for a non-modular app).
-$cp = @(
-    (Join-Path $runDir 'lib\commons-net-3.5.jar')
-    (Join-Path $runDir 'lib\sevenzipjbinding.jar')
-    (Join-Path $runDir 'lib\sevenzipjbinding-AllPlatforms.jar')
-    (Join-Path $runDir 'lib\flatlaf-3.7.2.jar')
-) -join ';'
+#    JavaFX + AtlantaFX ride the classpath (not the module path) and are bundled
+#    as jars under app/lib/javafx/ via the manifest Class-Path - jdeps just needs
+#    them here so --ignore-missing-deps can see (and skip) the javafx.* automatic
+#    modules while still resolving the real JDK deps underneath.
+$cp = (Get-ChildItem -Recurse -Path (Join-Path $runDir 'lib') -Filter *.jar |
+       ForEach-Object { $_.FullName }) -join ';'
 
 Write-Host "==> Computing required JDK modules with jdeps"
-$modules = & jdeps --multi-release 11 --print-module-deps --ignore-missing-deps `
+$modules = & jdeps --multi-release 21 --print-module-deps --ignore-missing-deps `
     --class-path $cp (Join-Path $runDir 'PS2GM-local.jar')
 if ($LASTEXITCODE -ne 0) { throw "jdeps failed" }
 $modules = ($modules | Select-Object -Last 1).Trim()
@@ -78,6 +78,8 @@ $jpackageArgs = @(
     '--add-modules', $modules
     '--dest', $packageDir
     '--java-options', "-Dps2gm.api.baseurl=$ApiBaseUrl"
+    # JavaFX rides the classpath, not the module path - silence its native-load warning
+    '--java-options', '--enable-native-access=ALL-UNNAMED'
 )
 if ($Icon) { $jpackageArgs += @('--icon', $Icon) }
 

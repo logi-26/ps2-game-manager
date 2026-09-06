@@ -1,15 +1,17 @@
 <#
-    Builds a cross-platform "plain jar" distribution - for Mac and Linux users
-    (and anyone on Windows who'd rather not use the packaged .exe). Unlike
-    package.ps1's jpackage app-image, no JRE is bundled: the recipient needs
-    their own Java 11+ on PATH. Output is just the jar next to lib/, hdd/ and
-    POPSTARTER/ - the layout PopsGameManager.getCurrentDirectory() expects -
-    plus a run.sh / run.cmd so they don't have to type the java command.
+    Builds a "plain jar" distribution - for anyone who'd rather not use the
+    packaged .exe. Unlike package.ps1's jpackage app-image, no JRE is bundled:
+    the recipient needs their own Java 17+ on PATH. Output is just the jar next
+    to lib/, hdd/ and POPSTARTER/ - the layout PopsGameManager.getCurrentDirectory()
+    expects - plus a run.sh / run.cmd so they don't have to type the java command.
 
-    The bundled sevenzipjbinding-AllPlatforms.jar and lib/data/tools/{windows,linux}
-    already carry the native code / tool binaries for every OS the app supports,
-    so this one bundle runs unmodified on Windows, macOS or Linux - it doesn't
-    need building separately per platform.
+    sevenzipjbinding-AllPlatforms.jar and lib/data/tools/{windows,linux} carry the
+    native code / tool binaries for every OS, BUT the vendored JavaFX jars are the
+    Windows-classified ('-win') builds - they only carry the Windows native libs.
+    So this bundle is currently WINDOWS-ONLY. Mac/Linux support needs the
+    mac/mac-aarch64/linux-classified JavaFX jars vendored alongside (or a switch
+    to the base javafx-*-21.0.5.jar + per-OS native jars). Until then, macOS /
+    Linux users need to run from source (build.ps1).
 
     Usage:
         pwsh ./bundle-jar.ps1                          # defaults (127.0.0.1:8000/v1)
@@ -64,13 +66,13 @@ $sh = "#!/bin/sh`n" +
       "cd `"`$(dirname `"`$0`")`"`n" +
       "chmod +x lib/data/tools/linux/* 2>/dev/null`n" +
       (($envLines | ForEach-Object { "export $_" }) -join "`n") + "`n" +
-      "exec java -jar $jarName `"`$@`"`n"
+      "exec java --enable-native-access=ALL-UNNAMED -jar $jarName `"`$@`"`n"
 [IO.File]::WriteAllText((Join-Path $bundleDir 'run.sh'), $sh, [Text.UTF8Encoding]::new($false))
 
 $cmd = "@echo off`r`n" +
        "cd /d %~dp0`r`n" +
        (($envLines | ForEach-Object { "set $_" }) -join "`r`n") + "`r`n" +
-       "java -jar $jarName %*`r`n"
+       "java --enable-native-access=ALL-UNNAMED -jar $jarName %*`r`n"
 Set-Content -Path (Join-Path $bundleDir 'run.cmd') -Value $cmd -Encoding ascii -NoNewline
 
 Write-Host "==> Bundled at $bundleDir"
