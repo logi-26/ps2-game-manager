@@ -47,21 +47,36 @@ Every ported screen is a triple in `ps2gm.game.manager.fx`:
 
 **Screens:** About · Changelog · HashChecker · SetPartition · EmulatorSettings ·
 GameVMC · SplitMerge · GameLongName · **GameRenamingPS1/PS2** ·
-**BatchDownloadPS1/PS2** · **GameImagePS1/PS2 + GameImageSelectorPS1/PS2**.
+**BatchDownloadPS1/PS2** · **GameImagePS1/PS2 + GameImageSelectorPS1/PS2** ·
+**AddGameHDDPS1/PS2** · **SetModeScreen** · **AddGameSMBScreen** ·
+**SyncFileScreen**.
 **Infra:** `FxRuntime`, `FxScreens.open` + `openModal` + `StageAware`.
-**Decouples:** `SplitMergeProgress` (USBUtil), `GameLongNameRenamer`.
+**Decouples:** `SplitMergeProgress` (USBUtil), `GameLongNameRenamer`,
+`FtpTransferProgress` (MyFTPClient + HDLDumpManager).
 **Made public for the `fx` subpackage:** `GameLongNameRenamer`,
 `GameArtFileManager` (+ `isMissing`/`resolve`/`baseName`/`deleteAll`),
 `GameConfigFileManager.renameConfigTitlesToMatch`.
 
-Tier A is done. `GameImageScreen` / `GameImageSelectorScreen` (Tier B) are done
-too — one `GameImageController` / `GameImageSelectorController` pair for both
-consoles; File button runs the Swing `manualImageSelection` on the EDT then
-re-reads `ART/` (no `javafx-swing`); Auto / next-image on daemon threads.
+Tier A + the GameImage pair (Tier B) are done. **Tier C is done** except its
+overlap with GameCheat/GameConfig (still Tier B):
+- `FtpTransferProgress` — one toolkit-agnostic progress sink for `MyFTPClient`
+  (PS1 FTP upload) and `HDLDumpManager` (PS2 hdl_dump). Both managers' inner
+  SwingWorkers became plain daemon-thread methods; the Swing screens implement
+  the interface marshalling to the EDT until they're deleted.
+- `AddGameHddScreen` — one façade, `AddGameHddPs1Controller` (VCD/ELF folder
+  combos, POPSTARTER check, cue2pops + ELF gen + FTP connect on a daemon thread)
+  and `AddGameHddPs2Controller` (IP + hdl_dump).
+- `SetModeScreen` — `FxScreens.openModal`, still blocks first launch. Browse uses
+  a `DirectoryChooser`; the console-list fetches in `connectToPS2` run off the
+  FX thread. Dead "USB - HDD" stub dropped.
+- `AddGameSmbScreen` — fire-and-forget progress window; both inner SwingWorkers
+  → daemon-thread work + `Platform.runLater`.
+- `SyncFileScreen` — two-pane browser; FTP directory listings / get / put /
+  delete on a daemon thread (`runFtp`). No decouple (no progress-bar path).
 
 ---
 
-## Remaining — 10 screen classes
+## Remaining — 5 screen classes (GameCheat, GameConfig, MainScreen + 2 dead)
 
 Delete first, not ports:
 - **`TestScreen`** (96) — dead code.
@@ -83,15 +98,17 @@ Delete first, not ports:
 | **GameCheatScreen** | 810 | Cheat-code editor: game list + a big editable text area of codes + Save + server fetch (download shared cheats). No `SwingWorker`; server calls are synchronous today (move them to a `Task`). `GameConfigFileManager` / server for read/write. Self-contained. Medium-large. **Do this next.** |
 | **GameConfigScreen** | 2975 | **The monster.** Per-game OPL `.cfg` editor — compatibility flags, GSM, cheats, VMC slots, PADEMU, a 5-star rating widget (custom mouse-hover handlers → an FX star control or a `Rating` from ControlsFX/AtlantaFX), ~11 `JOptionPane`. Reads/writes via `GameConfigFileManager` (`readGameConfigFormatted` / `writeGameConfigFile`, index-mapped `NEW_CONFIG_DATA` array) — **that mapping stays; only the widgets change.** No worker. Break the FXML into `TitledPane` sections. Budget a whole session; consider sub-tasking (layout, then per-section binding, then save round-trip). |
 
-### Tier C — needs a backend decouple first
+### Tier C — DONE (`eef4a05` decouple, `b45bf0e` `50df44e` `5d04f88` `1995af6`)
 
-| Screen | LOC | Blocker → decouple |
+| Screen | LOC | Outcome |
 |---|---|---|
-| **AddGameHDDScreenPS1** | 813 | `MyFTPClient.addGameToPS2(AddGameHDDScreenPS1, …)` + its inner `BackgroundWorker extends SwingWorker` call `screen.getProgressBar / getTimeRemainingLabel / getUploadSpeedLabel / getGameNameLabel / getGameCounterLabel / setUploadInProgress(bool) / closeDialog() / includeElfFile()`. **Extract `FtpTransferProgress`** (like `SplitMergeProgress` but richer: `setProgressRange/setProgress/setTimeRemaining(String)/setUploadSpeed(String)/setGameName(String)/setGameCounter(String)/setInProgress(bool)/finished()`); `includeElfFile()` is an *input* — pass it as a method arg, don't call back for it. `BackgroundWorker` → plain daemon thread. |
-| **AddGameHDDScreenPS2** | 427 | Same, via `HDLDumpManager.hdlDumpUploadGame/…Batch(AddGameHDDScreenPS2, …)` + two `SwingWorker`s with the identical label/progress surface. **Reuse the same `FtpTransferProgress`.** |
-| **SetModeScreen** | 701 | First-launch mode picker — **critical path**. `HDLDumpManager.hdlDumpGetTOC` + `GameListManager.getGameListFromConsolePS1()` (FTP) run **synchronously on the EDT** in `connectToPS2()`; 4 `JFileChooser`; 11 `JOptionPane`; window-close **exits the app** (`Runtime.getRuntime().exit(0)`) if the OPL dir isn't set. Radio-driven panel enable/disable, `saveMode()` writes settings.xml. Move the console fetch to a `Task`; FX `Alert`/`FileChooser` for the dialogs; keep the exit-on-close in `stageReady`'s `setOnCloseRequest`. Do this **after** `AddGameHDD*` so the TOC download can reuse the decouple. Verify by real first-launch run. |
-| **AddGameSMBScreen** | 657 | SMB/USB import: 3 `SwingWorker`s, `launchCueToPops` / `launchCueToPopsBatch` (public — cue2pops archive extraction), 11 `JOptionPane`, 7-arg ctor (batchMode, path, ext, file, index). Callbacks are mostly internal but the workers touch a progress bar. Convert the workers to `Task`s; a small internal progress interface if any manager reaches in (check `AddGameManager`). Large. |
-| **SyncFileScreen** | 964 | Two-pane local/remote file diff + sync via `MyFTPClient` (`listRemoteDirectory` + per-file transfer). Uses FTP reads mainly; check whether it hits the same progress-bar upload path as `AddGameHDD*` (if so, reuse `FtpTransferProgress`; if only directory listing + `renameFile`, no decouple). `compose{Local,Remote}FileList` are public but likely self-calls. Large. |
+| ~~**AddGameHDDScreenPS1 / PS2**~~ | 813 / 427 | `FtpTransferProgress` extracted (`setProgressRange/setProgress/setTimeRemaining/setUploadSpeed/setGameName/setGameCounter/setInProgress/closeWindow`; `includeElf` passed as a method arg). `MyFTPClient.addGameToPS2` + `HDLDumpManager.hdlDumpUploadGame/…Batch` take it; every inner SwingWorker → a plain daemon-thread method. `AddGameHddPs1Controller` / `AddGameHddPs2Controller` + one `AddGameHddScreen` façade. PS1 cue2pops + ELF gen + `connectToConsole` on a daemon thread; PS2 single upload still leaves its window open, matching the manager. |
+| ~~**SetModeScreen**~~ | 701 | `FxScreens.openModal` still blocks first launch. `DirectoryChooser` for Browse; the `hdl_dump` (PS2) + FTP (PS1) list fetches in `connectToPS2` run off the FX thread; the two "fetch which list?" confirms stay on it. Save ports `jButtonSaveModeActionPerformed` verbatim. Cancel / close still `Runtime.exit(0)` when no OPL dir is set. Dead "USB - HDD" stub panel dropped. IP field is a plain `TextField`. |
+| ~~**AddGameSMBScreen**~~ | 657 | Fire-and-forget progress window - starts the copy on show, closes itself when done. No manager coupling, so no decouple; the two inner SwingWorkers → daemon-thread work + `Platform.runLater`. `addGame` / `batchAddGame` / `launchCueToPops` / `launchCueToPopsBatch` / `alreadyInGameList*` ported. `finish()` = the workers' shared `done()`. |
+| ~~**SyncFileScreen**~~ | 964 | No progress-bar upload path → no decouple. FTP directory listings / `getFile` / `addFileToPS2` / `deleteRemoteFile` moved onto a daemon thread (`runFtp`). Two `ListView`s with mutual-exclusion selection. Partition `ComboBox` writes `RemoteOPLPath` + settings.xml. ART region-code filtering + PS1 `__common` cheat browsing ported. |
+
+**Not yet verified against a real console** - built + FXML-load / field-inject
+smoke only. The FTP / hdl_dump paths need a live PS2.
 
 ### Last
 
@@ -109,8 +126,6 @@ Delete first, not ports:
   alongside the current `-win` jars (or switch to the classified
   `org.openjfx:*:{win,mac,linux}` set and pick per-OS in the scripts).
   `release.ps1` calls both. Do this before any release off `javafx-ui`.
-- **New shared interface:** `FtpTransferProgress` (Tier C) — one interface for
-  `MyFTPClient` + `HDLDumpManager`, mirrors `SplitMergeProgress`.
 - **Delete** `TestScreen`, `GameCheatScreenNew` (dead), and every Swing
   `*Screen.java` once its FX replacement is merged.
 - **AtlantaFX**: add `atlantafx-base` to `lib/javafx/`, `Application.setUserAgentStylesheet(...)`
@@ -118,13 +133,13 @@ Delete first, not ports:
 
 ## Suggested order
 
-1. `GameRenamingScreenPS1/PS2` (Tier A, quick win)
+1. ~~`GameRenamingScreenPS1/PS2`~~ — done (`713f0cc`)
 2. ~~`GameImageSelectorScreenPS1/PS2` + `GameImageScreenPS1/PS2`~~ — done (`cdec299`)
-3. `BatchDownloadScreenPS1/PS2` (Tier A)
-4. `GameCheatScreen` (Tier B)
-5. `FtpTransferProgress` decouple → `AddGameHDDScreenPS1/PS2` (Tier C)
-6. `SetModeScreen` (Tier C, reuses the decouple)
-7. `AddGameSMBScreen`, `SyncFileScreen` (Tier C)
+3. ~~`BatchDownloadScreenPS1/PS2`~~ — done (`0c6309f`)
+4. ~~`FtpTransferProgress` decouple → `AddGameHDDScreenPS1/PS2`~~ — done (`eef4a05`, `b45bf0e`)
+5. ~~`SetModeScreen`~~ — done (`50df44e`)
+6. ~~`AddGameSMBScreen`, `SyncFileScreen`~~ — done (`5d04f88`, `1995af6`)
+7. **`GameCheatScreen` (Tier B) — next**
 8. `GameConfigScreen` (Tier B monster — own session)
 9. `MainScreen` + retire coexistence glue + AtlantaFX
 10. Packaging scripts, delete Swing classes, merge to `main`
