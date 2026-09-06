@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ps2gm.game.manager.fx.AddGameSmbController"
+      spacing="10.0" prefWidth="480.0"
+      style="-fx-font-family: 'Segoe UI', 'Ubuntu', sans-serif; -fx-font-size: 12px;">
+    <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
+
+    <TitledPane fx:id="outerPane" text="Add Game" collapsible="false">
+        <TitledPane text="Transfer Status" collapsible="false">
+            <VBox spacing="8.0">
+                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="Game:" minWidth="55.0"/>
+                    <Label fx:id="gameNameLabel" text="Game Name" style="-fx-font-weight: bold;"/>
+                </HBox>
+                <ProgressBar fx:id="progressBar" progress="0.0" maxWidth="Infinity"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="Size:" minWidth="55.0"/>
+                    <Label fx:id="sizeLabel" text="0 Kb"/>
+                </HBox>
+            </VBox>
+        </TitledPane>
+    </TitledPane>
+</VBox>

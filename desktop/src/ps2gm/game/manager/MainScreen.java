@@ -768,8 +768,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                     selectedGameFolder = new File(chooser.getSelectedFile().getPath().substring(0, chooser.getSelectedFile().getPath().lastIndexOf(File.separator)));
 
                     //if (chooser.getSelectedFile().getName().length()-4 < 32 ){
-                        AddGameSMBScreen addGameSMBScreen;
-
                         switch (PopsGameManager.getCurrentMode()) {
                             case "HDD":
 
@@ -780,15 +778,13 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                             case "HDD_USB":
                             case "SMB":
 
-                                // Works
-                                addGameSMBScreen = new AddGameSMBScreen(this, true, false, chooser.getSelectedFile().getPath(), fileExtension, chooser.getSelectedFile(), jListGameList.getSelectedIndex());
-                                addGameSMBScreen.setLocationRelativeTo(this);
-                                addGameSMBScreen.setVisible(true);   
+                                // Ported to JavaFX (Swing AddGameSMBScreen kept until the migration lands)
+                                ps2gm.game.manager.fx.AddGameSmbScreen.open(false, fileExtension, chooser.getSelectedFile());
 
                                 break;
                             default:
                                 break;
-                        } 
+                        }
                     //} 
                     //else {
                         //JOptionPane.showMessageDialog(null,"The file name of this game contains more than 32 characters.\nPlease rename the game and try again."," Game Name Too Long!",JOptionPane.ERROR_MESSAGE);
@@ -826,8 +822,6 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                 if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     selectedGameFolder = new File(chooser.getSelectedFile().toString());
 
-                    AddGameSMBScreen addGameSMBScreen;
-
                     switch (PopsGameManager.getCurrentMode()) {
                         case "HDD":
 
@@ -862,14 +856,13 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
                         case "HDD_USB":
                         case "SMB":
 
-                            addGameSMBScreen = new AddGameSMBScreen(this, true, true, chooser.getSelectedFile().getPath(), null, chooser.getSelectedFile(), jListGameList.getSelectedIndex());
-                            addGameSMBScreen.setLocationRelativeTo(this);
-                            addGameSMBScreen.setVisible(true);   
-    
+                            // Ported to JavaFX (Swing AddGameSMBScreen kept until the migration lands)
+                            ps2gm.game.manager.fx.AddGameSmbScreen.open(true, null, chooser.getSelectedFile());
+
                             break;
                         default:
                             break;
-                    }    
+                    }
                 }     
             } 
         }
