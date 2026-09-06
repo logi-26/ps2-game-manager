@@ -1,0 +1,8 @@
+/* MainScreen tweaks over the AtlantaFX Primer base. */
+
+/* Primer gives .titled-pane > .content a chunky padding (~15px all round), which
+   reads as a big gap between the pane's title bar and its first control. Tighten
+   it - the inner GridPanes/HBoxes keep a small padding of their own. */
+.titled-pane > .content {
+    -fx-padding: 4 8 8 8;
+}
