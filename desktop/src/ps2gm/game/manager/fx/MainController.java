@@ -27,6 +27,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -73,6 +74,7 @@ public class MainController implements MyListener {
     private static final String NO_IMAGE_PS2_COVER = img("No Image Cover PS2.png");
 
     @FXML private Label consoleLabel;
+    @FXML private TitledPane frontCoverPane, configDetailsPane;
     @FXML private ListView<String> gameList;
     @FXML private TextField ps1CountField, ps2CountField;
     @FXML private TextField gameTitleField, gameNumberField, gameIdField, gameSizeField;
@@ -119,6 +121,15 @@ public class MainController implements MyListener {
                 if ("PS1".equals(PopsGameManager.getCurrentConsole())) { launchEmulatorPS1(); }
                 else { launchEmulatorPS2(); }
             }
+        });
+
+        // Keep the Front Cover pane exactly as tall as the Config Details pane.
+        // Config Details is the one that grows to fill its column; bind pref+min
+        // after the first layout pass so configDetailsPane.height is real (binding
+        // while it's still 0 collapses the cover pane and never recovers).
+        Platform.runLater(() -> {
+            frontCoverPane.prefHeightProperty().bind(configDetailsPane.heightProperty());
+            frontCoverPane.minHeightProperty().bind(configDetailsPane.heightProperty());
         });
     }
 
