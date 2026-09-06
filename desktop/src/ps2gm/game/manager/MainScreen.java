@@ -2290,18 +2290,8 @@ public final class MainScreen extends javax.swing.JFrame implements MyListener {
     private void jButtonGameArtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGameArtActionPerformed
 
         if (jListGameList.getSelectedIndex() != -1) {
-            if (PopsGameManager.getCurrentConsole().equals("PS1")) {
-                gameImageScreenPS1 = new GameImageScreenPS1(this, true);
-                gameImageScreenPS1.initialiseGUI(jListGameList.getSelectedIndex());
-                gameImageScreenPS1.setLocationRelativeTo(this);
-                gameImageScreenPS1.setVisible(true);
-            }
-            else if (PopsGameManager.getCurrentConsole().equals("PS2")) {
-                gameImageScreenPS2 = new GameImageScreenPS2(this, true);
-                gameImageScreenPS2.initialiseGUI(jListGameList.getSelectedIndex());
-                gameImageScreenPS2.setLocationRelativeTo(this);
-                gameImageScreenPS2.setVisible(true);
-            }
+            // Ported to JavaFX (Swing GameImageScreenPS1/PS2 kept until the migration lands)
+            ps2gm.game.manager.fx.GameImageScreen.open(PopsGameManager.getCurrentConsole(), jListGameList.getSelectedIndex());
         }
         else {JOptionPane.showMessageDialog(null,"You need to select a game before you can manage the game ART."," No game selected!",JOptionPane.WARNING_MESSAGE);}
 
