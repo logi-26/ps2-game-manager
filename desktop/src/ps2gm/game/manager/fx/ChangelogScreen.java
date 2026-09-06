@@ -9,6 +9,6 @@ public final class ChangelogScreen {
     private ChangelogScreen() {}
 
     public static void show() {
-        FxScreens.open("ChangelogScreen.fxml", "Changelog", true, (ChangelogController c) -> { });
+        FxScreens.open("ChangelogScreen.fxml", "Changelog", false, (ChangelogController c) -> { });
     }
 }

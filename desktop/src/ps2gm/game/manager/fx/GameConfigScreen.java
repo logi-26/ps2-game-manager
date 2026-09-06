@@ -11,7 +11,7 @@ public final class GameConfigScreen {
     private GameConfigScreen() {}
 
     public static void open(int gameIndex) {
-        FxScreens.open("GameConfigScreen.fxml", " Manage Game Config", true,
+        FxScreens.open("GameConfigScreen.fxml", " Manage Game Config", false,
                 (GameConfigController c) -> c.init(gameIndex));
     }
 }

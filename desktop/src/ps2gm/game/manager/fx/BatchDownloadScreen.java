@@ -9,7 +9,7 @@ public final class BatchDownloadScreen {
     private BatchDownloadScreen() {}
 
     public static void open(String console) {
-        FxScreens.open("BatchDownloadScreen.fxml", " Batch Downloads", true,
+        FxScreens.open("BatchDownloadScreen.fxml", " Batch Downloads", false,
                 (BatchDownloadController c) -> c.init(console));
     }
 }

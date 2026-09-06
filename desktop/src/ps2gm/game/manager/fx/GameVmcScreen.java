@@ -9,7 +9,7 @@ public final class GameVmcScreen {
     private GameVmcScreen() {}
 
     public static void open(int gameIndex) {
-        FxScreens.open("GameVmcScreen.fxml", " Download Game VMC Files", true,
+        FxScreens.open("GameVmcScreen.fxml", " Download Game VMC Files", false,
                 (GameVmcController c) -> c.initialiseGUI(gameIndex));
     }
 }

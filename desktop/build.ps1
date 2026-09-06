@@ -64,7 +64,20 @@ Get-ChildItem -Recurse -Path $srcRoot -File |
         $rel  = $_.FullName.Substring($srcRoot.Length + 1)
         $dest = Join-Path $outDir $rel
         New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null
-        Copy-Item $_.FullName $dest -Force
+        if ($_.Extension -eq '.fxml') {
+            # Scene Builder 26 stamps xmlns="http://javafx.com/javafx/26..." on every
+            # save; the JavaFX 21 runtime then warns "Loading FXML ... API of version 26
+            # by ... runtime of version 21" on each load. Pin it to 21 in the copied
+            # (packaged) file only - the source keeps whatever Scene Builder wrote.
+            # WriteAllText with a no-BOM UTF8 encoding: Set-Content -Encoding UTF8 on
+            # PS 5.1 adds a BOM, which makes FXMLLoader fail ("Content is not allowed
+            # in prolog").
+            $fxml = (Get-Content -Raw $_.FullName) `
+                -replace 'http://javafx\.com/javafx/[\d.]+', 'http://javafx.com/javafx/21'
+            [IO.File]::WriteAllText($dest, $fxml, [Text.UTF8Encoding]::new($false))
+        } else {
+            Copy-Item $_.FullName $dest -Force
+        }
     }
 
 Write-Host "==> Packaging $jarPath"

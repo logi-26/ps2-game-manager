@@ -33,6 +33,7 @@ public final class MainApp extends Application {
 
         primaryStage.setTitle(PopsGameManager.getFormTitle());
         primaryStage.setScene(new Scene(root));
+        primaryStage.setResizable(false);
         primaryStage.centerOnScreen();
         controller.init(primaryStage);
         primaryStage.show();
