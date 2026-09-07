@@ -95,7 +95,7 @@ public class MainController implements MyListener {
             miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miCheckUpdate;
 
     // Game-list right-click items whose enablement depends on the selected game.
-    private MenuItem ctxSplit, ctxMerge, ctxMd5;
+    private MenuItem ctxRun, ctxSplit, ctxMerge, ctxMd5;
     @FXML private Menu menuConsoleFileTransfer, menuTheme, menuPs2IdPos;
 
     private Stage stage;
@@ -469,8 +469,19 @@ public class MainController implements MyListener {
     private void refreshRowMenuState() {
         Game g = selectedGame();
         boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
-        boolean smb = "SMB".equals(PopsGameManager.getCurrentMode());
+        String mode = PopsGameManager.getCurrentMode();
+        boolean smb = "SMB".equals(mode);
         boolean ul = g != null && Boolean.TRUE.equals(g.getULGame());
+
+        // Run in Emulator needs SMB/USB mode and a configured emulator (the
+        // Emulator Settings screen keeps "in use" and the path in lock-step).
+        boolean emuMode = smb || "HDD_USB".equals(mode);
+        boolean emuInUse = ps1 ? Boolean.TRUE.equals(PopsGameManager.getEmulatorInUsePS1())
+                               : Boolean.TRUE.equals(PopsGameManager.getEmulatorInUsePS2());
+        String emuPath = ps1 ? PopsGameManager.getEmulatorPathPS1() : PopsGameManager.getEmulatorPathPS2();
+        boolean emuReady = emuMode && emuInUse && emuPath != null && !emuPath.trim().isEmpty();
+        ctxRun.setDisable(g == null || !emuReady);
+
         ctxSplit.setVisible(g != null && !ps1 && smb && !ul);
         ctxMerge.setVisible(g != null && !ps1 && smb && ul && g.getGameRawSize() > 0);
         ctxMd5.setVisible(g != null && smb && !ul);
@@ -768,8 +779,8 @@ public class MainController implements MyListener {
 
     /** Right-click menu shared by every game-list row (see the cell factory). */
     private ContextMenu buildGameListContextMenu() {
-        MenuItem run = new MenuItem("Run in Emulator");
-        run.setOnAction(e -> {
+        ctxRun = new MenuItem("Run in Emulator");
+        ctxRun.setOnAction(e -> {
             if (gameList.getSelectionModel().getSelectedIndex() == -1) { return; }
             if ("PS1".equals(PopsGameManager.getCurrentConsole())) { launchEmulatorPS1(); }
             else { launchEmulatorPS2(); }
@@ -789,7 +800,7 @@ public class MainController implements MyListener {
             if (gameList.getSelectionModel().getSelectedIndex() != -1) { deleteGame(); }
         });
 
-        ContextMenu menu = new ContextMenu(run, rename, ctxSplit, ctxMerge, ctxMd5,
+        ContextMenu menu = new ContextMenu(ctxRun, rename, ctxSplit, ctxMerge, ctxMd5,
                 new SeparatorMenuItem(), delete);
         menu.setOnShowing(e -> refreshRowMenuState());
         return menu;
