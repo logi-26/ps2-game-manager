@@ -23,11 +23,11 @@
          <HBox.margin>
             <Insets left="10.0" />
          </HBox.margin></TextField>
-        <Button fx:id="prevButton" onAction="#onPrev" prefWidth="60.0" text="←">
+        <Button fx:id="prevButton" onAction="#onPrev" prefWidth="60.0" text="&lt;&lt;">
          <HBox.margin>
             <Insets left="70.0" />
          </HBox.margin></Button>
-        <Button fx:id="nextButton" onAction="#onNext" prefWidth="60.0" text="→">
+        <Button fx:id="nextButton" onAction="#onNext" prefWidth="60.0" text="&gt;&gt;">
          <HBox.margin>
             <Insets left="10.0" />
          </HBox.margin></Button>
