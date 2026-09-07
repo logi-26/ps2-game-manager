@@ -92,7 +92,7 @@ public class MainController implements MyListener {
     @FXML private RadioMenuItem rmiPlaystation1, rmiPlaystation2, rmiIdPosPs2Start, rmiIdPosPs2End;
     @FXML private MenuItem miAddPs1Game, miAddPs2Game, miGenerateConfElm, miGenerateUlConf,
             miPs1Emulator, miPs2Emulator, miRefreshGameList, miBatchAddPs1Game,
-            miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miChangelog, miCheckUpdate;
+            miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miCheckUpdate;
 
     // Game-list right-click items whose enablement depends on the selected game.
     private MenuItem ctxSplit, ctxMerge, ctxMd5;
@@ -509,7 +509,6 @@ public class MainController implements MyListener {
         else { PopsGameManager.openDirectory(PopsGameManager.getOPLFolder()); }
     }
     @FXML private void onAbout() { AboutScreen.show(PopsGameManager.getFormTitle(), PopsGameManager.getApplicationReleaseDate()); }
-    @FXML private void onChangelog() { ChangelogScreen.show(); }
     @FXML private void onExit() { Platform.exit(); System.exit(0); }
 
     @FXML private void onPs1CompatToggle() {

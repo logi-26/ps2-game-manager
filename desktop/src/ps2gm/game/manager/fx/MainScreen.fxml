@@ -27,7 +27,6 @@
         <Menu text="File">
             <MenuItem fx:id="miOpenOplDir" onAction="#onOpenOplDirectory" text="Open OPL Directory" />
             <MenuItem fx:id="miAbout" onAction="#onAbout" text="About" />
-            <MenuItem fx:id="miChangelog" onAction="#onChangelog" text="Changelog" />
             <Menu text="Settings">
                 <CheckMenuItem fx:id="cmiPs1Compat" onAction="#onPs1CompatToggle" text="Display PS1 Compatability" />
                 <CheckMenuItem fx:id="cmiPs2UlHighlight" onAction="#onPs2UlToggle" text="Highlight PS2 UL Games" />
