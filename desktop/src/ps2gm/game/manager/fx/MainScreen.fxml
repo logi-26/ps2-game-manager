@@ -27,20 +27,20 @@
         <Menu text="File">
             <MenuItem fx:id="miOpenOplDir" onAction="#onOpenOplDirectory" text="Open OPL Directory" />
             <MenuItem fx:id="miAbout" onAction="#onAbout" text="About" />
-            <Menu text="Settings">
-                <CheckMenuItem fx:id="cmiPs1Compat" onAction="#onPs1CompatToggle" text="Display PS1 Compatability" />
-                <CheckMenuItem fx:id="cmiPs2UlHighlight" onAction="#onPs2UlToggle" text="Highlight PS2 UL Games" />
-                <Menu fx:id="menuTheme" text="Theme">
-                    <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Light" userData="Cupertino Light">
-                        <toggleGroup><ToggleGroup fx:id="themeGroup" /></toggleGroup>
-                    </RadioMenuItem>
-                    <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Dark" toggleGroup="$themeGroup" userData="Cupertino Dark" />
-                    <RadioMenuItem onAction="#onThemeChosen" text="Primer Light" toggleGroup="$themeGroup" userData="Primer Light" />
-                    <RadioMenuItem onAction="#onThemeChosen" text="Primer Dark" toggleGroup="$themeGroup" userData="Primer Dark" />
-                    <RadioMenuItem onAction="#onThemeChosen" text="Nord Light" toggleGroup="$themeGroup" userData="Nord Light" />
-                    <RadioMenuItem onAction="#onThemeChosen" text="Nord Dark" toggleGroup="$themeGroup" userData="Nord Dark" />
-                    <RadioMenuItem onAction="#onThemeChosen" text="Dracula" toggleGroup="$themeGroup" userData="Dracula" />
-                </Menu>
+            <MenuItem fx:id="miCheckUpdate" onAction="#onCheckUpdate" text="Check for Updates" />
+            <SeparatorMenuItem />
+            <CheckMenuItem fx:id="cmiPs1Compat" onAction="#onPs1CompatToggle" text="Display PS1 Compatability" />
+            <CheckMenuItem fx:id="cmiPs2UlHighlight" onAction="#onPs2UlToggle" text="Highlight PS2 UL Games" />
+            <Menu fx:id="menuTheme" text="Theme">
+                <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Light" userData="Cupertino Light">
+                    <toggleGroup><ToggleGroup fx:id="themeGroup" /></toggleGroup>
+                </RadioMenuItem>
+                <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Dark" toggleGroup="$themeGroup" userData="Cupertino Dark" />
+                <RadioMenuItem onAction="#onThemeChosen" text="Primer Light" toggleGroup="$themeGroup" userData="Primer Light" />
+                <RadioMenuItem onAction="#onThemeChosen" text="Primer Dark" toggleGroup="$themeGroup" userData="Primer Dark" />
+                <RadioMenuItem onAction="#onThemeChosen" text="Nord Light" toggleGroup="$themeGroup" userData="Nord Light" />
+                <RadioMenuItem onAction="#onThemeChosen" text="Nord Dark" toggleGroup="$themeGroup" userData="Nord Dark" />
+                <RadioMenuItem onAction="#onThemeChosen" text="Dracula" toggleGroup="$themeGroup" userData="Dracula" />
             </Menu>
             <SeparatorMenuItem />
             <MenuItem onAction="#onExit" text="Exit" />
@@ -54,7 +54,6 @@
             <MenuItem fx:id="miPs1Emulator" onAction="#onPs1EmulatorSettings" text="PS1 Emulator Settings" />
             <MenuItem fx:id="miPs2Emulator" onAction="#onPs2EmulatorSettings" text="PS2 Emulator Settings" />
             <MenuItem fx:id="miRefreshGameList" onAction="#onRefreshGameList" text="Refresh Game List" />
-            <MenuItem fx:id="miCheckUpdate" onAction="#onCheckUpdate" text="Check for Updates" />
         </Menu>
 
         <Menu text="Batch Tools">
