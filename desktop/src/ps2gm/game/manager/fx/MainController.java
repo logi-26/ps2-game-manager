@@ -27,6 +27,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputDialog;
@@ -90,10 +91,13 @@ public class MainController implements MyListener {
     @FXML private CheckMenuItem cmiPs1Compat, cmiPs2UlHighlight;
     @FXML private RadioMenuItem rmiPlaystation1, rmiPlaystation2,
             rmiIdPosPs1Start, rmiIdPosPs1End, rmiIdPosPs2Start, rmiIdPosPs2End;
-    @FXML private MenuItem miAddPs1Game, miAddPs2Game, miGenerateConfElm, miGenerateUlConf, miSplitPs2Game,
-            miMergePs2Game, miPs1Emulator, miPs2Emulator, miMd5, miRefreshGameList, miBatchAddPs1Game,
+    @FXML private MenuItem miAddPs1Game, miAddPs2Game, miGenerateConfElm, miGenerateUlConf,
+            miPs1Emulator, miPs2Emulator, miRefreshGameList, miBatchAddPs1Game,
             miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miChangelog, miCheckUpdate,
             miSwitchPs2IdPos;
+
+    // Game-list right-click items whose enablement depends on the selected game.
+    private MenuItem ctxSplit, ctxMerge, ctxMd5;
     @FXML private Menu menuConsoleFileTransfer, menuTheme;
 
     private Stage stage;
@@ -126,7 +130,6 @@ public class MainController implements MyListener {
         gameList.getSelectionModel().selectedIndexProperty().addListener((o, ov, nv) -> {
             if (!suppressSelectionEvents && nv.intValue() >= 0) {
                 displayGameDetails();
-                updateSplitMergeMenuState();
             }
         });
         gameList.setOnKeyReleased(e -> {
@@ -431,7 +434,6 @@ public class MainController implements MyListener {
         String mode = PopsGameManager.getCurrentMode();
         boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
 
-        miMd5.setVisible("SMB".equals(mode));
         boolean hdd = "HDD".equals(mode);
         menuConsoleFileTransfer.setVisible(hdd);
         miRefreshGameList.setVisible(hdd);
@@ -448,8 +450,6 @@ public class MainController implements MyListener {
 
         boolean smb = "SMB".equals(mode);
         miGenerateUlConf.setVisible(!ps1 && smb);
-        miMergePs2Game.setVisible(!ps1 && smb);
-        miSplitPs2Game.setVisible(!ps1 && smb);
         miSwitchPs2IdPos.setVisible(!ps1 && ("SMB".equals(mode) || "HDD_USB".equals(mode)));
 
         suppressSelectionEvents = true;
@@ -466,18 +466,17 @@ public class MainController implements MyListener {
         suppressSelectionEvents = false;
     }
 
-    private void updateSplitMergeMenuState() {
+    // Show only the game-list tools that apply to the currently selected game.
+    // Convert ISO->UL and MD5 need a non-UL PS2/PS1 game in SMB mode; Convert
+    // UL->ISO needs a UL game with a known size.
+    private void refreshRowMenuState() {
         Game g = selectedGame();
-        if (g == null || !"PS2".equals(PopsGameManager.getCurrentConsole())) { return; }
-        if (g.getULGame()) {
-            miMd5.setDisable(true);
-            miSplitPs2Game.setDisable(true);
-            miMergePs2Game.setDisable(g.getGameRawSize() <= 0);
-        } else {
-            miMd5.setDisable(false);
-            miSplitPs2Game.setDisable(false);
-            miMergePs2Game.setDisable(true);
-        }
+        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean smb = "SMB".equals(PopsGameManager.getCurrentMode());
+        boolean ul = g != null && Boolean.TRUE.equals(g.getULGame());
+        ctxSplit.setVisible(g != null && !ps1 && smb && !ul);
+        ctxMerge.setVisible(g != null && !ps1 && smb && ul && g.getGameRawSize() > 0);
+        ctxMd5.setVisible(g != null && smb && !ul);
     }
 
     // ----------------------------------------------------------- toolbar
@@ -575,7 +574,7 @@ public class MainController implements MyListener {
     @FXML private void onPs1EmulatorSettings() { EmulatorSettingsScreen.open("PS1"); }
     @FXML private void onPs2EmulatorSettings() { EmulatorSettingsScreen.open("PS2"); }
 
-    @FXML private void onMd5() {
+    private void onMd5() {
         Game g = selectedGame();
         if (g == null) { return; }
         File file = "PS1".equals(PopsGameManager.getCurrentConsole())
@@ -592,13 +591,17 @@ public class MainController implements MyListener {
         }
     }
 
-    @FXML private void onSplitPs2Game() {
-        Game g = GameListManager.getGameListPS2().get(gameList.getSelectionModel().getSelectedIndex());
+    private void onSplitPs2Game() {
+        int i = gameList.getSelectionModel().getSelectedIndex();
+        if (i < 0) { return; }
+        Game g = GameListManager.getGameListPS2().get(i);
         if (g.getGameName().length() <= 32) { SplitMergeScreen.open(g, "Split"); }
         else { warn("You cannot split games that have names greater than 32 characters in length.", " Game Name is Too Long!"); }
     }
-    @FXML private void onMergePs2Game() {
-        SplitMergeScreen.open(GameListManager.getGameListPS2().get(gameList.getSelectionModel().getSelectedIndex()), "Merge");
+    private void onMergePs2Game() {
+        int i = gameList.getSelectionModel().getSelectedIndex();
+        if (i < 0) { return; }
+        SplitMergeScreen.open(GameListManager.getGameListPS2().get(i), "Merge");
     }
 
     @FXML private void onGenerateSpine() {
@@ -768,11 +771,23 @@ public class MainController implements MyListener {
         });
         MenuItem rename = new MenuItem("Rename");
         rename.setOnAction(e -> renameSelectedGame());
+
+        ctxSplit = new MenuItem("Convert ISO to UL Format");
+        ctxSplit.setOnAction(e -> onSplitPs2Game());
+        ctxMerge = new MenuItem("Convert UL Format to ISO");
+        ctxMerge.setOnAction(e -> onMergePs2Game());
+        ctxMd5 = new MenuItem("Perform MD5 Hash");
+        ctxMd5.setOnAction(e -> onMd5());
+
         MenuItem delete = new MenuItem("Delete");
         delete.setOnAction(e -> {
             if (gameList.getSelectionModel().getSelectedIndex() != -1) { deleteGame(); }
         });
-        return new ContextMenu(run, rename, delete);
+
+        ContextMenu menu = new ContextMenu(run, rename, ctxSplit, ctxMerge, ctxMd5,
+                new SeparatorMenuItem(), delete);
+        menu.setOnShowing(e -> refreshRowMenuState());
+        return menu;
     }
 
     /** Prompt for a new (32-char capped) title and rename the selected game in place. */

@@ -64,11 +64,8 @@
             <MenuItem fx:id="miAddPs2Game" onAction="#onAddGame" text="Add PS2 Game" />
             <MenuItem fx:id="miGenerateConfElm" onAction="#onGenerateConfElm" text="Generate conf_apps.cfg" />
             <MenuItem fx:id="miGenerateUlConf" onAction="#onGenerateUlConf" text="Generate ul.cfg" />
-            <MenuItem fx:id="miSplitPs2Game" onAction="#onSplitPs2Game" text="Convert ISO to UL Format" />
-            <MenuItem fx:id="miMergePs2Game" onAction="#onMergePs2Game" text="Convert UL Format to ISO" />
             <MenuItem fx:id="miPs1Emulator" onAction="#onPs1EmulatorSettings" text="PS1 Emulator Settings" />
             <MenuItem fx:id="miPs2Emulator" onAction="#onPs2EmulatorSettings" text="PS2 Emulator Settings" />
-            <MenuItem fx:id="miMd5" onAction="#onMd5" text="Perform MD5 Hash" />
             <MenuItem fx:id="miRefreshGameList" onAction="#onRefreshGameList" text="Refresh Game List" />
             <MenuItem fx:id="miCheckUpdate" onAction="#onCheckUpdate" text="Check for Updates" />
         </Menu>
