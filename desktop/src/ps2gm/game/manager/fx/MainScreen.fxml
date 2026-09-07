@@ -29,8 +29,6 @@
             <MenuItem fx:id="miAbout" onAction="#onAbout" text="About" />
             <MenuItem fx:id="miCheckUpdate" onAction="#onCheckUpdate" text="Check for Updates" />
             <SeparatorMenuItem />
-            <CheckMenuItem fx:id="cmiPs1Compat" onAction="#onPs1CompatToggle" text="Display PS1 Compatability" />
-            <CheckMenuItem fx:id="cmiPs2UlHighlight" onAction="#onPs2UlToggle" text="Highlight PS2 UL Games" />
             <Menu fx:id="menuTheme" text="Theme">
                 <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Light" userData="Cupertino Light">
                     <toggleGroup><ToggleGroup fx:id="themeGroup" /></toggleGroup>
@@ -54,6 +52,9 @@
             <MenuItem fx:id="miPs1Emulator" onAction="#onPs1EmulatorSettings" text="PS1 Emulator Settings" />
             <MenuItem fx:id="miPs2Emulator" onAction="#onPs2EmulatorSettings" text="PS2 Emulator Settings" />
             <MenuItem fx:id="miRefreshGameList" onAction="#onRefreshGameList" text="Refresh Game List" />
+            <SeparatorMenuItem />
+            <CheckMenuItem fx:id="cmiPs1Compat" onAction="#onPs1CompatToggle" text="Display PS1 Compatability" />
+            <CheckMenuItem fx:id="cmiPs2UlHighlight" onAction="#onPs2UlToggle" text="Highlight PS2 UL Games" />
         </Menu>
 
         <Menu text="Batch Tools">
