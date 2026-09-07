@@ -70,18 +70,17 @@
                 </RadioMenuItem>
                 <RadioMenuItem fx:id="rmiIdPosPs2End" onAction="#onIdPosPs2End" text="After Game Name" toggleGroup="$idPosPs2Group" />
             </Menu>
-        </Menu>
-
-        <Menu text="Delete Files">
-            <MenuItem onAction="#onDeleteUnusedArt" text="Delete Unused ART Files" />
-            <MenuItem onAction="#onDeleteUnusedConfig" text="Delete Unused CFG Files" />
-            <MenuItem onAction="#onDeleteUnusedCheat" text="Delete Unused CHT Files" />
-            <SeparatorMenuItem />
-            <MenuItem onAction="#onDeleteAllArt" text="Delete All ART Files" />
-            <MenuItem onAction="#onDeleteAllConfig" text="Delete All CFG Files" />
-            <MenuItem onAction="#onDeleteAllCheat" text="Delete All CHT Files" />
-            <MenuItem fx:id="miDeleteAllElf" onAction="#onDeleteAllElf" text="Delete All ELF Files" />
-            <MenuItem onAction="#onDeleteAllSpineArt" text="Delete All Spine ART" />
+            <Menu text="Delete Files">
+                <MenuItem onAction="#onDeleteUnusedArt" text="Delete Unused ART Files" />
+                <MenuItem onAction="#onDeleteUnusedConfig" text="Delete Unused CFG Files" />
+                <MenuItem onAction="#onDeleteUnusedCheat" text="Delete Unused CHT Files" />
+                <SeparatorMenuItem />
+                <MenuItem onAction="#onDeleteAllArt" text="Delete All ART Files" />
+                <MenuItem onAction="#onDeleteAllConfig" text="Delete All CFG Files" />
+                <MenuItem onAction="#onDeleteAllCheat" text="Delete All CHT Files" />
+                <MenuItem fx:id="miDeleteAllElf" onAction="#onDeleteAllElf" text="Delete All ELF Files" />
+                <MenuItem onAction="#onDeleteAllSpineArt" text="Delete All Spine ART" />
+            </Menu>
         </Menu>
 
         <Menu text="Console">
