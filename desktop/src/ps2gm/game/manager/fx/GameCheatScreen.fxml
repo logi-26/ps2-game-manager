@@ -7,47 +7,42 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="ps2gm.game.manager.fx.GameCheatController"
-      spacing="10.0" prefWidth="900.0" prefHeight="560.0">
-    <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/></padding>
+<VBox prefHeight="501.0" prefWidth="900.0" spacing="10.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.GameCheatController">
+    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
 
-    <HBox spacing="10.0" alignment="CENTER_LEFT">
-        <TextField fx:id="gameNumberField" editable="false" alignment="CENTER" prefWidth="90.0"/>
-        <TextField fx:id="gameNameField" editable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-        <Button fx:id="prevButton" text="&lt;&lt;" prefWidth="55.0" onAction="#onPrev"/>
-        <Button fx:id="nextButton" text="&gt;&gt;" prefWidth="55.0" onAction="#onNext"/>
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <TextField fx:id="gameNumberField" alignment="CENTER" editable="false" prefWidth="90.0" />
+        <TextField fx:id="gameNameField" editable="false" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+        <Button fx:id="prevButton" onAction="#onPrev" prefWidth="55.0" text="&lt;&lt;" />
+        <Button fx:id="nextButton" onAction="#onNext" prefWidth="55.0" text="&gt;&gt;" />
     </HBox>
 
     <HBox spacing="10.0" VBox.vgrow="ALWAYS">
         <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-            <TitledPane text="Cheat File" collapsible="false" VBox.vgrow="ALWAYS">
-                <VBox spacing="8.0">
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-                    <TextArea fx:id="cheatContentArea" VBox.vgrow="ALWAYS" wrapText="false"
-                              style="-fx-font-family: 'Consolas', 'DejaVu Sans Mono', monospace;"/>
-                    <HBox spacing="20.0" alignment="CENTER">
-                        <Button fx:id="saveButton" styleClass="accent" text="Save" prefWidth="85.0" onAction="#onSave"/>
-                        <Button fx:id="undoButton" text="Undo" prefWidth="85.0" onAction="#onUndo"/>
-                        <Button fx:id="deleteButton" text="Delete" prefWidth="85.0" onAction="#onDelete"/>
+            <TitledPane collapsible="false" text="Cheat File" VBox.vgrow="ALWAYS">
+                <VBox prefHeight="413.0" prefWidth="362.0" spacing="8.0">
+                    <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
+                    <TextArea fx:id="cheatContentArea" style="-fx-font-family: 'Consolas', 'DejaVu Sans Mono', monospace;" wrapText="false" VBox.vgrow="ALWAYS" />
+                    <HBox alignment="CENTER" spacing="20.0">
+                        <Button fx:id="saveButton" onAction="#onSave" prefWidth="85.0" styleClass="accent" text="Save" />
+                        <Button fx:id="undoButton" onAction="#onUndo" prefWidth="85.0" text="Undo" />
+                        <Button fx:id="deleteButton" onAction="#onDelete" prefWidth="85.0" text="Delete" />
                     </HBox>
                 </VBox>
             </TitledPane>
         </VBox>
 
         <VBox alignment="CENTER">
-            <Button fx:id="addButton" text="&#171; Add" prefWidth="70.0" onAction="#onAddSelected"/>
+            <Button fx:id="addButton" onAction="#onAddSelected" prefWidth="70.0" styleClass="accent" text="←" />
         </VBox>
 
         <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-            <TitledPane text="Cheats From Server" collapsible="false" VBox.vgrow="ALWAYS">
+            <TitledPane collapsible="false" text="Cheats From Server" VBox.vgrow="ALWAYS">
                 <VBox>
-                    <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-                    <ListView fx:id="serverCheatList" VBox.vgrow="ALWAYS"/>
+                    <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
+                    <ListView fx:id="serverCheatList" VBox.vgrow="ALWAYS" />
                 </VBox>
             </TitledPane>
         </VBox>

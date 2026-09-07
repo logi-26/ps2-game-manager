@@ -82,12 +82,14 @@ Get-ChildItem -Recurse -Path $srcRoot -File |
             # save; the JavaFX 21 runtime then warns "Loading FXML ... API of version 26
             # by ... runtime of version 21" on each load. Pin it to 21 in the copied
             # (packaged) file only - the source keeps whatever Scene Builder wrote.
-            # WriteAllText with a no-BOM UTF8 encoding: Set-Content -Encoding UTF8 on
-            # PS 5.1 adds a BOM, which makes FXMLLoader fail ("Content is not allowed
-            # in prolog").
-            $fxml = (Get-Content -Raw $_.FullName) `
+            # Read AND write as no-BOM UTF-8 explicitly: Get-Content -Raw on PS 5.1
+            # decodes as the ANSI codepage and mangles non-ASCII glyphs (e.g. the
+            # arrow chars on some buttons); Set-Content -Encoding UTF8 adds a BOM,
+            # which makes FXMLLoader fail ("Content is not allowed in prolog").
+            $utf8 = [Text.UTF8Encoding]::new($false)
+            $fxml = [IO.File]::ReadAllText($_.FullName, $utf8) `
                 -replace 'http://javafx\.com/javafx/[\d.]+', 'http://javafx.com/javafx/21'
-            [IO.File]::WriteAllText($dest, $fxml, [Text.UTF8Encoding]::new($false))
+            [IO.File]::WriteAllText($dest, $fxml, $utf8)
         } else {
             Copy-Item $_.FullName $dest -Force
         }
