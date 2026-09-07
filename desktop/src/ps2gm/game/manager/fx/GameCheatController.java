@@ -74,6 +74,12 @@ public class GameCheatController implements FxScreens.StageAware {
     private List<String> serverCheatIndex = new ArrayList<>();
     private List<String> displayedLines = new ArrayList<>();
 
+    /** One cheat as shown in the list: its title plus every line "Add" should paste
+     *  (the title followed by its code lines, in order). */
+    private record CheatGroup(String title, List<String> lines) {}
+
+    private final List<CheatGroup> serverCheatGroups = new ArrayList<>();
+
     @FXML
     private void initialize() {
         serverCheatList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -251,6 +257,7 @@ public class GameCheatController implements FxScreens.StageAware {
 
     private void fetchServerCheats() {
         serverCheatList.getItems().clear();
+        serverCheatGroups.clear();
         Game game = gameList.get(currentListIndex);
         String console = PopsGameManager.getCurrentConsole();
         new Thread(() -> {
@@ -259,9 +266,37 @@ public class GameCheatController implements FxScreens.StageAware {
             Platform.runLater(() -> {
                 serverCheatIndex = index;
                 displayedLines = lines;
-                serverCheatList.getItems().setAll(lines);
+                serverCheatGroups.clear();
+                serverCheatGroups.addAll(groupServerCheats(lines));
+                List<String> titles = new ArrayList<>();
+                for (CheatGroup g : serverCheatGroups) { titles.add(g.title()); }
+                serverCheatList.getItems().setAll(titles);
             });
         }, "fx-game-cheat-server").start();
+    }
+
+    // Fold the flat server line list into one entry per cheat: a title line
+    // (anything styleFor() colours, plus the IGR entries) followed by every line
+    // up to the next title.
+    private List<CheatGroup> groupServerCheats(List<String> lines) {
+        List<CheatGroup> groups = new ArrayList<>();
+        CheatGroup current = null;
+        for (String line : lines) {
+            if (current == null || isCheatHeader(line)) {
+                current = new CheatGroup(line, new ArrayList<>());
+                current.lines().add(line);
+                groups.add(current);
+            } else {
+                current.lines().add(line);
+            }
+        }
+        return groups;
+    }
+
+    private boolean isCheatHeader(String line) {
+        if (line == null || line.isEmpty()) { return false; }
+        for (String igr : IGR_ARRAY) { if (line.equals(igr)) { return true; } }
+        return styleFor(line) != null;
     }
 
     private List<String> downloadServerCheatIndex(String console) {
@@ -352,12 +387,17 @@ public class GameCheatController implements FxScreens.StageAware {
 
     @FXML
     private void onAddSelected() {
-        List<String> selected = new ArrayList<>(serverCheatList.getSelectionModel().getSelectedItems());
-        if (selected.isEmpty()) { return; }
+        List<Integer> indices = new ArrayList<>(serverCheatList.getSelectionModel().getSelectedIndices());
+        if (indices.isEmpty()) { return; }
         boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
         StringBuilder sb = new StringBuilder(cheatContentArea.getText());
-        for (String cheat : selected) {
-            sb.append(transformForEditor(cheat, ps1)).append("\n");
+        for (int i : indices) {
+            if (i < 0 || i >= serverCheatGroups.size()) { continue; }
+            // Paste the whole cheat - its title and every code line, in order -
+            // otherwise the cheat won't work.
+            for (String line : serverCheatGroups.get(i).lines()) {
+                sb.append(transformForEditor(line, ps1)).append("\n");
+            }
         }
         cheatContentArea.setText(sb.toString());
     }
