@@ -80,6 +80,7 @@
             <MenuItem onAction="#onCheckGameNames" text="Check Long Game Names" />
             <MenuItem fx:id="miBatchPs1Elf" onAction="#onGeneratePs1Elf" text="Generate PS1 ELF Files" />
             <MenuItem onAction="#onGenerateSpine" text="Generate Spine ART" />
+            <MenuItem fx:id="miSwitchPs2IdPos" onAction="#onSwitchPs2IdPosition" text="Switch PS2 Game ID Position" />
         </Menu>
 
         <Menu text="Delete Files">

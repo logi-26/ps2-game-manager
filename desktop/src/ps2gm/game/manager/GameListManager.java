@@ -158,6 +158,21 @@ public class GameListManager {
     }
     
     
+    // Strip a game ID from a filename base (extension already removed), whether it
+    // sits at the start ("<id>.<name>"), the end ("<name>.<id>", "<name> <id>",
+    // "<name>-<id>") or in a "(<id>)" / "[<id>]" group, together with its adjoining
+    // separator. Lets the scanner accept OPL's ID-first and ID-last conventions.
+    public static String stripGameId(String base, String gameId) {
+        if (base == null || gameId == null || gameId.isEmpty()) { return base; }
+        String q = java.util.regex.Pattern.quote(gameId);
+        String s = base
+                .replaceAll("[\\s._-]*[\\(\\[]\\s*" + q + "\\s*[\\)\\]]", "")
+                .replaceAll("^" + q + "[\\s._-]+", "")
+                .replaceAll("[\\s._-]+" + q + "$", "")
+                .replaceAll("^" + q + "$", "");
+        return s.trim();
+    }
+
     // Adds a game to the PS2 game list
     public static void addToGameListsPS2(File isoFile){
         
@@ -169,8 +184,8 @@ public class GameListManager {
         // Get the game name without the directory path or file extension and game ID
         String gameName = isoFile.getName();
         if (gameName.toLowerCase().endsWith(".iso") || gameName.toLowerCase().endsWith(".zso")) {gameName = gameName.substring(0, gameName.length() - 4);}
-        if (gameName.contains(gameID + ".")) {gameName = gameName.replace(gameID + ".", "");}
-        
+        gameName = stripGameId(gameName, gameID);
+
         gameListPS2.add(new Game(gameName, gameID, isoFile.toString(), PopsGameManager.bytesToHuman(isoFile.length()), isoFile.length()));
     }
     
@@ -187,8 +202,8 @@ public class GameListManager {
         // Get the game name without the directory path or file extension and game ID
         String gameName = vcdFile.getName();
         if (gameName.contains(".VCD")) {gameName = gameName.replace(".VCD", "");}
-        if (gameName.contains("-" + gameID)) {gameName = gameName.replace("-" + gameID, "");}
-        
+        gameName = stripGameId(gameName, gameID);
+
         gameListPS1.add(new Game(gameName, gameID, vcdFile.toString(), PopsGameManager.bytesToHuman(vcdFile.length()), vcdFile.length()));
     }
     
@@ -768,9 +783,7 @@ public class GameListManager {
                 String fileName = vcdFile.getName();
                 int extDot = fileName.lastIndexOf('.');
                 String gameName = extDot > 0 ? fileName.substring(0, extDot) : fileName;
-                if (gameID != null && gameName.length() >= gameID.length() && gameName.endsWith(gameID)) {
-                    gameName = gameName.substring(0, gameName.length() - gameID.length()).replaceAll("[\\s.\\-_]+$", "");
-                }
+                if (gameID != null) { gameName = stripGameId(gameName, gameID); }
                 if (gameName.isEmpty()) {gameName = gameID != null ? gameID : (extDot > 0 ? fileName.substring(0, extDot) : fileName);}
 
                 // Used to calculate the total size of all VCD files combined
@@ -1022,7 +1035,8 @@ public class GameListManager {
                 // Split the string to get the game name without the directory path or file extension
                 String gamePath = isoFile.toString();
                 String gameName = gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).substring(0,gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).lastIndexOf('.'));
-                
+                if (gameID != null) { gameName = stripGameId(gameName, gameID); }
+
                 // Used to calculate the total size of all ISO files combined
                 totalSize += isoFile.length();
 
@@ -1092,9 +1106,7 @@ public class GameListManager {
                         String fileName = isoFile.getName();
                         int extDot = fileName.lastIndexOf('.');
                         String gameName = extDot > 0 ? fileName.substring(0, extDot) : fileName;
-                        if (gameName.startsWith(gameID)) {
-                            gameName = gameName.substring(gameID.length()).replaceAll("^[\\s.\\-_]+", "");
-                        }
+                        gameName = stripGameId(gameName, gameID);
                         if (gameName.isEmpty()) {gameName = gameID;}
 
                         // Used to calculate the total size of all ISO files combined
@@ -1165,7 +1177,8 @@ public class GameListManager {
                 // Split the string to get the game name without the directory path or file extension
                 String gamePath = isoFile.toString();
                 String gameName = gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).substring(0,gamePath.substring(gamePath.lastIndexOf(File.separator) + 1).lastIndexOf('.'));
-                
+                if (gameID != null) { gameName = stripGameId(gameName, gameID); }
+
                 // Used to calculate the total size of all ISO files combined
                 totalSize += isoFile.length();
 

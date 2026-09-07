@@ -41,6 +41,7 @@ import ps2gm.game.manager.AddGameManager;
 import ps2gm.game.manager.BackendClient;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameConfigFileManager;
+import ps2gm.game.manager.GameIdPositionSwitcher;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.GameLongNameRenamer;
 import ps2gm.game.manager.GenerateSpineART;
@@ -91,7 +92,8 @@ public class MainController implements MyListener {
             rmiIdPosPs1Start, rmiIdPosPs1End, rmiIdPosPs2Start, rmiIdPosPs2End;
     @FXML private MenuItem miAddPs1Game, miAddPs2Game, miGenerateConfElm, miGenerateUlConf, miSplitPs2Game,
             miMergePs2Game, miPs1Emulator, miPs2Emulator, miMd5, miRefreshGameList, miBatchAddPs1Game,
-            miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miChangelog, miCheckUpdate;
+            miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miChangelog, miCheckUpdate,
+            miSwitchPs2IdPos;
     @FXML private Menu menuConsoleFileTransfer, menuTheme;
 
     private Stage stage;
@@ -448,6 +450,7 @@ public class MainController implements MyListener {
         miGenerateUlConf.setVisible(!ps1 && smb);
         miMergePs2Game.setVisible(!ps1 && smb);
         miSplitPs2Game.setVisible(!ps1 && smb);
+        miSwitchPs2IdPos.setVisible(!ps1 && ("SMB".equals(mode) || "HDD_USB".equals(mode)));
 
         suppressSelectionEvents = true;
         rmiPlaystation1.setSelected(ps1);
@@ -601,6 +604,45 @@ public class MainController implements MyListener {
     @FXML private void onGenerateSpine() {
         GenerateSpineART gen = new GenerateSpineART();
         if ("PS1".equals(PopsGameManager.getCurrentConsole())) { gen.generateForPS1(); } else { gen.generateForPS2(); }
+    }
+
+    @FXML private void onSwitchPs2IdPosition() {
+        String mode = PopsGameManager.getCurrentMode();
+        if (!"SMB".equals(mode) && !"HDD_USB".equals(mode)) {
+            warn("Switching the game ID position renames the game files on disk, which is only possible in SMB or USB mode.",
+                    " Switch PS2 Game ID Position");
+            return;
+        }
+        List<Game> games = GameListManager.getGameListPS2();
+        if (games == null || games.isEmpty()) {
+            info("There are no PS2 games in the list.", " Switch PS2 Game ID Position");
+            return;
+        }
+        String target = "start".equals(PopsGameManager.getGameIDPositionPS2()) ? "end" : "start";
+        String where = "start".equals(target) ? "the start" : "the end";
+        if (!confirm("Rename every PS2 game file so the game ID is at " + where + " of the name?\n\n"
+                + games.size() + " game(s) will be checked. OPL reads the ID from inside the ISO, so this is safe.",
+                " Switch PS2 Game ID Position")) {
+            return;
+        }
+
+        runBg(() -> {
+            GameIdPositionSwitcher.Result r = GameIdPositionSwitcher.switchAllPS2(target);
+            PopsGameManager.setGameIDPositionPS2(target);
+            GameListManager.createGameListsPS2(true);   // rescan from disk
+            Platform.runLater(() -> {
+                saveSettings();
+                suppressSelectionEvents = true;
+                rmiIdPosPs2Start.setSelected("start".equals(target));
+                rmiIdPosPs2End.setSelected("end".equals(target));
+                suppressSelectionEvents = false;
+                updateGameList(null, 0);
+                info("Renamed " + r.renamed + " game(s)."
+                        + (r.skipped > 0 ? "\nSkipped " + r.skipped + " (UL games / already in place)." : "")
+                        + (r.failed > 0 ? "\nFailed " + r.failed + " - see the debug log." : ""),
+                        " Switch PS2 Game ID Position");
+            });
+        });
     }
     @FXML private void onDeleteAllSpineArt() { new GenerateSpineART().deleteForPS2(); }
 

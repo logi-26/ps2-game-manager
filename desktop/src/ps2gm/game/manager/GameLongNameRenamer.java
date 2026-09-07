@@ -80,9 +80,14 @@ public final class GameLongNameRenamer {
             return false;
         }
 
-        // Rename the ISO/ZSO file, preserving whichever extension it actually has
+        // Rename the ISO/ZSO file, preserving whichever extension it actually has.
+        // The game ID goes at the start or the end of the name per the user's
+        // "PS2 Game ID Position" setting (OPL reads the ID from the ISO itself).
         String extension = selectedGame.getName().substring(selectedGame.getName().length() - 4);
-        return selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + game.getGameID() + "." + newTitle + extension));
+        String base = "start".equals(PopsGameManager.getGameIDPositionPS2())
+                ? game.getGameID() + "." + newTitle
+                : newTitle + "." + game.getGameID();
+        return selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + base + extension));
     }
 
     // HDD mode (PS1): rename the VCD and ELF on the console over FTP. Fire and forget.
