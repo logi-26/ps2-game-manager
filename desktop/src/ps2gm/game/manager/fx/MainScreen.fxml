@@ -42,18 +42,6 @@
                     <RadioMenuItem onAction="#onThemeChosen" text="Nord Dark" toggleGroup="$themeGroup" userData="Nord Dark" />
                     <RadioMenuItem onAction="#onThemeChosen" text="Dracula" toggleGroup="$themeGroup" userData="Dracula" />
                 </Menu>
-                <Menu text="PS1 Game ID Position">
-                    <RadioMenuItem fx:id="rmiIdPosPs1Start" onAction="#onIdPosPs1Start" text="Before Game Name">
-                        <toggleGroup><ToggleGroup fx:id="idPosPs1Group" /></toggleGroup>
-                    </RadioMenuItem>
-                    <RadioMenuItem fx:id="rmiIdPosPs1End" onAction="#onIdPosPs1End" text="After Game Name" toggleGroup="$idPosPs1Group" />
-                </Menu>
-                <Menu text="PS2 Game ID Position">
-                    <RadioMenuItem fx:id="rmiIdPosPs2Start" onAction="#onIdPosPs2Start" text="Before Game Name">
-                        <toggleGroup><ToggleGroup fx:id="idPosPs2Group" /></toggleGroup>
-                    </RadioMenuItem>
-                    <RadioMenuItem fx:id="rmiIdPosPs2End" onAction="#onIdPosPs2End" text="After Game Name" toggleGroup="$idPosPs2Group" />
-                </Menu>
             </Menu>
             <SeparatorMenuItem />
             <MenuItem onAction="#onExit" text="Exit" />
@@ -77,7 +65,12 @@
             <MenuItem onAction="#onCheckGameNames" text="Check Long Game Names" />
             <MenuItem fx:id="miBatchPs1Elf" onAction="#onGeneratePs1Elf" text="Generate PS1 ELF Files" />
             <MenuItem onAction="#onGenerateSpine" text="Generate Spine ART" />
-            <MenuItem fx:id="miSwitchPs2IdPos" onAction="#onSwitchPs2IdPosition" text="Switch PS2 Game ID Position" />
+            <Menu fx:id="menuPs2IdPos" text="PS2 Game ID Position">
+                <RadioMenuItem fx:id="rmiIdPosPs2Start" onAction="#onIdPosPs2Start" text="Before Game Name">
+                    <toggleGroup><ToggleGroup fx:id="idPosPs2Group" /></toggleGroup>
+                </RadioMenuItem>
+                <RadioMenuItem fx:id="rmiIdPosPs2End" onAction="#onIdPosPs2End" text="After Game Name" toggleGroup="$idPosPs2Group" />
+            </Menu>
         </Menu>
 
         <Menu text="Delete Files">

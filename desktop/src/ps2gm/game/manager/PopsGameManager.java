@@ -71,7 +71,6 @@ public class PopsGameManager {
     private static boolean darkMode = false;
     private static String themeName = ps2gm.game.manager.fx.Themes.DEFAULT;
 
-    private static String gameIDPositionPS1 = "end";
     private static String gameIDPositionPS2 = "start";
     // </editor-fold>
     
@@ -111,7 +110,6 @@ public class PopsGameManager {
     public static void setSplitGameDisplayPS2(boolean splitGameDisplay) {splitGameDisplayPS2 = splitGameDisplay;}
     public static void setDarkMode(boolean enabled) {darkMode = enabled;}
     public static void setThemeName(String name) {themeName = ps2gm.game.manager.fx.Themes.normalise(name); darkMode = ps2gm.game.manager.fx.Themes.isDark(themeName);}
-    public static void setGameIDPositionPS1(String position) {gameIDPositionPS1 = position;}  
     public static void setGameIDPositionPS2(String position) {gameIDPositionPS2 = position;}
     
     public static Boolean getFisrtLaunch() {return firstLaunch;}                                                            // Returns the first launch boolean value
@@ -141,7 +139,6 @@ public class PopsGameManager {
     public static Boolean getSplitGameDisplayPS2() {return splitGameDisplayPS2;}
     public static Boolean getDarkMode() {return darkMode;}
     public static String getThemeName() {return ps2gm.game.manager.fx.Themes.normalise(themeName);}
-    public static String getGameIDPositionPS1() {return gameIDPositionPS1;}
     public static String getGameIDPositionPS2() {return gameIDPositionPS2;}
     
     public static Boolean isOPLFolderSet() {return oplFolder != null;}                                                      // Returns a boolean showing if the OPL folder has been set by user                        

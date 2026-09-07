@@ -2,6 +2,7 @@ package ps2gm.game.manager;
 
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Bulk-renames the PS2 game files so the game ID sits at the start or the end of
@@ -16,6 +17,36 @@ import java.util.List;
 public final class GameIdPositionSwitcher {
 
     private GameIdPositionSwitcher() {}
+
+    /**
+     * Where the game ID currently sits in the PS2 game files on disk - "start"
+     * ("&lt;id&gt;.&lt;name&gt;"), "end" ("&lt;name&gt;.&lt;id&gt;" / "&lt;name&gt; (&lt;id&gt;)"),
+     * or null if it can't tell (no games, or none have a descriptive part).
+     * Majority wins; used to seed the menu's radio state.
+     */
+    public static String detectCurrentPS2Position() {
+        List<Game> games = GameListManager.getGameListPS2();
+        if (games == null) { return null; }
+
+        int start = 0;
+        int end = 0;
+        for (Game game : games) {
+            String id = game.getGameID();
+            String path = game.getGamePath();
+            if (id == null || id.isEmpty() || path == null || Boolean.TRUE.equals(game.getULGame())) { continue; }
+
+            String base = new File(path).getName();
+            int dot = base.lastIndexOf('.');
+            if (dot > 0) { base = base.substring(0, dot); }
+            if (base.equals(id)) { continue; }   // bare "<id>" - no descriptive part
+
+            String q = Pattern.quote(id);
+            if (base.matches("^" + q + "[\\s._-].*")) { start++; }
+            else if (base.matches(".*[\\s._-]" + q + "$") || base.matches(".*[\\(\\[]\\s*" + q + "\\s*[\\)\\]].*")) { end++; }
+        }
+        if (start == 0 && end == 0) { return null; }
+        return start > end ? "start" : "end";
+    }
 
     /** Outcome of a {@link #switchAllPS2} run. */
     public static final class Result {
