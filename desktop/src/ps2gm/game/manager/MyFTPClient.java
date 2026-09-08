@@ -53,9 +53,7 @@ public class MyFTPClient {
             try {ftpClient.setFileType(FTP.BINARY_FILE_TYPE);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
             try {
                 try (OutputStream outputStream = ftpClient.storeFileStream(remoteDirectory + localFileName)) {
-                    byte[] bytesIn = new byte[4096];
-                    int read = 0;
-                    while (-1 != (read = inputStream.read(bytesIn))) {outputStream.write(bytesIn, 0, read);}
+                    inputStream.transferTo(outputStream);
                     inputStream.close();
                 }
 
@@ -97,14 +95,10 @@ public class MyFTPClient {
         try {ftpClient.setFileType(FTP.BINARY_FILE_TYPE);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
         try {
             try (OutputStream outputStream = ftpClient.storeFileStream(firstRemoteFile)) {
-                if (inputStream!= null){
-                    if (outputStream != null){
-                        byte[] bytesIn = new byte[4096];
-                        int read = 0;
-                        while (-1 != (read = inputStream.read(bytesIn))) {outputStream.write(bytesIn, 0, read);}
-                        inputStream.close();
-                    }  
-                }     
+                if (inputStream != null && outputStream != null){
+                    inputStream.transferTo(outputStream);
+                    inputStream.close();
+                }
             }
 
             ftpClient.completePendingCommand();
@@ -506,7 +500,7 @@ public class MyFTPClient {
                         if (formattedDownloadSpeed.length()>5){formattedDownloadSpeed = formattedDownloadSpeed.substring(2, 5);}
 
                         if (timeRemaining.length() <= 4) {
-                            progress.setTimeRemaining(getDurationString(Integer.parseInt(timeRemaining), false));
+                            progress.setTimeRemaining(DurationFormatter.toDurationString(Integer.parseInt(timeRemaining), false));
                             progress.setUploadSpeed(formattedDownloadSpeed + "KB/sec");
                         }
                     }
@@ -519,23 +513,5 @@ public class MyFTPClient {
             
             try {inputStream.close();} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
         }catch (FileNotFoundException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-    }
-    
-    
-    // This converts seconds into hh:mm:ss
-    private String getDurationString(int seconds, boolean usingHours) {
-
-        int hours = seconds / 3600;
-        int minutes = (seconds % 3600) / 60;
-        seconds = seconds % 60;
-
-        if (usingHours) {return twoDigitString(hours) + ":" + twoDigitString(minutes) + ":" + twoDigitString(seconds);}
-        else {return twoDigitString(minutes) + ":" + twoDigitString(seconds);}
-    }
-
-    private String twoDigitString(int number) {
-        if (number == 0) {return "00";}
-        if (number / 10 == 0) {return "0" + number;}
-        return String.valueOf(number);
     }
 }
