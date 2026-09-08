@@ -40,6 +40,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.DeviceCompatFormatter;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameConfigFileManager;
 import ps2gm.game.manager.GameIdPositionSwitcher;
@@ -356,20 +357,7 @@ public class MainController implements MyListener {
         vmc0Field.setText(configData[9] != null ? configData[9] : "");
         vmc1Field.setText(configData[10] != null ? configData[10] : "");
 
-        String device = "";
-        if (configData[13] != null) {
-            switch (configData[13]) {
-                case "1": device = "USB"; break;
-                case "5": device = "ETH"; break;
-                case "6": device = "HDD"; break;
-                case "2": device = "USB, ETH"; break;
-                case "3": device = "USB, HDD"; break;
-                case "4": device = "HDD, ETH"; break;
-                case "all": device = "USB, HDD, ETH"; break;
-                default: break;
-            }
-        }
-        deviceCompatField.setText(device);
+        deviceCompatField.setText(DeviceCompatFormatter.format(configData[13]));
     }
 
     private void clearGameConfigDetails() {
@@ -1027,7 +1015,7 @@ public class MainController implements MyListener {
                 if (files != null) {
                     for (File f : files) {
                         myFTP.deleteRemoteFile("/pfs/0/APPS/" + f.getName());
-                        myFTP.addFileToPS2(PopsGameManager.getOPLFolder() + "POPS" + File.separator + "ELF_TEMP" + File.separator, f.getName(), "/pfs/0/APPS/", "PS1".equals(PopsGameManager.getCurrentConsole()));
+                        myFTP.addFileToPS2(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + "ELF_TEMP" + File.separator, f.getName(), "/pfs/0/APPS/", "PS1".equals(PopsGameManager.getCurrentConsole()));
                     }
                 }
                 myFTP.disconnectFromConsole();
@@ -1048,9 +1036,9 @@ public class MainController implements MyListener {
         Game g = selectedGame();
         if (g == null) { return; }
         runBg(() -> {
-            int idx = PopsGameManager.getEmulatorPathPS2().lastIndexOf(File.separator);
-            String exePath = PopsGameManager.getEmulatorPathPS2().substring(0, idx);
-            String exeName = PopsGameManager.getEmulatorPathPS2().substring(idx + 1);
+            File emulator = new File(PopsGameManager.getEmulatorPathPS2());
+            String exePath = emulator.getParent();
+            String exeName = emulator.getName();
             List<String> commands = new ArrayList<>();
             commands.add(exePath + File.separator + exeName);
             commands.add(g.getGamePath());
@@ -1072,11 +1060,11 @@ public class MainController implements MyListener {
         Game g = selectedGame();
         if (g == null) { return; }
         runBg(() -> {
-            int idx = PopsGameManager.getEmulatorPathPS1().lastIndexOf(File.separator);
+            File emulator = new File(PopsGameManager.getEmulatorPathPS1());
             String gameName = g.getGameName();
             String gameID = g.getGameID();
-            String exePath = PopsGameManager.getEmulatorPathPS1().substring(0, idx);
-            String exeName = PopsGameManager.getEmulatorPathPS1().substring(idx + 1);
+            String exePath = emulator.getParent();
+            String exeName = emulator.getName();
             String gamePath = PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + gameName + "-" + gameID + ".VCD";
             File tempFolder = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + "EMU_TEMP");
             tempFolder.mkdirs();
