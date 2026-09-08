@@ -52,12 +52,6 @@ public final class GameListPersistence {
         FileEncryptor encryptor = new FileEncryptor();
         encryptor.EncryptData(lines, file.getAbsolutePath(), key.getAbsolutePath());
 
-        if (console.equals("PS1")) {
-            PopsGameManager.setGameListRetrievedPS1(true);
-        } else {
-            PopsGameManager.setGameListRetrievedPS2(true);
-        }
-
         return file.exists() && file.isFile();
     }
 

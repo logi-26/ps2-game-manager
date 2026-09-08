@@ -16,6 +16,7 @@ import ps2gm.game.manager.BackendClient;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameArtFileManager;
 import ps2gm.game.manager.GameListManager;
+import ps2gm.game.manager.ImageArtProcessor;
 import ps2gm.game.manager.ImageChangedListener;
 import ps2gm.game.manager.ImageSelectListener;
 import ps2gm.game.manager.PopsGameManager;
@@ -28,7 +29,7 @@ import ps2gm.game.manager.PopsGameManager;
  * {@code GameImageScreenPS2} were near-identical copies).
  *
  * <ul>
- *   <li><b>File</b> - {@link PopsGameManager#manualImageSelection} (a Swing
+ *   <li><b>File</b> - {@link ImageArtProcessor#manualImageSelection} (a Swing
  *       {@code JFileChooser}, run on the EDT) picks + rescales + copies a local
  *       image into the OPL {@code ART/} directory; we then re-read that directory.</li>
  *   <li><b>Auto</b> - queries the backend for how many alternatives exist, downloads
@@ -152,7 +153,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
                 // rescaled result into ART/ - keep it on the EDT, ignore its AWT
                 // return value, then re-read the file it just wrote.
                 javax.swing.SwingUtilities.invokeAndWait(() ->
-                        PopsGameManager.manualImageSelection(coverType, game.getGameName(), game.getGameID()));
+                        ImageArtProcessor.manualImageSelection(coverType, game.getGameName(), game.getGameID()));
             } catch (Exception ex) {
                 PopsGameManager.displayErrorMessageDebug(ex.toString());
             }
