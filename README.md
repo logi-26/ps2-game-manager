@@ -45,8 +45,8 @@ on the PS2's internal hard drive over the network — for both PS1 (POPS) and PS
   the game-list right-click menu.
 - **File transfer** — browse the PS2 over FTP and push files to it, or set the
   remote ART/CFG/CHT locations.
-- **Themes** — seven built-in looks (Cupertino, Primer, Nord in light and dark,
-  plus Dracula) chosen from *File → Settings → Theme*; the choice is remembered.
+- **Themes** — five built-in looks (Primer, Nord in light and dark, plus Dracula)
+  chosen from *File → Settings → Theme*; the choice is remembered.
 - **Update check** against the API.
 
 ## Download
@@ -100,11 +100,12 @@ Set from *Console → Mode → Set Mode*, or on first launch:
 ##### Downloading content
 
 Art, configs, cheats and VMCs are fetched from the PS2GM database API. By default
-the app expects it at `http://127.0.0.1:8000/v1`; a packaged build can be pointed
-elsewhere at build time (`-ApiBaseUrl`) or at runtime with the
-`PS2GM_API_BASEURL` environment variable / `-Dps2gm.api.baseurl=` system
-property. The app also contacts the API on startup (game-list sync, update
-check), so it needs to be reachable to launch — see *Running against the API*.
+the app talks to PS2GM's own hosted API at `https://ps2gm.logi26.co.uk/v1` — no
+setup needed. A packaged build can be pointed elsewhere at build time
+(`-ApiBaseUrl`) or at runtime with the `PS2GM_API_BASEURL` environment variable
+/ `-Dps2gm.api.baseurl=` system property (mainly useful for local API
+development, see *Running against the API*). The app also contacts the API on
+startup (game-list sync, update check), so it needs to be reachable to launch.
 
 ##### Adding games
 
@@ -133,8 +134,10 @@ than from a source checkout.
 - **PowerShell** to run the build scripts — Windows PowerShell 5.1, or
   [PowerShell 7+](https://github.com/PowerShell/PowerShell) (`pwsh`) on
   macOS/Linux.
-- A running PS2GM API for the app to talk to (see `api/README.md`), or point it
-  at a hosted one.
+
+The app talks to PS2GM's hosted API by default, so no API setup is needed just
+to build and run it. You'd only run your own API instance (see `api/README.md`)
+if you're developing against API changes yourself.
 
 ### Run it
 
@@ -182,9 +185,15 @@ packaged copies, so that warning in a dev run is harmless.
 
 ## Running against the API
 
-The desktop app needs the PS2GM API (`api/`, FastAPI + SQLite/Postgres) for
-downloads and update checks. One-time setup and the full runbook are in
-[`api/README.md`](api/README.md) and [`local-dev/README.md`](local-dev/README.md).
+The desktop app needs the PS2GM API for downloads and update checks, and by
+default it talks to PS2GM's own hosted instance at `https://ps2gm.logi26.co.uk`
+— nothing to set up.
+
+The API's source (`api/`, FastAPI + SQLite/Postgres) is included in this repo
+for transparency and so developers can run their own instance to test API
+changes; it isn't meant for end users to self-host. See
+[`api/README.md`](api/README.md) and [`local-dev/README.md`](local-dev/README.md)
+if you're doing that kind of development.
 
 ## Debugging
 
@@ -204,7 +213,7 @@ downloads and update checks. One-time setup and the full runbook are in
 | Path | What |
 |---|---|
 | `desktop/` | The desktop app (`ps2gm.game.manager`, Java + JavaFX). Build with `desktop/build.ps1`. |
-| `api/` | HTTP API + database that serves the shared art/config/cheat/VMC content. See [`api/README.md`](api/README.md). |
+| `api/` | Source for the hosted API (art/config/cheat/VMC content). Included for transparency / local dev testing, not for self-hosting. See [`api/README.md`](api/README.md). |
 | `local-dev/` | Scripts to run the app and API together on localhost. |
 | `docs/` | Design and migration notes. |
 

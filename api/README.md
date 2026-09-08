@@ -1,11 +1,13 @@
 # api/ — HTTP API + database
 
 Database-backed replacement for the original raw-TCP file server (retired).
-FastAPI + SQLAlchemy 2.0 +
-Alembic. Runs on **SQLite + local filesystem** out of the box; a single env var
-switches it to Postgres. Read-only: it serves the imported catalogue, nothing
-writes to it at runtime (user uploads and bad-file reports were removed as a
-feature).
+FastAPI + SQLAlchemy 2.0 + Alembic. Read-only: it serves the imported
+catalogue, nothing writes to it at runtime.
+
+> **Not meant to be self-hosted.** This source is included for transparency
+> and so developers can run a local instance to test API changes. The PS2GM
+> desktop app talks to its own hosted API at **https://ps2gm.logi26.co.uk** by
+> default — end users don't need to run this themselves.
 
 ## Quick start
 
@@ -19,101 +21,29 @@ python -m alembic upgrade head          # creates api/var/dev.db
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 ```
 
-`GET /v1/health` should return `{"status":"ok", ...}`.
+`GET /v1/health` should return `{"status":"ok", ...}`. Full endpoint reference
+is the interactive docs at `/docs` once it's running.
 
-## Load the legacy data
+## Load test data
 
 ```powershell
-# from api/, venv active, after `alembic upgrade head`
-python -m scripts.import_content --content-dir "..\..\Server Content"
-
-# quick partial run while iterating:
 python -m scripts.import_content --content-dir "..\..\Server Content" --console PS2 --limit 500
 ```
 
-Idempotent — safe to re-run. Blobs land in `api/var/blobs/` (content-addressed
-`<sha[:2]>/<sha[2:4]>/<sha>`); the DB stores only the sha256.
-
-## App updates
-
-`/v1/app/latest` and `/v1/app/releases/{version}/download` read live from
-**GitHub Releases** on this repo (`app/github.py`) — there's no jar mirrored
-into the DB. To publish an update: attach a `.jar` asset to a GitHub release
-(`gh release create v0.7.0 PS2GM_0.7.0.jar`). Mark it a
-pre-release for the `beta` channel; anything else counts as `stable`. An
-unauthenticated client is capped at 60 req/hr by GitHub — the module caches
-responses for `OPLAPI_GITHUB_CACHE_SECONDS` (default 300s), and setting
-`OPLAPI_GITHUB_TOKEN` (no special scope needed) raises that to 5000/hr.
-
-## Switching to Postgres
-
-```powershell
-docker compose up -d db                 # from repo root
-$env:OPLAPI_DATABASE_URL = "postgresql+psycopg://ps2gm:ps2gm@localhost:5432/ps2gm"
-pip install -e ".[postgres]"
-python -m alembic upgrade head
-```
+Idempotent — safe to re-run.
 
 ## Configuration
 
-`api/.env` (see `.env.example`), all `OPLAPI_`-prefixed:
-
-| key | default | meaning |
-|---|---|---|
-| `OPLAPI_DATABASE_URL` | `sqlite:///api/var/dev.db` | any SQLAlchemy URL |
-| `OPLAPI_BLOB_ROOT` | `api/var/blobs` | blob storage root |
-| `OPLAPI_GITHUB_REPO` | `logi-26/ps2-game-manager` | where app releases are read from |
-| `OPLAPI_GITHUB_TOKEN` | *(unset)* | raises the GitHub API rate limit from 60/hr to 5000/hr |
-| `OPLAPI_GITHUB_CACHE_SECONDS` | `300` | how long a release lookup is cached |
-| `OPLAPI_RATE_LIMIT_PER_MINUTE` | *(unset = off)* | per-client-IP cap; only enable if reachable beyond localhost (size it generously — a batch download can fire thousands of requests in minutes) |
-
-## Hardening
-
-- **Gzip** is always on (`GZipMiddleware`, responses ≥ 500 bytes) — meaningfully
-  shrinks the paginated JSON list endpoints.
-- **Rate limiting** is off by default (see `OPLAPI_RATE_LIMIT_PER_MINUTE` above);
-  a simple in-process fixed-window limiter (`app/ratelimit.py`), no new
-  dependency. Exceeding it gets a `429` with `Retry-After`.
-- **Path safety**: no endpoint builds a filesystem path from request input.
-  Blob paths are always `<sha256>` values computed server-side during import
-  and read back from the DB; `game_id`/`kind`/`variant` path params only ever
-  reach parameterized SQLAlchemy queries. Unlike the old TCP server, there's
-  nothing here for a crafted request to path-traverse.
-
-## Endpoints (v1)
-
-All read-only.
-
-| Old TCP command | Endpoint |
-|---|---|
-| `ART` | `GET /v1/games/{id}/artwork/{kind}/{variant}` → bytes, `ETag`, `304` |
-| `ART_NUM` | `GET /v1/games/{id}/artwork/{kind}` → `{count, variants[]}` |
-| `ART_LIST` | `GET /v1/artwork?console=PS2` (paged) |
-| `CONFIG` / `CONFIG_LIST` | `GET /v1/games/{id}/config` · `GET /v1/configs` |
-| `CHEAT` / `CHEAT_LIST` | `GET /v1/games/{id}/cheats` · `GET /v1/cheats` |
-| `VMC` / `VMC_LIST` | `GET /v1/games/{id}/vmc[/{vmc_id}]` · `GET /v1/vmc` |
-| `VERSION` / `UPDATE` | `GET /v1/app/latest` · `GET /v1/app/releases/{v}/download` (both read GitHub Releases live) |
-| `CUE2POPS` | `GET /v1/tools/cue2pops?os=windows` |
-| `RESPOND` | `GET /v1/health` |
-| `UPLOAD_ART/CFG/VMC`, `REPORT` | removed — no longer offered |
-
-Full interactive reference at `/docs` when the server is running.
+`api/.env` (see `.env.example`), all `OPLAPI_`-prefixed — defaults to SQLite +
+local filesystem; set `OPLAPI_DATABASE_URL` for Postgres (`compose.yaml` has a
+throwaway Postgres + MinIO for that). See `api/app/config.py` for the full list.
 
 ## Layout
 
 ```
 api/
-  app/
-    main.py          FastAPI app + router wiring
-    config.py        pydantic-settings (OPLAPI_* / .env)
-    db.py            engine + session
-    models.py        SQLAlchemy models (the schema)
-    schemas.py       pydantic response models
-    blobstore.py     content-addressed filesystem blob store
-    deps.py          pagination helper
-    routers/         health, games, artwork, files, releases
-  alembic/           migrations
-  scripts/
-    import_content.py  legacy "Server Content" -> DB + blobs
-  var/               dev.db + blobs/  (gitignored)
+  app/            FastAPI app, models, routers
+  alembic/        migrations
+  scripts/        import_content.py - legacy "Server Content" -> DB + blobs
+  var/            dev.db + blobs/  (gitignored)
 ```
