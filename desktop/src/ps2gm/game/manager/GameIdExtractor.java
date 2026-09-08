@@ -153,6 +153,23 @@ public final class GameIdExtractor {
         return s.trim();
     }
 
+    /**
+     * Derives a descriptive game name from a filename and its game ID:
+     * strips the extension, then strips the ID (and its separator) via
+     * {@link #stripGameId}, falling back to the ID - or, if there isn't one,
+     * the extension-stripped filename - when nothing descriptive is left
+     * (e.g. a file named just "&lt;id&gt;.vcd").
+     */
+    public static String deriveDescriptiveName(String fileName, String gameId) {
+        int extDot = fileName.lastIndexOf('.');
+        String nameWithoutExt = extDot > 0 ? fileName.substring(0, extDot) : fileName;
+        String gameName = gameId != null ? stripGameId(nameWithoutExt, gameId) : nameWithoutExt;
+        if (gameName.isEmpty()) {
+            gameName = gameId != null ? gameId : nameWithoutExt;
+        }
+        return gameName;
+    }
+
     private static String truncate(String value, int length) {
         return value.length() > length ? value.substring(0, length) : value;
     }

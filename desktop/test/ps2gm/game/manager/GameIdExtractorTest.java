@@ -55,4 +55,26 @@ class GameIdExtractorTest {
     void returnsNullBaseUnchanged() {
         assertNull(GameIdExtractor.stripGameId(null, "SLUS_207.68"));
     }
+
+    // ---- deriveDescriptiveName ----------------------------------------------------
+
+    @Test
+    void derivesNameFromIdPrefixedFilename() {
+        assertEquals("Final Fantasy X", GameIdExtractor.deriveDescriptiveName("SLUS_207.68.Final Fantasy X.iso", "SLUS_207.68"));
+    }
+
+    @Test
+    void derivesNameFromIdSuffixedFilename() {
+        assertEquals("Final Fantasy X", GameIdExtractor.deriveDescriptiveName("Final Fantasy X-SLUS_207.68.vcd", "SLUS_207.68"));
+    }
+
+    @Test
+    void fallsBackToIdWhenFilenameIsJustTheId() {
+        assertEquals("SLUS_207.68", GameIdExtractor.deriveDescriptiveName("SLUS_207.68.vcd", "SLUS_207.68"));
+    }
+
+    @Test
+    void fallsBackToExtensionStrippedFilenameWhenGameIdIsNull() {
+        assertEquals("Some Unrecognised Game", GameIdExtractor.deriveDescriptiveName("Some Unrecognised Game.vcd", null));
+    }
 }
