@@ -30,11 +30,9 @@
             <MenuItem fx:id="miCheckUpdate" onAction="#onCheckUpdate" text="Check for Updates" />
             <SeparatorMenuItem />
             <Menu fx:id="menuTheme" text="Theme">
-                <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Light" userData="Cupertino Light">
+                <RadioMenuItem onAction="#onThemeChosen" text="Primer Light" userData="Primer Light">
                     <toggleGroup><ToggleGroup fx:id="themeGroup" /></toggleGroup>
                 </RadioMenuItem>
-                <RadioMenuItem onAction="#onThemeChosen" text="Cupertino Dark" toggleGroup="$themeGroup" userData="Cupertino Dark" />
-                <RadioMenuItem onAction="#onThemeChosen" text="Primer Light" toggleGroup="$themeGroup" userData="Primer Light" />
                 <RadioMenuItem onAction="#onThemeChosen" text="Primer Dark" toggleGroup="$themeGroup" userData="Primer Dark" />
                 <RadioMenuItem onAction="#onThemeChosen" text="Nord Light" toggleGroup="$themeGroup" userData="Nord Light" />
                 <RadioMenuItem onAction="#onThemeChosen" text="Nord Dark" toggleGroup="$themeGroup" userData="Nord Dark" />

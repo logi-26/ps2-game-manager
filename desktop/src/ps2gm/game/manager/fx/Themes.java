@@ -1,7 +1,5 @@
 package ps2gm.game.manager.fx;
 
-import atlantafx.base.theme.CupertinoDark;
-import atlantafx.base.theme.CupertinoLight;
 import atlantafx.base.theme.Dracula;
 import atlantafx.base.theme.NordDark;
 import atlantafx.base.theme.NordLight;
@@ -26,12 +24,10 @@ import javafx.scene.Scene;
 public final class Themes {
 
     /** Used when settings.xml has no theme yet, or names one we don't ship. */
-    public static final String DEFAULT = "Cupertino Light";
+    public static final String DEFAULT = "Primer Light";
 
     private static final Map<String, Theme> REGISTRY = new LinkedHashMap<>();
     static {
-        REGISTRY.put("Cupertino Light", new CupertinoLight());
-        REGISTRY.put("Cupertino Dark",  new CupertinoDark());
         REGISTRY.put("Primer Light",    new PrimerLight());
         REGISTRY.put("Primer Dark",     new PrimerDark());
         REGISTRY.put("Nord Light",      new NordLight());

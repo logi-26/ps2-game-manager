@@ -225,7 +225,7 @@ public class XMLFileManager {
 
                                     // Theme (optional - superseded the darkmode flag). If absent: a
                                     // previously dark-mode user stays dark (Primer Dark, closest to the
-                                    // old look); everyone else gets the new default (Cupertino Light).
+                                    // old look); everyone else gets the new default (Primer Light).
                                     Node themeNode = eElement.getElementsByTagName("theme").item(0);
                                     if (themeNode != null && !themeNode.getTextContent().isBlank()) {
                                         PopsGameManager.setThemeName(themeNode.getTextContent());
