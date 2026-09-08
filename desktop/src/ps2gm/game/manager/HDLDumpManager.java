@@ -139,8 +139,6 @@ public class HDLDumpManager {
     // This determines information about the game before adding it to the list which is passed in
     private static void addGameToList(List<Game> gameListPS2, String line){
 
-        String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
-
         // Split the line using whitespace as the deliminator
         String[] splitLine = line.split("\\s+");
         String gameName = "";
@@ -154,7 +152,7 @@ public class HDLDumpManager {
         int gameIDPosition = 0;
         boolean gameIDFound = false;
         
-        for (String regionCode:REGION_CODES) {
+        for (String regionCode : RegionCodes.ALL) {
 
             if (splitLine.length >2 && !gameIDFound){
                 if (splitLine[2].contains(regionCode)) {
@@ -203,12 +201,14 @@ public class HDLDumpManager {
         
         if (!hdlLocalDirectory.exists()) {
             if (hdlLocalDirectory.mkdir()) {
+                // BUG FIX: previously each line overwrote directoriesCreated instead of
+                // accumulating, so only the last (VMC) mkdirs() result was ever reported.
                 directoriesCreated = (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "ART" + File.separator)).mkdirs();
-                directoriesCreated = (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "CFG" + File.separator)).mkdirs();
-                directoriesCreated = (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "CHT" + File.separator)).mkdirs();
-                directoriesCreated = (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "POPS" + File.separator)).mkdirs();
-                directoriesCreated = (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "VMC" + File.separator)).mkdirs();
-            } 
+                directoriesCreated &= (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "CFG" + File.separator)).mkdirs();
+                directoriesCreated &= (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "CHT" + File.separator)).mkdirs();
+                directoriesCreated &= (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "POPS" + File.separator)).mkdirs();
+                directoriesCreated &= (new File(PopsGameManager.getCurrentDirectory() + File.separator + directoryName + File.separator + "VMC" + File.separator)).mkdirs();
+            }
         }
         return hdlLocalDirectory.exists() || directoriesCreated;
     }
@@ -222,7 +222,6 @@ public class HDLDumpManager {
         String path;
         String downloadSpeed = null;
         boolean errorConnecting = false;
-        String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
 
         try {
 
@@ -247,7 +246,7 @@ public class HDLDumpManager {
                 path = game.toString();
                 
                 // If the game name contains the region code at the start of the name, this removes it
-                if (name.length() > 4){for (String regionCode : REGION_CODES){if (name.substring(0, 5).equals(regionCode)) {name = name.substring(12, name.length());}}}
+                if (name.length() > 4){for (String regionCode : RegionCodes.ALL){if (name.substring(0, 5).equals(regionCode)) {name = name.substring(12, name.length());}}}
 
                 // Set the game name in the text field
                 progress.setGameName(" " + name);
@@ -277,72 +276,11 @@ public class HDLDumpManager {
                 String line = null;
 
                 while ((line = stdInput.readLine()) != null) {
-
-                    // Remove all whitespace from the string
-                    line = line.replaceAll(" ", "");
-
-                    if (line.contains(",")) {
-
-                        String[] splitLine = line.split(",");
-                        boolean isFirstDigit = false;
-                        boolean isSecondDigit = false;
-
-                        int minutes = 0;
-                        int seconds = 0;
-
-                        // This hideous bit of code determines the number of digits in the string and calculates the percent downloaded and time remaining
-                        if (splitLine.length == 4){
-
-                            if (splitLine[0].length() >= 1){isFirstDigit = (splitLine[0].charAt(0) >= '0' && splitLine[0].charAt(0) <= '9');}
-                            if (splitLine[0].length() >= 2){isSecondDigit = (splitLine[0].charAt(1) >= '0' && splitLine[0].charAt(1) <= '9');}
-
-                            if (isSecondDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,2));}
-                            else if (isFirstDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,1));}
-
-                            if (splitLine[1].length() >= 1){isFirstDigit = (splitLine[1].charAt(0) >= '0' && splitLine[1].charAt(0) <= '9');}
-                            if (splitLine[1].length() >= 2){isSecondDigit = (splitLine[1].charAt(1) >= '0' && splitLine[1].charAt(1) <= '9');}
-
-                            if (isSecondDigit){minutes = Integer.valueOf(splitLine[1].substring(0,2));}
-                            else if (isFirstDigit){minutes = Integer.valueOf(splitLine[1].substring(0,1));}
-
-                            isFirstDigit = false;
-                            isSecondDigit = false;
-
-                            if (splitLine[2].length() >= 1){isFirstDigit = (splitLine[2].charAt(0) >= '0' && splitLine[2].charAt(0) <= '9');}
-                            if (splitLine[2].length() >= 2){isSecondDigit = (splitLine[2].charAt(1) >= '0' && splitLine[2].charAt(1) <= '9');}
-
-                            if (isSecondDigit){seconds = Integer.valueOf(splitLine[2].substring(0,2));}
-                            else if (isFirstDigit){seconds = Integer.valueOf(splitLine[2].substring(0,1));}
-
-                            timeRemaining = Integer.toString(minutes) + ":" + Integer.toString(seconds);
-                            downloadSpeed = splitLine[3];
-                        }
-                        else if (splitLine.length == 3){
-
-                            if (splitLine[0].length() >= 1){isFirstDigit = (splitLine[0].charAt(0) >= '0' && splitLine[0].charAt(0) <= '9');}
-                            if (splitLine[0].length() >= 2){isSecondDigit = (splitLine[0].charAt(1) >= '0' && splitLine[0].charAt(1) <= '9');}
-
-                            if (isSecondDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,2));}
-                            else if (isFirstDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,1));}
-
-                            isFirstDigit = false;
-                            isSecondDigit = false;
-
-                            if (splitLine[1].length() >= 1){isFirstDigit = (splitLine[1].charAt(0) >= '0' && splitLine[1].charAt(0) <= '9');}
-                            if (splitLine[1].length() >= 2){isSecondDigit = (splitLine[1].charAt(1) >= '0' && splitLine[1].charAt(1) <= '9');}
-
-                            if (isSecondDigit){seconds = Integer.valueOf(splitLine[1].substring(0,2));}
-                            else if (isFirstDigit){seconds = Integer.valueOf(splitLine[1].substring(0,1));}
-
-                            if (splitLine[1].contains("secremaining")){timeRemaining = "0:" + Integer.toString(seconds);}
-                            else if (splitLine[1].contains("minremaining")){timeRemaining = Integer.toString(seconds) + ":00";}
-
-                            downloadSpeed = splitLine[2];
-                        }
-                    }
-                    else {
-                        if (line.length() ==4){percentDownloaded = Integer.valueOf(line.substring(0, 3));}
-                        else{percentDownloaded = Integer.valueOf(line.substring(0, 1));}
+                    HdlDumpProgressParser.Progress result = HdlDumpProgressParser.parseLine(line, percentDownloaded, timeRemaining);
+                    percentDownloaded = result.percentDownloaded();
+                    timeRemaining = result.timeRemaining();
+                    if (result.downloadSpeed() != null) {
+                        downloadSpeed = result.downloadSpeed();
                     }
 
                     if (downloadSpeed != null){
@@ -440,72 +378,11 @@ public class HDLDumpManager {
             String line = null;
 
             while ((line = stdInput.readLine()) != null) {
-
-                // Remove all whitespace from the string
-                line = line.replaceAll(" ", "");
-                
-                if (line.contains(",")) {
- 
-                    String[] splitLine = line.split(",");
-                    boolean isFirstDigit = false;
-                    boolean isSecondDigit = false;
-
-                    int minutes = 0;
-                    int seconds = 0;
-                    
-                    // This hideous bit of code determines the number of digits in the string and calculates the percent downloaded and time remaining
-                    if (splitLine.length == 4){
-
-                        if (splitLine[0].length() >= 1){isFirstDigit = (splitLine[0].charAt(0) >= '0' && splitLine[0].charAt(0) <= '9');}
-                        if (splitLine[0].length() >= 2){isSecondDigit = (splitLine[0].charAt(1) >= '0' && splitLine[0].charAt(1) <= '9');}
-                        
-                        if (isSecondDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,2));}
-                        else if (isFirstDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,1));}
-
-                        if (splitLine[1].length() >= 1){isFirstDigit = (splitLine[1].charAt(0) >= '0' && splitLine[1].charAt(0) <= '9');}
-                        if (splitLine[1].length() >= 2){isSecondDigit = (splitLine[1].charAt(1) >= '0' && splitLine[1].charAt(1) <= '9');}
-                        
-                        if (isSecondDigit){minutes = Integer.valueOf(splitLine[1].substring(0,2));}
-                        else if (isFirstDigit){minutes = Integer.valueOf(splitLine[1].substring(0,1));}
-                        
-                        isFirstDigit = false;
-                        isSecondDigit = false;
-                        
-                        if (splitLine[2].length() >= 1){isFirstDigit = (splitLine[2].charAt(0) >= '0' && splitLine[2].charAt(0) <= '9');}
-                        if (splitLine[2].length() >= 2){isSecondDigit = (splitLine[2].charAt(1) >= '0' && splitLine[2].charAt(1) <= '9');}
-                        
-                        if (isSecondDigit){seconds = Integer.valueOf(splitLine[2].substring(0,2));}
-                        else if (isFirstDigit){seconds = Integer.valueOf(splitLine[2].substring(0,1));}
-                        
-                        timeRemaining = Integer.toString(minutes) + ":" + Integer.toString(seconds);
-                        downloadSpeed = splitLine[3];
-                    }
-                    else if (splitLine.length == 3){
-                        
-                        if (splitLine[0].length() >= 1){isFirstDigit = (splitLine[0].charAt(0) >= '0' && splitLine[0].charAt(0) <= '9');}
-                        if (splitLine[0].length() >= 2){isSecondDigit = (splitLine[0].charAt(1) >= '0' && splitLine[0].charAt(1) <= '9');}
-                        
-                        if (isSecondDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,2));}
-                        else if (isFirstDigit){percentDownloaded = Integer.valueOf(splitLine[0].substring(0,1));}
-
-                        isFirstDigit = false;
-                        isSecondDigit = false;
-                                            
-                        if (splitLine[1].length() >= 1){isFirstDigit = (splitLine[1].charAt(0) >= '0' && splitLine[1].charAt(0) <= '9');}
-                        if (splitLine[1].length() >= 2){isSecondDigit = (splitLine[1].charAt(1) >= '0' && splitLine[1].charAt(1) <= '9');}
-                        
-                        if (isSecondDigit){seconds = Integer.valueOf(splitLine[1].substring(0,2));}
-                        else if (isFirstDigit){seconds = Integer.valueOf(splitLine[1].substring(0,1));}
-                        
-                        if (splitLine[1].contains("secremaining")){timeRemaining = "0:" + Integer.toString(seconds);}
-                        else if (splitLine[1].contains("minremaining")){timeRemaining = Integer.toString(seconds) + ":00";}
-
-                        downloadSpeed = splitLine[2];
-                    }
-                }
-                else {
-                    if (line.length() ==4){percentDownloaded = Integer.valueOf(line.substring(0, 3));}
-                    else{percentDownloaded = Integer.valueOf(line.substring(0, 1));}
+                HdlDumpProgressParser.Progress result = HdlDumpProgressParser.parseLine(line, percentDownloaded, timeRemaining);
+                percentDownloaded = result.percentDownloaded();
+                timeRemaining = result.timeRemaining();
+                if (result.downloadSpeed() != null) {
+                    downloadSpeed = result.downloadSpeed();
                 }
 
                 if (downloadSpeed != null){

@@ -6,10 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -26,14 +23,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 
-// Lightweight 7zip library for reading the ISO file contents
-import net.sf.sevenzipjbinding.*;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
-
 public class GameListManager {
     
     // <editor-fold defaultstate="collapsed" desc="Private Variables">
-    private static final String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
 
     // Encrypted file paths
     private static final File keyFilePS1 = new File(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "data_1");
@@ -158,19 +150,9 @@ public class GameListManager {
     }
     
     
-    // Strip a game ID from a filename base (extension already removed), whether it
-    // sits at the start ("<id>.<name>"), the end ("<name>.<id>", "<name> <id>",
-    // "<name>-<id>") or in a "(<id>)" / "[<id>]" group, together with its adjoining
-    // separator. Lets the scanner accept OPL's ID-first and ID-last conventions.
+    // Strip a game ID from a filename base - see GameIdExtractor.stripGameId.
     public static String stripGameId(String base, String gameId) {
-        if (base == null || gameId == null || gameId.isEmpty()) { return base; }
-        String q = java.util.regex.Pattern.quote(gameId);
-        String s = base
-                .replaceAll("[\\s._-]*[\\(\\[]\\s*" + q + "\\s*[\\)\\]]", "")
-                .replaceAll("^" + q + "[\\s._-]+", "")
-                .replaceAll("[\\s._-]+" + q + "$", "")
-                .replaceAll("^" + q + "$", "");
-        return s.trim();
+        return GameIdExtractor.stripGameId(base, gameId);
     }
 
     // Adds a game to the PS2 game list
@@ -301,30 +283,14 @@ public class GameListManager {
             totalSize += gameRawSize;
 
             if (console.equals("PS1")){
-                
+
                 // This sets the PS1 game compatability values from the text file within the resources
-                String compatabilityUSB = "0";
-                String compatabilityHDD = "0";
-                String compatabilitySMB = "0";
-
-                InputStream in = GameListManager.class.getResourceAsStream("/ps2gm/game/manager/PS1CompatabilityList.txt"); 
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
-
-                String theLine;
-                try {
-                    while ((theLine = bufferedReader.readLine()) != null) {
-                        if(theLine.substring(0, 11).equals(gameID)){
-                            compatabilityUSB = theLine.substring(16, 17);
-                            compatabilityHDD = theLine.substring(22, 23);
-                            compatabilitySMB = theLine.substring(28, 29);
-                        }
-                    }
-                } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 
                 Game selectedGame = new Game(gameName, gameID, "GAME PATH HERE!!!!", PopsGameManager.bytesToHuman(gameRawSize), gameRawSize);
-                selectedGame.setCompatibleHDD(compatabilityUSB);
-                selectedGame.setCompatibleUSB(compatabilityHDD);
-                selectedGame.setCompatibleSMB(compatabilitySMB);
+                selectedGame.setCompatibleHDD(compat.usb());
+                selectedGame.setCompatibleUSB(compat.hdd());
+                selectedGame.setCompatibleSMB(compat.smb());
 
                 gameListPS1.add(selectedGame);
             }
@@ -342,89 +308,15 @@ public class GameListManager {
     }
     
     
-    // This searches the ISO file for the game's unique identifier file. Two cases fall back to
-    // reading the ID out of the filename instead ("<id>.<name>.iso" / "<id>.<name>.zso" style):
-    //  - .zso is compressed, so the 7-Zip ISO reader can't parse its content at all;
-    //  - the 7-Zip native library can fail to load on modern Windows (or lose its temp-dir lock
-    //    to another instance), which makes every real ISO fail to open. Rather than detecting
-    //    zero games and flooding the debug log, degrade to the filename in that case too.
+    // This searches the ISO file for the game's unique identifier file - see
+    // GameIdExtractor.getPS2GameIDFromArchive for the fallback-to-filename details.
     public static String getPS2GameIDFromArchive(String archiveFile) throws Exception {
-
-        if (archiveFile.toLowerCase().endsWith(".zso")) {return extractGameIDFromFilename(new File(archiveFile).getName());}
-
-        IInArchive archive = null;
-        RandomAccessFile randomAccessFile = null;
-        String theGameID = null;
-        try {
-            randomAccessFile = new RandomAccessFile(archiveFile, "r");
-            archive = SevenZip.openInArchive(ArchiveFormat.ISO, new RandomAccessFileInStream(randomAccessFile));
-
-            for (int i = 0; i < archive.getNumberOfItems(); i++){
-                String gameID = archive.getStringProperty(i, PropID.PATH);
-                for (String regionCode:REGION_CODES) {if (gameID.contains(regionCode)) {theGameID = gameID;}}
-            }
-        }
-        catch (Exception ex) {
-            // 7-Zip couldn't open the archive (broken native lib, temp-dir lock lost to another
-            // instance, or a damaged ISO). Try the filename before giving up so a
-            // "<id>.<name>.iso" still gets detected instead of flooding the debug log.
-            String fromName = extractGameIDFromFilename(new File(archiveFile).getName());
-            if (fromName == null) {PopsGameManager.displayErrorMessageDebug("7-Zip could not open " + new File(archiveFile).getName() + " and its name has no game ID: " + ex);}
-            theGameID = fromName;
-        }
-        finally {
-            if (archive != null) {try {archive.close();} catch (Exception ignored) {}}
-            if (randomAccessFile != null) {try {randomAccessFile.close();} catch (Exception ignored) {}}
-        }
-
-        return theGameID;
+        return GameIdExtractor.getPS2GameIDFromArchive(archiveFile);
     }
 
-
-    // Extracts a PS2 game ID (e.g. SLUS_215.93) directly from a filename, for formats (like .zso)
-    // whose compressed content getPS2GameIDFromArchive() can't read the archive listing from.
-    private static String extractGameIDFromFilename(String filename) {
-        for (String regionCode : REGION_CODES) {
-            int index = filename.indexOf(regionCode);
-            if (index != -1) {
-                java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(java.util.regex.Pattern.quote(regionCode) + "\\d{3}\\.\\d{2}").matcher(filename.substring(index));
-                if (matcher.find()) {return matcher.group();}
-            }
-        }
-        return null;
-    }
-
-
-    // This searches the VCD file for the games unique identifier string
+    // This searches the VCD file for the game's unique identifier string.
     public static String getPS1GameIDFromVCD(File vcdfile) throws Exception {
-
-        String theGameID;
-        try (FileReader fileReader = new FileReader(vcdfile); BufferedReader bufferedReader = new BufferedReader(fileReader)) {
-            String line;
-            Boolean gameIDFound = false;
-            theGameID = null;
-            
-            // Check each line for the games region code and unique ID
-            while((line = bufferedReader.readLine()) != null && !gameIDFound){
-                for (String code:REGION_CODES) if (line.contains(code)) {
-                    gameIDFound = true;
-                    String[] parts = line.split("_");
-                    String regionCode = parts[0].substring(parts[0].length() - 4);
-                    String idNumber = truncate(parts[1], 6);
-                    
-                    // If the game ID does not contain a decimal
-                    if (!idNumber.contains(".")){
-                        idNumber = truncate(idNumber, 5);                                   // Remove empty char at the end of the string
-                        String afterDecimal = idNumber.substring(idNumber.length() - 2);    // Get the last 2 digits
-                        idNumber = truncate(idNumber, 3);                                   // Get the first 3 digits
-                        idNumber += "." + afterDecimal;                                     // Place a decimal between the digits
-                    }
-                    theGameID = regionCode + "_" + idNumber;
-                }
-            }          
-        }
-        
-        return theGameID;
+        return GameIdExtractor.getPS1GameIDFromVCD(vcdfile);
     }
 
     
@@ -673,66 +565,44 @@ public class GameListManager {
     
     // Returns the OPL Drive formatted
     public static String getFormattedOPLDrive(){
-        String remoteDriveOPL = null;
-        String[] splitOplPath = PopsGameManager.getRemoteOPLPath().split("/");
-        if (splitOplPath.length > 0){remoteDriveOPL = splitOplPath[0].substring(0, splitOplPath[0].length()-2);}
-        return remoteDriveOPL;
+        return RemotePath.parse(PopsGameManager.getRemoteOPLPath()).drive();
     }
 
     // Returns the OPL Partition formatted
     public static String getFormattedOPLPartition(){
-        String remotePartitionOPL = null;
-        String[] splitOplPath = PopsGameManager.getRemoteVCDPath().split("/");
-        if (splitOplPath.length > 0){remotePartitionOPL = splitOplPath[0].substring(splitOplPath[0].length()-2, splitOplPath[0].length()-1);}
-        return remotePartitionOPL;
+        // BUG FIX: this previously parsed getRemoteVCDPath() instead of getRemoteOPLPath()
+        // (a copy-paste slip - every other OPL getter here already used the OPL path).
+        return RemotePath.parse(PopsGameManager.getRemoteOPLPath()).partition();
     }
 
     // Returns the VCD Drive formatted
     public static String getFormattedVCDDrive(){
-        String remoteDriveVCD = null;
-        String[] splitVcdPath = PopsGameManager.getRemoteVCDPath().split("/");
-        if (splitVcdPath.length > 0){remoteDriveVCD = splitVcdPath[0].substring(0, splitVcdPath[0].length()-2);}
-        return remoteDriveVCD;
+        return RemotePath.parse(PopsGameManager.getRemoteVCDPath()).drive();
     }
-    
+
     // Returns the VCD Partition formatted
     public static String getFormattedVCDPartition(){
-        String remotePartitionVCD = null;
-        String[] splitVcdPath = PopsGameManager.getRemoteVCDPath().split("/");
-        if (splitVcdPath.length > 0){remotePartitionVCD = splitVcdPath[0].substring(splitVcdPath[0].length()-2, splitVcdPath[0].length()-1);}
-        return remotePartitionVCD;
+        return RemotePath.parse(PopsGameManager.getRemoteVCDPath()).partition();
     }
-    
+
     // Returns the VCD Folder formatted
     public static String getFormattedVCDFolder(){
-        String remoteFolderVCD = null;
-        String[] splitVcdPath = PopsGameManager.getRemoteVCDPath().split("/");
-        if (splitVcdPath.length > 0){remoteFolderVCD = splitVcdPath[1];}
-        return remoteFolderVCD;
+        return RemotePath.parse(PopsGameManager.getRemoteVCDPath()).folder();
     }
 
     // Returns the ELF Drive formatted
     public static String getFormattedELFDrive(){
-        String remoteDriveELF = null;
-        String[] splitElfPath = PopsGameManager.getRemoteELFPath().split("/");
-        if (splitElfPath.length > 0){remoteDriveELF = splitElfPath[0].substring(0, splitElfPath[0].length()-2);}
-        return remoteDriveELF;
+        return RemotePath.parse(PopsGameManager.getRemoteELFPath()).drive();
     }
-    
+
     // Returns the ELF Partition formatted
     public static String getFormattedELFPartition(){
-        String remotePartitionELF = null;
-        String[] splitElfPath = PopsGameManager.getRemoteELFPath().split("/");
-        if (splitElfPath.length > 0){remotePartitionELF = splitElfPath[0].substring(splitElfPath[0].length()-2, splitElfPath[0].length()-1);}
-        return remotePartitionELF;
+        return RemotePath.parse(PopsGameManager.getRemoteELFPath()).partition();
     }
-    
+
     // Returns the ELF Folder formatted
     public static String getFormattedELFFolder(){
-        String remoteFolderELF = "";
-        String[] splitElfPath = PopsGameManager.getRemoteELFPath().split("/");
-        if (splitElfPath.length > 0){for (int i = 1; i < splitElfPath.length; i++){if (i!=1) {remoteFolderELF = remoteFolderELF + "/" + splitElfPath[i];}else {remoteFolderELF = remoteFolderELF + splitElfPath[i];}}}
-        return remoteFolderELF;
+        return RemotePath.parse(PopsGameManager.getRemoteELFPath()).folder();
     }
     // </editor-fold>
    
@@ -794,25 +664,8 @@ public class GameListManager {
                     if (gamePath.contains(gameID)) {
                         
                         // This sets the PS1 game compatability values from the text file within the resources
-                        String compatabilityUSB = "0";
-                        String compatabilityHDD = "0";
-                        String compatabilitySMB = "0";
-                        
-                        InputStream in = GameListManager.class.getResourceAsStream("/ps2gm/game/manager/PS1CompatabilityList.txt"); 
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
-                        
-                        String line;
-                        try {
-                            while ((line = bufferedReader.readLine()) != null) {
-                                if(line.substring(0, 11).equals(gameID)){
-                                    compatabilityUSB = line.substring(16, 17);
-                                    compatabilityHDD = line.substring(22, 23);
-                                    compatabilitySMB = line.substring(28, 29);
-                                }
-                            }
-                        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
-                        
-                        
+                        PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
+
                         // This checks if the game is a mult-disc game
                         boolean multiDiscGame = false;
                         String[] multiDiscArray = null;
@@ -828,9 +681,9 @@ public class GameListManager {
                         
                         // Create the game object
                         Game selectedGame = new Game(gameName, gameID, vcdFile.toString(), PopsGameManager.bytesToHuman(vcdFile.length()), vcdFile.length());
-                        selectedGame.setCompatibleHDD(compatabilityUSB);
-                        selectedGame.setCompatibleUSB(compatabilityHDD);
-                        selectedGame.setCompatibleSMB(compatabilitySMB);
+                        selectedGame.setCompatibleHDD(compat.usb());
+                        selectedGame.setCompatibleUSB(compat.hdd());
+                        selectedGame.setCompatibleSMB(compat.smb());
                         
                         if (multiDiscGame){
                             selectedGame.setMultiDiscGame(true);
@@ -939,8 +792,8 @@ public class GameListManager {
     
     // Create the invalidGameList.txt file
     public static void createBadGameListFile(){
-        
-        ArrayList<String> badGameList = new ArrayList<>();
+
+        List<String> badGameList = new ArrayList<>();
         File [] files = null;
         
         // Loop through all the VCD files and if we are unable to read the gameID from the file, it gets added to the bad game list
@@ -965,14 +818,15 @@ public class GameListManager {
         }     
         
         // Create the bad game list text file
-        FileWriter writer; 
-        try {
-            writer = new FileWriter(badGameListTextFile);
-            for(String badGmaeName: badGameList) {writer.write(badGmaeName);}
-            writer.close();
+        // BUG FIX: previously wrote every name back-to-back with no delimiter, producing
+        // one unreadable blob instead of one name per line.
+        try (FileWriter writer = new FileWriter(badGameListTextFile, StandardCharsets.UTF_8)) {
+            for (String badGameName : badGameList) {
+                writer.write(badGameName);
+                writer.write(System.lineSeparator());
+            }
             encryptBadGameListFile();
-            
-        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} 
+        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
     
     
@@ -1210,9 +1064,6 @@ public class GameListManager {
         return files;
     }
     
-    
-    // This truncates a string
-    private static String truncate(String value, int length) {if (value.length() > length) return value.substring(0, length); else return value;}
     
     // </editor-fold>
     

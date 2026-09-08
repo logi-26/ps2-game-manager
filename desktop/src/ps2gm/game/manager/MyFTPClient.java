@@ -2,14 +2,12 @@ package ps2gm.game.manager;
 
 import static java.lang.Math.toIntExact;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +19,10 @@ import org.apache.commons.net.ftp.FTPReply;
 
 public class MyFTPClient {
 
-    private static FTPClient ftpClient;
+    // BUG FIX: was `static`, despite MyFTPClient being instantiated per-use (`new
+    // MyFTPClient()`) - two concurrent instances (e.g. two background uploads) shared
+    // and corrupted a single connection.
+    private FTPClient ftpClient;
 
     // Booleans to determine if the OPL directories are present on the console
     private static final boolean folderExistsPOPS = false;
@@ -291,7 +292,6 @@ public class MyFTPClient {
     public List<Game> getGameListPS1(){
         
         List<Game> gameList = new ArrayList<>();
-        String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
         boolean conatinsIdentifier = false;
         String remoteDriveVCD = GameListManager.getFormattedVCDDrive();
         String remotePartitionVCD = GameListManager.getFormattedVCDPartition(); 
@@ -318,34 +318,18 @@ public class MyFTPClient {
                                 String possibleID = "";
                                 if (file.getName().contains("-") && file.getName().contains("_")){possibleID = file.getName().substring(file.getName().lastIndexOf("-")+1, file.getName().lastIndexOf("."));}
                                 // Ensure that the file name contains the unique identifier
-                                for (String regionCode:REGION_CODES) {if (possibleID.contains(regionCode)){conatinsIdentifier = true;}}
+                                for (String regionCode : RegionCodes.ALL) {if (possibleID.contains(regionCode)){conatinsIdentifier = true;}}
                                 if (conatinsIdentifier){
                                     String gameName = file.getName().substring(0, file.getName().lastIndexOf("-"));
                                     gameID = possibleID;
 
                                     // This sets the PS1 game compatability values from the text file within the resources
-                                    String compatabilityUSB = "0";
-                                    String compatabilityHDD = "0";
-                                    String compatabilitySMB = "0";
-
-                                    InputStream in = GameListManager.class.getResourceAsStream("/ps2gm/game/manager/PS1CompatabilityList.txt"); 
-                                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
-
-                                    String line;
-                                    try {
-                                        while ((line = bufferedReader.readLine()) != null) {
-                                            if(line.substring(0, 11).equals(gameID)){
-                                                compatabilityUSB = line.substring(16, 17);
-                                                compatabilityHDD = line.substring(22, 23);
-                                                compatabilitySMB = line.substring(28, 29);
-                                            }
-                                        }
-                                    } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+                                    PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 
                                     Game selectedGame = new Game(gameName,gameID,"PATH HERE!!",PopsGameManager.bytesToHuman(rawFileSize),rawFileSize);
-                                    selectedGame.setCompatibleHDD(compatabilityUSB);
-                                    selectedGame.setCompatibleUSB(compatabilityHDD);
-                                    selectedGame.setCompatibleSMB(compatabilitySMB);
+                                    selectedGame.setCompatibleHDD(compat.usb());
+                                    selectedGame.setCompatibleUSB(compat.hdd());
+                                    selectedGame.setCompatibleSMB(compat.smb());
         
                                     gameList.add(selectedGame);
                                 }  

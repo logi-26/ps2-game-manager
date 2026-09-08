@@ -20,7 +20,6 @@ import java.util.List;
 
 public final class USBUtil {
 
-    private static final int[] CRC_TABLE = new int[0x400];
     private static final File UL_BACKUP_TXT = new File(PopsGameManager.getCurrentDirectory() + File.separator + "ul-backup.txt");
     private static final File UL_BACKUP_FILE = new File(PopsGameManager.getCurrentDirectory() + File.separator + "ul-backup");
     private static final File KEY_FILE_BACKUP = new File(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "data_4");
@@ -135,15 +134,12 @@ public final class USBUtil {
     
     
     // This generates the ul.cfg file in the OPL directory
-    public static void writeULCFG(ArrayList<Game> ulGameList){
-
-        // Generate the ul.cfg file
-        OutputStream outputStream;
-        try {
-            // Create the ul.cfg file in the OPL directory
-            outputStream = new FileOutputStream(PopsGameManager.getOPLFolder() + File.separator + "ul.cfg");
-
-            // Loop through all of the UL games
+    public static void writeULCFG(List<Game> ulGameList){
+        // BUG FIX: previously wrote each byte via Byte.parseByte(String.valueOf(num)),
+        // which throws for any control-byte value >= 128 (byte's range is -128..127).
+        // outputStream.write(int) already only uses the low 8 bits, so writing num
+        // directly is both correct and simpler.
+        try (OutputStream outputStream = new FileOutputStream(PopsGameManager.getOPLFolder() + File.separator + "ul.cfg")) {
             for (Game ulGame : ulGameList){
 
                 // Get the game name and pad it if the length is less than 32 bytes
@@ -158,18 +154,11 @@ public final class USBUtil {
 
                     // Write the line to the ul.cfg file
                     for (char ch : confLine.toCharArray()){
-                        int num = (int)ch;
-                        String text = String.valueOf(num);
-                        byte value = Byte.parseByte(text);
-                        outputStream.write(value);
+                        outputStream.write((int) ch);
                     }
                 }
-                else {}
-
             }
-            // Close the ul.cfg file once all of the UL Games have been written
-            outputStream.close();
-        } catch (FileNotFoundException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
+        } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
     
     
@@ -225,23 +214,9 @@ public final class USBUtil {
     }
     
     
-    // This converts the game name string into a HEX format for UL Games
+    // This converts the game name string into a HEX format for UL Games - see UlHexNaming.
     public static String gameNameToULHex(byte[] originalName) {
-
-        int count, table, crc = 0;
-        for(table = 0; table < 256; table++) {
-            crc = table << 24;
-            for(count = 8; count > 0; count--) {if (crc < 0) {crc = crc << 1;} else {crc = crc << 1 ^ 0x04C11DB7;}}
-            CRC_TABLE[255-table] = crc;
-        }
-        
-        // Loop through all of the bytes in the string
-        for (byte singleByte : originalName){crc = CRC_TABLE[singleByte ^ ((crc >>> 24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00);}
-        
-        // Add the zero byte at the end
-        crc = CRC_TABLE[0 ^ ((crc >>> 24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00);
-        
-        return String.format("%08X", crc);
+        return UlHexNaming.toHex(originalName);
     }
     
     
