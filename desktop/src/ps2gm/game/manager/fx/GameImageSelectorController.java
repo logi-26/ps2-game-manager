@@ -123,11 +123,12 @@ public class GameImageSelectorController implements FxScreens.StageAware {
 
     @FXML
     private void onSave() {
-        // Matches the Swing version: keep the file, tell the parent, leave the window
-        // open so the user can keep browsing or close it with the X.
+        // Keep the file, tell the parent, then close - imageSaved is already true
+        // by the time stage.setOnHidden's handler runs, so it won't re-delete/re-notify.
         imageSaved = true;
         if (selectListener != null && image != null) {
             selectListener.imageSelected(imageType, image);
         }
+        stage.close();
     }
 }
