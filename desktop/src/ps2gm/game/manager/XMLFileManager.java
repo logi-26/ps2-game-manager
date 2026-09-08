@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,8 +40,27 @@ public class XMLFileManager {
     }
 
     public  XMLFileManager() {}
-  
-    
+
+    // Creates a text element under root, e.g. <tag>value</tag>.
+    private static void appendText(Document doc, Element root, String tag, String value) {
+        Element el = doc.createElement(tag);
+        el.appendChild(doc.createTextNode(value));
+        root.appendChild(el);
+    }
+
+    // Reads a single text element's content, e.g. <tag>value</tag> -> "value".
+    // Throws NullPointerException (caught by the caller) if the tag is missing.
+    private static String text(Element root, String tag) {
+        return root.getElementsByTagName(tag).item(0).getTextContent();
+    }
+
+    // Applies a boolean element's value if it's exactly "true" or "false", otherwise
+    // leaves the setting unchanged (matches how this file has always tolerated garbage).
+    private static void applyBoolean(String text, Consumer<Boolean> setter) {
+        if ("false".equals(text)) {setter.accept(false);}
+        else if ("true".equals(text)) {setter.accept(true);}
+    }
+
     // This writes the settings to the settings.xml file
     public static void writeSettingsXML() throws TransformerException, ParserConfigurationException{
 
@@ -51,91 +71,24 @@ public class XMLFileManager {
         Document doc = docBuilder.newDocument();
         Element rootElement = doc.createElement("settings");
         doc.appendChild(rootElement);
-        
-        // Consoleaddress element
-        Element consoleIP = doc.createElement("consoleaddress");
-        consoleIP.appendChild(doc.createTextNode(PopsGameManager.getPS2IP()));
-        rootElement.appendChild(consoleIP);
-        
-        // Oplfolder element
-        Element oplFolder = doc.createElement("oplfolder");
-        oplFolder.appendChild(doc.createTextNode(PopsGameManager.getOPLFolder()));
-        rootElement.appendChild(oplFolder);
 
-        // Currentconsole element
-        Element currentConsole = doc.createElement("currentconsole");
-        currentConsole.appendChild(doc.createTextNode(PopsGameManager.getCurrentConsole().name()));
-        rootElement.appendChild(currentConsole);
-
-        // Currentmode element
-        Element currentMode = doc.createElement("currentmode");
-        currentMode.appendChild(doc.createTextNode(PopsGameManager.getCurrentMode().name()));
-        rootElement.appendChild(currentMode);
-
-        // Useemulator ps2 element
-        Element useEmulatorPS2 = doc.createElement("useemulatorps2");
-        useEmulatorPS2.appendChild(doc.createTextNode(PopsGameManager.getEmulatorInUsePS2().toString()));
-        rootElement.appendChild(useEmulatorPS2);
-        
-        // Emulatorpath ps2 element
-        Element emulatorPathPS2 = doc.createElement("emulatorpathps2");
-        emulatorPathPS2.appendChild(doc.createTextNode(PopsGameManager.getEmulatorPathPS2()));
-        rootElement.appendChild(emulatorPathPS2);
-        
-        // Emulatorfull ps2 element
-        Element emulatorFullPS2 = doc.createElement("emulatorfullps2");
-        emulatorFullPS2.appendChild(doc.createTextNode(PopsGameManager.getEmulatorFullScreenPS2().toString()));
-        rootElement.appendChild(emulatorFullPS2);
-
-        // Useemulator ps1 element
-        Element useEmulatorPS1 = doc.createElement("useemulatorps1");
-        useEmulatorPS1.appendChild(doc.createTextNode(PopsGameManager.getEmulatorInUsePS1().toString()));
-        rootElement.appendChild(useEmulatorPS1);
-
-        // Emulatorpath ps1 element
-        Element emulatorPathPS1 = doc.createElement("emulatorpathps1");
-        emulatorPathPS1.appendChild(doc.createTextNode(PopsGameManager.getEmulatorPathPS1()));
-        rootElement.appendChild(emulatorPathPS1);
-        
-        // Emulatorfull ps1 element
-        Element emulatorFullPS1 = doc.createElement("emulatorfullps1");
-        emulatorFullPS1.appendChild(doc.createTextNode(PopsGameManager.getEmulatorFullScreenPS1().toString()));
-        rootElement.appendChild(emulatorFullPS1);
-
-        // PS2 HDD VCD partition
-        Element remoteVCDPath = doc.createElement("remotevcdpath");
-        remoteVCDPath.appendChild(doc.createTextNode(PopsGameManager.getRemoteVCDPath()));
-        rootElement.appendChild(remoteVCDPath);
-        
-        // PS2 HDD ELF partition
-        Element remoteELFPath = doc.createElement("remoteelfpath");
-        remoteELFPath.appendChild(doc.createTextNode(PopsGameManager.getRemoteELFPath()));
-        rootElement.appendChild(remoteELFPath);
-
-        // PS2 HDD OPL partition
-        Element remoteOPLPath = doc.createElement("remoteoplpath");
-        remoteOPLPath.appendChild(doc.createTextNode(PopsGameManager.getRemoteOPLPath()));
-        rootElement.appendChild(remoteOPLPath);
-        
-        // PS1 Compatability coloured list
-        Element compatabilityPS1 = doc.createElement("compatabilityps1");
-        compatabilityPS1.appendChild(doc.createTextNode(PopsGameManager.getGameCompatabilityPS1().toString()));
-        rootElement.appendChild(compatabilityPS1);
-        
-        // PS2 UL Game coloured list
-        Element ulGamePS2 = doc.createElement("splitgamesps2");
-        ulGamePS2.appendChild(doc.createTextNode(PopsGameManager.getSplitGameDisplayPS2().toString()));
-        rootElement.appendChild(ulGamePS2);
-
-        // Dark mode (kept for older builds that still read it)
-        Element darkMode = doc.createElement("darkmode");
-        darkMode.appendChild(doc.createTextNode(PopsGameManager.getDarkMode().toString()));
-        rootElement.appendChild(darkMode);
-
-        // Theme
-        Element theme = doc.createElement("theme");
-        theme.appendChild(doc.createTextNode(PopsGameManager.getThemeName()));
-        rootElement.appendChild(theme);
+        appendText(doc, rootElement, "consoleaddress", PopsGameManager.getPS2IP());
+        appendText(doc, rootElement, "oplfolder", PopsGameManager.getOPLFolder());
+        appendText(doc, rootElement, "currentconsole", PopsGameManager.getCurrentConsole().name());
+        appendText(doc, rootElement, "currentmode", PopsGameManager.getCurrentMode().name());
+        appendText(doc, rootElement, "useemulatorps2", PopsGameManager.getEmulatorInUsePS2().toString());
+        appendText(doc, rootElement, "emulatorpathps2", PopsGameManager.getEmulatorPathPS2());
+        appendText(doc, rootElement, "emulatorfullps2", PopsGameManager.getEmulatorFullScreenPS2().toString());
+        appendText(doc, rootElement, "useemulatorps1", PopsGameManager.getEmulatorInUsePS1().toString());
+        appendText(doc, rootElement, "emulatorpathps1", PopsGameManager.getEmulatorPathPS1());
+        appendText(doc, rootElement, "emulatorfullps1", PopsGameManager.getEmulatorFullScreenPS1().toString());
+        appendText(doc, rootElement, "remotevcdpath", PopsGameManager.getRemoteVCDPath());
+        appendText(doc, rootElement, "remoteelfpath", PopsGameManager.getRemoteELFPath());
+        appendText(doc, rootElement, "remoteoplpath", PopsGameManager.getRemoteOPLPath());
+        appendText(doc, rootElement, "compatabilityps1", PopsGameManager.getGameCompatabilityPS1().toString());
+        appendText(doc, rootElement, "splitgamesps2", PopsGameManager.getSplitGameDisplayPS2().toString());
+        appendText(doc, rootElement, "darkmode", PopsGameManager.getDarkMode().toString()); // kept for older builds that still read it
+        appendText(doc, rootElement, "theme", PopsGameManager.getThemeName());
 
         // Write the contents to the xml file
         try {
@@ -184,43 +137,36 @@ public class XMLFileManager {
                                 Element eElement = (Element) nNode;
                                 try{
                                     // General settings
-                                    PopsGameManager.setPS2IP(eElement.getElementsByTagName("consoleaddress").item(0).getTextContent());
-                                    PopsGameManager.setOPLFolder(eElement.getElementsByTagName("oplfolder").item(0).getTextContent());
-                                    PopsGameManager.setCurrentMode(parseMode(eElement.getElementsByTagName("currentmode").item(0).getTextContent()));
-                                    PopsGameManager.setCurrentConsole(parseConsole(eElement.getElementsByTagName("currentconsole").item(0).getTextContent()));
+                                    PopsGameManager.setPS2IP(text(eElement, "consoleaddress"));
+                                    PopsGameManager.setOPLFolder(text(eElement, "oplfolder"));
+                                    PopsGameManager.setCurrentMode(parseMode(text(eElement, "currentmode")));
+                                    PopsGameManager.setCurrentConsole(parseConsole(text(eElement, "currentconsole")));
 
                                     // PS2 emulator settings
-                                    if (eElement.getElementsByTagName("useemulatorps2").item(0).getTextContent().equals("false")) PopsGameManager.setEmulatorInUsePS2(false);
-                                    else if (eElement.getElementsByTagName("useemulatorps2").item(0).getTextContent().equals("true")) PopsGameManager.setEmulatorInUsePS2(true);
-                                    PopsGameManager.setEmulatorPathPS2(eElement.getElementsByTagName("emulatorpathps2").item(0).getTextContent());
-                                    if (eElement.getElementsByTagName("emulatorfullps2").item(0).getTextContent().equals("false")) PopsGameManager.setEmulatorFullScreenPS2(false);
-                                    else if (eElement.getElementsByTagName("emulatorfullps2").item(0).getTextContent().equals("true")) PopsGameManager.setEmulatorFullScreenPS2(true);
+                                    applyBoolean(text(eElement, "useemulatorps2"), PopsGameManager::setEmulatorInUsePS2);
+                                    PopsGameManager.setEmulatorPathPS2(text(eElement, "emulatorpathps2"));
+                                    applyBoolean(text(eElement, "emulatorfullps2"), PopsGameManager::setEmulatorFullScreenPS2);
 
                                     // PS1 emulator settings
-                                    if (eElement.getElementsByTagName("useemulatorps1").item(0).getTextContent().equals("false")) PopsGameManager.setEmulatorInUsePS1(false);
-                                    else if (eElement.getElementsByTagName("useemulatorps1").item(0).getTextContent().equals("true")) PopsGameManager.setEmulatorInUsePS1(true);
-                                    PopsGameManager.setEmulatorPathPS1(eElement.getElementsByTagName("emulatorpathps1").item(0).getTextContent());
-                                    if (eElement.getElementsByTagName("emulatorfullps1").item(0).getTextContent().equals("false")) PopsGameManager.setEmulatorFullScreenPS1(false);
-                                    else if (eElement.getElementsByTagName("emulatorfullps1").item(0).getTextContent().equals("true")) PopsGameManager.setEmulatorFullScreenPS1(true);
-                                
+                                    applyBoolean(text(eElement, "useemulatorps1"), PopsGameManager::setEmulatorInUsePS1);
+                                    PopsGameManager.setEmulatorPathPS1(text(eElement, "emulatorpathps1"));
+                                    applyBoolean(text(eElement, "emulatorfullps1"), PopsGameManager::setEmulatorFullScreenPS1);
+
                                     // Remote PS2 file paths
-                                    PopsGameManager.setRemoteVCDPath(eElement.getElementsByTagName("remotevcdpath").item(0).getTextContent());
-                                    PopsGameManager.setRemoteELFPath(eElement.getElementsByTagName("remoteelfpath").item(0).getTextContent());
-                                    PopsGameManager.setRemoteOPLPath(eElement.getElementsByTagName("remoteoplpath").item(0).getTextContent());
-                                    
+                                    PopsGameManager.setRemoteVCDPath(text(eElement, "remotevcdpath"));
+                                    PopsGameManager.setRemoteELFPath(text(eElement, "remoteelfpath"));
+                                    PopsGameManager.setRemoteOPLPath(text(eElement, "remoteoplpath"));
+
                                     // PS1 Compatability mode
-                                    if (eElement.getElementsByTagName("compatabilityps1").item(0).getTextContent().equals("false")) {PopsGameManager.setGameCompatabilityPS1(false);}
-                                    else if (eElement.getElementsByTagName("compatabilityps1").item(0).getTextContent().equals("true")) {PopsGameManager.setGameCompatabilityPS1(true);}
-                                    
+                                    applyBoolean(text(eElement, "compatabilityps1"), PopsGameManager::setGameCompatabilityPS1);
+
                                     // PS2 Split game highlight
-                                    if (eElement.getElementsByTagName("splitgamesps2").item(0).getTextContent().equals("false")) {PopsGameManager.setSplitGameDisplayPS2(false);}
-                                    else if (eElement.getElementsByTagName("splitgamesps2").item(0).getTextContent().equals("true")) {PopsGameManager.setSplitGameDisplayPS2(true);}
+                                    applyBoolean(text(eElement, "splitgamesps2"), PopsGameManager::setSplitGameDisplayPS2);
 
                                     // Dark mode (optional - missing from settings files written before this was added, defaults to light)
                                     Node darkModeNode = eElement.getElementsByTagName("darkmode").item(0);
                                     if (darkModeNode != null) {
-                                        if (darkModeNode.getTextContent().equals("false")) {PopsGameManager.setDarkMode(false);}
-                                        else if (darkModeNode.getTextContent().equals("true")) {PopsGameManager.setDarkMode(true);}
+                                        applyBoolean(darkModeNode.getTextContent(), PopsGameManager::setDarkMode);
                                     }
 
                                     // Theme (optional - superseded the darkmode flag). If absent: a
