@@ -11,6 +11,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
 import ps2gm.game.manager.Game;
@@ -29,9 +30,10 @@ import ps2gm.game.manager.PopsGameManager;
  * {@code GameImageScreenPS2} were near-identical copies).
  *
  * <ul>
- *   <li><b>File</b> - {@link ImageArtProcessor#manualImageSelection} (a Swing
- *       {@code JFileChooser}, run on the EDT) picks + rescales + copies a local
- *       image into the OPL {@code ART/} directory; we then re-read that directory.</li>
+ *   <li><b>File</b> - a JavaFX {@code FileChooser} picks a local image, then
+ *       {@link ImageArtProcessor#applySelectedImage} rescales + copies it into
+ *       the OPL {@code ART/} directory on a background thread; we then re-read
+ *       that directory.</li>
  *   <li><b>Auto</b> - queries the backend for how many alternatives exist, downloads
  *       the first, and opens {@link GameImageSelectorScreen} to browse them.</li>
  *   <li><b>Del</b> - {@link GameArtFileManager#deleteAll}.</li>
@@ -145,18 +147,27 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
 
     @FXML
     private void onFile(javafx.event.ActionEvent e) {
+        if (!PopsGameManager.isOPLFolderSet()) {
+            warn("OPL directory is not set.", " OPL Directory Not Set");
+            return;
+        }
         String coverType = (String) ((Node) e.getSource()).getUserData();
         Game game = gameList.get(currentListIndex);
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select Image File");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("IMAGE FILES", "*.png", "*.jpg"));
+        File start = new File(PopsGameManager.getOPLFolder());
+        if (start.isDirectory()) {
+            chooser.setInitialDirectory(start);
+        }
+        File imageFile = chooser.showOpenDialog(stage);
+        if (imageFile == null) {
+            return;
+        }
+
         Thread t = new Thread(() -> {
-            try {
-                // manualImageSelection() opens a Swing JFileChooser and writes the
-                // rescaled result into ART/ - keep it on the EDT, ignore its AWT
-                // return value, then re-read the file it just wrote.
-                javax.swing.SwingUtilities.invokeAndWait(() ->
-                        ImageArtProcessor.manualImageSelection(coverType, game.getGameName(), game.getGameID()));
-            } catch (Exception ex) {
-                PopsGameManager.displayErrorMessageDebug(ex.toString());
-            }
+            ImageArtProcessor.applySelectedImage(imageFile, coverType, game.getGameName(), game.getGameID());
             Platform.runLater(this::displayGameImages);
         }, "fx-game-art-file");
         t.setDaemon(true);

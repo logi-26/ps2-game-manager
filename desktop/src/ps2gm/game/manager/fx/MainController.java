@@ -161,6 +161,7 @@ public class MainController implements MyListener {
             @Override public void warn(String message, String title) { runOnFx(() -> MainController.this.warn(message, title)); }
             @Override public void error(String message, String title) { runOnFx(() -> MainController.this.error(message, title)); }
             @Override public boolean confirm(String message, String title) { return confirmFx(message, title); }
+            @Override public void infoTimed(String message, String title, int seconds) { infoTimedFx(message, title, seconds); }
         });
         suppressSelectionEvents = true;
         cmiPs1Compat.setSelected(PopsGameManager.getGameCompatabilityPS1());
@@ -1215,5 +1216,26 @@ public class MainController implements MyListener {
         Platform.runLater(() -> { result[0] = confirm(message, title); latch.countDown(); });
         try { latch.await(); } catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
         return result[0];
+    }
+
+    // Shows an info dialog that auto-closes after `seconds` (or sooner, if the user closes it).
+    private void infoTimed(String message, String title, int seconds) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.CLOSE);
+        a.setHeaderText(null);
+        a.setTitle(title);
+        if (stage != null) { a.initOwner(stage); }
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
+        pause.setOnFinished(ev -> a.hide());
+        pause.play();
+        a.showAndWait();
+    }
+
+    // infoTimed() usable from a background thread - blocks it until the dialog actually closes,
+    // same shape as confirmFx above (the caller needs the ~`seconds` wait to have happened, not a return value).
+    private void infoTimedFx(String message, String title, int seconds) {
+        if (Platform.isFxApplicationThread()) { infoTimed(message, title, seconds); return; }
+        final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        Platform.runLater(() -> { infoTimed(message, title, seconds); latch.countDown(); });
+        try { latch.await(); } catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
     }
 }

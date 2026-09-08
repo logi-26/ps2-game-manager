@@ -68,6 +68,7 @@ public class PopsGameManager {
     public static void showWarningDialog(String message, String title) {if (dialogCallback != null) {dialogCallback.warn(message, title);}}
     public static void showErrorDialog(String message, String title) {if (dialogCallback != null) {dialogCallback.error(message, title);}}
     public static boolean confirmDialog(String message, String title) {return dialogCallback != null && dialogCallback.confirm(message, title);}
+    public static void showTimedInfoDialog(String message, String title, int seconds) {if (dialogCallback != null) {dialogCallback.infoTimed(message, title, seconds);}}
 
     public static void setDebugMode(boolean debugMode) {DebugMode = debugMode;}                                             // Set debug mode on or off (if debug on, most of the exception messages will be printed)
     public static void setCurrentConsole(String console){currentConsole = console;}                                         // This sets the current console and saves it to the settings.xml file

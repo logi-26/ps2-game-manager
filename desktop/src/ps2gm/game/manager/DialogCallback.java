@@ -10,4 +10,7 @@ public interface DialogCallback {
     void warn(String message, String title);
     void error(String message, String title);
     boolean confirm(String message, String title);
+
+    /** Shows an informational message for about {@code seconds}, then auto-closes. Blocks the caller until it closes. */
+    void infoTimed(String message, String title, int seconds);
 }

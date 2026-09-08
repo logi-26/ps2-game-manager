@@ -11,8 +11,6 @@ import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 
 
 public final class AddGameManager {
@@ -57,19 +55,8 @@ public final class AddGameManager {
     public static boolean launchCueToPops(File cueFile) throws IOException, InterruptedException{
         
         // Display a message for 3 seconds to inform the user that cue2pops is converting the file
-        JOptionPane opt = new JOptionPane("BIN/CUE to POPStarter VCD conversion tool v2.3.    \nSaving the virtual CD-ROM image. Please wait...    \n\n" + cueFile.getName() + "\n", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{});
-       
-        
-        final JDialog timedDialog = opt.createDialog("CUE2POPS");
-        new Thread(() -> {
-            try{
-                Thread.sleep(3000);
-                timedDialog.dispose();
-            }
-            catch (InterruptedException ex){PopsGameManager.displayErrorMessageDebug(ex.toString());}
-        }).start();
-        timedDialog.setVisible(true);
-        
+        PopsGameManager.showTimedInfoDialog("BIN/CUE to POPStarter VCD conversion tool v2.3.    \nSaving the virtual CD-ROM image. Please wait...    \n\n" + cueFile.getName() + "\n", "CUE2POPS", 3);
+
         boolean generatedVCD = false;
 
         String appFolder = "windows";

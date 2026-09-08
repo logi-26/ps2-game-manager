@@ -7,130 +7,111 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- * Lets the user pick a local image file, rescales it to the right dimensions
- * for the requested ART slot, and writes it into the OPL ART directory.
+ * Rescales a user-picked image file to the right dimensions for the
+ * requested ART slot and writes it into the OPL ART directory. The file
+ * itself is picked by the caller (a JavaFX FileChooser, see
+ * fx.GameImageController.onFile) - this class does no picking or dialogs
+ * of its own.
  *
- * Extracted from PopsGameManager, which is where nearly all of its Swing/AWT
+ * Extracted from PopsGameManager, which is where nearly all of its AWT
  * image-handling surface lived.
  */
 public final class ImageArtProcessor {
 
     private ImageArtProcessor() {}
 
-    // This enables the user to select an image file using a dialog (Image gets copied to OPL directory and re-sized)
-    public static Image manualImageSelection(String coverType, String gameName, String gameID){
+    // This re-sizes and copies the given image file into the OPL ART directory
+    public static void applySelectedImage(File imageFile, String coverType, String gameName, String gameID){
 
-        Image image = null;
+        // Attempts to load, re-size and copy the image file to the OPL ART directory
+        try {
+            Image image = ImageIO.read(imageFile);
 
-        if (!PopsGameManager.isOPLFolderSet()) {JOptionPane.showMessageDialog(null, "OPL directory is not set.");}
-        else {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setCurrentDirectory(new File(PopsGameManager.getOPLFolder()));
-            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setDialogTitle("Select Image File");
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("IMAGE FILES", "PNG", "JPG");
-            chooser.setFileFilter(filter);
-            chooser.showOpenDialog(null);
-            File imageFile = chooser.getSelectedFile();
+            // Re-scale the image (Different scales depending on the image)
+            BufferedImage scaledImage = null;
+            switch (coverType) {
+                case "_ICO":
+                    scaledImage = scaleImage(image, 64, 64);                                                      // Disc image
+                    break;
+                case "_BG":
+                    scaledImage = scaleImage(image, 640, 480);                                                    // Background image
+                    break;
+                case "_SCR":
+                case "_SCR2":
+                    scaledImage = scaleImage(image, 250, 188);                                                    // Screenshot images
+                    break;
+                case "_COV":
+                    if (PopsGameManager.getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 front cover image
+                    else if (PopsGameManager.getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 140, 200);}      // PS2 front cover image
+                    break;
+                    case "_COV2":
+                    if (PopsGameManager.getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 rear cover image
+                    else if (PopsGameManager.getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 242, 344);}      // PS2 rear cover image
+                    break;
+                case "_LAB":
+                case "_LGO":
+                    // Spine label / logo: no single canonical size, and logos routinely
+                    // rely on transparency - keep the source image's own dimensions and
+                    // alpha rather than forcing it through scaleImage()'s opaque RGB path.
+                    // ImageIO.read() hands back a BufferedImage; fall back to a scaled copy
+                    // only if that ever isn't the case, so the write below never gets null.
+                    scaledImage = (image instanceof BufferedImage) ? (BufferedImage) image : scaleImage(image, 256, 256);
+                    break;
+                default:
+                    break;
+            }
 
-            // Attempts to load, re-size and copy the image file to the OPL ART directory
-            try {
-                if (imageFile != null){
+            // Get the file extension for the image file
+            String imageExtension = null;
+            int i = imageFile.getPath().lastIndexOf('.');
+            if (i > 0) {imageExtension = imageFile.getPath().substring(i+1);}
 
-                    image = ImageIO.read(imageFile);
+            // Copy the re-scaled image file to the OPL ART directory
+            if (imageExtension != null) {
 
-                    // Re-scale the image (Different scales depending on the image)
-                    BufferedImage scaledImage = null;
-                    switch (coverType) {
-                        case "_ICO":
-                            scaledImage = scaleImage(image, 64, 64);                                                      // Disc image
-                            break;
-                        case "_BG":
-                            scaledImage = scaleImage(image, 640, 480);                                                    // Background image
-                            break;
-                        case "_SCR":
-                        case "_SCR2":
-                            scaledImage = scaleImage(image, 250, 188);                                                    // Screenshot images
-                            break;
-                        case "_COV":
-                            if (PopsGameManager.getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 front cover image
-                            else if (PopsGameManager.getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 140, 200);}      // PS2 front cover image
-                            break;
-                            case "_COV2":
-                            if (PopsGameManager.getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 rear cover image
-                            else if (PopsGameManager.getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 242, 344);}      // PS2 rear cover image
-                            break;
-                        case "_LAB":
-                        case "_LGO":
-                            // Spine label / logo: no single canonical size, and logos routinely
-                            // rely on transparency - keep the source image's own dimensions and
-                            // alpha rather than forcing it through scaleImage()'s opaque RGB path.
-                            // ImageIO.read() hands back a BufferedImage; fall back to a scaled copy
-                            // only if that ever isn't the case, so the write below never gets null.
-                            scaledImage = (image instanceof BufferedImage) ? (BufferedImage) image : scaleImage(image, 256, 256);
-                            break;
-                        default:
-                            break;
+                if (PopsGameManager.getCurrentConsole().equals("PS1")){
+
+                    if (imageExtension.equals("png")) {
+
+                        // If a jpg file with the same name already exists in the directory, delete it
+                        File jpgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".jpg");
+                        if(jpgFile.exists() && !jpgFile.isDirectory()) {jpgFile.delete();}
+
+                        ImageIO.write(scaledImage, "png",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".png"));
                     }
+                    else if (imageExtension.equals("jpg")) {
 
-                    // Get the file extension for the image file
-                    String imageExtension = null;
-                    int i = imageFile.getPath().lastIndexOf('.');
-                    if (i > 0) {imageExtension = imageFile.getPath().substring(i+1);}
+                        // If a png file with the same name already exists in the directory, delete it
+                        File pngFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".png");
+                        if(pngFile.exists() && !pngFile.isDirectory()) {pngFile.delete();}
 
-                    // Copy the re-scaled image file to the OPL ART directory
-                    if (imageExtension != null) {
+                        ImageIO.write(scaledImage, "jpg",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".jpg"));
+                    }
+                }
+                else if (PopsGameManager.getCurrentConsole().equals("PS2")){
 
-                        if (PopsGameManager.getCurrentConsole().equals("PS1")){
+                    if (imageExtension.equals("png")) {
 
-                            if (imageExtension.equals("png")) {
+                        // If a jpg file with the same name already exists in the directory, delete it
+                        File jpgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".jpg");
+                        if(jpgFile.exists() && !jpgFile.isDirectory()) {jpgFile.delete();}
 
-                                // If a jpg file with the same name already exists in the directory, delete it
-                                File jpgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".jpg");
-                                if(jpgFile.exists() && !jpgFile.isDirectory()) {jpgFile.delete();}
+                        ImageIO.write(scaledImage, "png",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".png"));
+                    }
+                    else if (imageExtension.equals("jpg")) {
 
-                                ImageIO.write(scaledImage, "png",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".png"));
-                            }
-                            else if (imageExtension.equals("jpg")) {
+                        // If a png file with the same name already exists in the directory, delete it
+                        File pngFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".png");
+                        if(pngFile.exists() && !pngFile.isDirectory()) {pngFile.delete();}
 
-                                // If a png file with the same name already exists in the directory, delete it
-                                File pngFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".png");
-                                if(pngFile.exists() && !pngFile.isDirectory()) {pngFile.delete();}
-
-                                ImageIO.write(scaledImage, "jpg",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".jpg"));
-                            }
-                        }
-                        else if (PopsGameManager.getCurrentConsole().equals("PS2")){
-
-                            if (imageExtension.equals("png")) {
-
-                                // If a jpg file with the same name already exists in the directory, delete it
-                                File jpgFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".jpg");
-                                if(jpgFile.exists() && !jpgFile.isDirectory()) {jpgFile.delete();}
-
-                                ImageIO.write(scaledImage, "png",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".png"));
-                            }
-                            else if (imageExtension.equals("jpg")) {
-
-                                // If a png file with the same name already exists in the directory, delete it
-                                File pngFile = new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".png");
-                                if(pngFile.exists() && !pngFile.isDirectory()) {pngFile.delete();}
-
-                                ImageIO.write(scaledImage, "jpg",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".jpg"));
-                            }
-                        }
+                        ImageIO.write(scaledImage, "jpg",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverType + ".jpg"));
                     }
                 }
             }
-            catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error processing the image file!\n\n" + ex.toString());}
         }
-        return image;
+        catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error processing the image file!\n\n" + ex.toString());}
     }
 
     // This scales an image file
