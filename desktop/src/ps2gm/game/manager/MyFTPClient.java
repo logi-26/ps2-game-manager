@@ -321,8 +321,9 @@ public class MyFTPClient {
                                     PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 
                                     Game selectedGame = new Game(gameName,gameID,"PATH HERE!!",PopsGameManager.bytesToHuman(rawFileSize),rawFileSize);
-                                    selectedGame.setCompatibleHDD(compat.usb());
-                                    selectedGame.setCompatibleUSB(compat.hdd());
+                                    // BUG FIX: these were swapped - see GameListPersistence.readGameListFile.
+                                    selectedGame.setCompatibleHDD(compat.hdd());
+                                    selectedGame.setCompatibleUSB(compat.usb());
                                     selectedGame.setCompatibleSMB(compat.smb());
         
                                     gameList.add(selectedGame);
