@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
 
 
 public class GenerateSpineART {
@@ -75,7 +74,7 @@ public class GenerateSpineART {
                 } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
             });  
             
-            JOptionPane.showMessageDialog(null,"All of the PS2 spine ART has been generated."," Spine ART Generated",JOptionPane.PLAIN_MESSAGE);
+            PopsGameManager.showInfoDialog("All of the PS2 spine ART has been generated."," Spine ART Generated");
         } 
     }
     
@@ -150,7 +149,7 @@ public class GenerateSpineART {
                 }
             });  
             
-            JOptionPane.showMessageDialog(null,"All of the PS1 spine ART has been generated."," Spine ART Generated",JOptionPane.PLAIN_MESSAGE);
+            PopsGameManager.showInfoDialog("All of the PS1 spine ART has been generated."," Spine ART Generated");
         } 
     }
     

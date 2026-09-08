@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -242,12 +241,12 @@ public class MyFTPClient {
             try {
                 ftpClient.connect(consoleIP, 21);
 
-                if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {JOptionPane.showMessageDialog(null, "Unable to establish a connection with the FTP server!", " FTP Connection Error!", JOptionPane.ERROR_MESSAGE);}
+                if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {PopsGameManager.showErrorDialog("Unable to establish a connection with the FTP server!", " FTP Connection Error!");}
                 else {connectionEstablished = true;}
 
-                if (!ftpClient.login("anonymous", "")) {JOptionPane.showMessageDialog(null, "Unable to login to FTP server!", " FTP Login Error!", JOptionPane.ERROR_MESSAGE);} 
-            } 
-            catch (IOException ex) {JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage() + ".", " FTP Connection Error!", JOptionPane.ERROR_MESSAGE);}  
+                if (!ftpClient.login("anonymous", "")) {PopsGameManager.showErrorDialog("Unable to login to FTP server!", " FTP Login Error!");}
+            }
+            catch (IOException ex) {PopsGameManager.showErrorDialog("Error: " + ex.getMessage() + ".", " FTP Connection Error!");}
         }
         
         return connectionEstablished;

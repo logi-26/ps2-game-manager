@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.JOptionPane;
 
 /**
  * Builds and writes conf_apps.cfg (the config-ELM list OPL reads to find each
@@ -95,8 +94,7 @@ public final class ConfigElmWriter {
         // If HDD mode, ask user if they want to upload the conf_apps file to the console via FTP
         if (PopsGameManager.getCurrentMode().equals("HDD")){
 
-            int dialogResult = JOptionPane.showConfirmDialog (null, "Do you want to upload conf_apps.cfg to your console?\n\nFTP Server must be running on your console in order to perform this task!"," Connect to PlayStation 2",JOptionPane.YES_NO_OPTION);
-            if(dialogResult == JOptionPane.YES_OPTION){
+            if (PopsGameManager.confirmDialog("Do you want to upload conf_apps.cfg to your console?\n\nFTP Server must be running on your console in order to perform this task!"," Connect to PlayStation 2")){
 
                 // FTP to console and upload the conf_apps.cfg file to the +OPL directory
                 MyFTPClient myFTP = new MyFTPClient();

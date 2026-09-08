@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  * Fetches the PS2 game list from the console via hdl_dump's TOC command.
@@ -29,7 +28,7 @@ final class HdlDumpToc {
 
         // Create a local directory to store the file for transfering to the console (If the local directory doesnt already exist)
         if (!HdlLocalDirectoryBootstrap.createLocalHDLDirectory("hdd")) {
-            JOptionPane.showMessageDialog(null, "There was a problem creating the local hdd folder in the same directory as this Jar file.", " Unable to Create Directory!", JOptionPane.WARNING_MESSAGE);
+            PopsGameManager.showWarningDialog("There was a problem creating the local hdd folder in the same directory as this Jar file.", " Unable to Create Directory!");
         }
 
         // Ensure that the HDL_Dump executable/binary is available before trying to launch it
@@ -60,7 +59,7 @@ final class HdlDumpToc {
             process.waitFor();
 
             if (errorConnecting) {
-                JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);
+                PopsGameManager.showErrorDialog("HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!");
             }
         }
 

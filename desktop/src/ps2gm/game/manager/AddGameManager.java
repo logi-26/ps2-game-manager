@@ -49,7 +49,7 @@ public final class AddGameManager {
             } 
             catch (FileNotFoundException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
         }
-        else {JOptionPane.showMessageDialog(null,"Could not locate POPSTARTER.ELF in the POPSTARTER directory."," Missing POPSTARTER.ELF!",JOptionPane.ERROR_MESSAGE);}
+        else {PopsGameManager.showErrorDialog("Could not locate POPSTARTER.ELF in the POPSTARTER directory."," Missing POPSTARTER.ELF!");}
     }
     
     
@@ -109,7 +109,7 @@ public final class AddGameManager {
         
         // If there was an error with cue2pops this displays a message to the user
         if (processErrorOutput.toString().trim().contains("Error")){
-            JOptionPane.showMessageDialog(null,"" + processErrorOutput.toString().trim()," CUE2POPS Error!",JOptionPane.ERROR_MESSAGE);
+            PopsGameManager.showErrorDialog("" + processErrorOutput.toString().trim()," CUE2POPS Error!");
         }
         
         // File name and path for the newly created .VCD file

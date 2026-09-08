@@ -41,6 +41,7 @@ import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
 import ps2gm.game.manager.BackendClient;
 import ps2gm.game.manager.DeviceCompatFormatter;
+import ps2gm.game.manager.DialogCallback;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameConfigFileManager;
 import ps2gm.game.manager.GameIdPositionSwitcher;
@@ -155,6 +156,12 @@ public class MainController implements MyListener {
     void init(Stage stage) {
         this.stage = stage;
         PopsGameManager.addListener(this);
+        PopsGameManager.setDialogCallback(new DialogCallback() {
+            @Override public void info(String message, String title) { runOnFx(() -> MainController.this.info(message, title)); }
+            @Override public void warn(String message, String title) { runOnFx(() -> MainController.this.warn(message, title)); }
+            @Override public void error(String message, String title) { runOnFx(() -> MainController.this.error(message, title)); }
+            @Override public boolean confirm(String message, String title) { return confirmFx(message, title); }
+        });
         suppressSelectionEvents = true;
         cmiPs1Compat.setSelected(PopsGameManager.getGameCompatabilityPS1());
         cmiPs2UlHighlight.setSelected(PopsGameManager.getSplitGameDisplayPS2());
@@ -1192,6 +1199,12 @@ public class MainController implements MyListener {
         a.setTitle(title);
         if (stage != null) { a.initOwner(stage); }
         return a.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+    }
+
+    // Runs a message-dialog action on the FX thread, without blocking the caller
+    // (unlike confirmFx below, nothing needs the dialog's dismissal to continue).
+    private static void runOnFx(Runnable action) {
+        if (Platform.isFxApplicationThread()) { action.run(); } else { Platform.runLater(action); }
     }
 
     // confirm() usable from a background thread (blocks it on an FX-thread dialog)

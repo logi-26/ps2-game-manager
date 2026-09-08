@@ -22,6 +22,7 @@ public class PopsGameManager {
     private static String userOSArchitecture;
 
     private static final List<MyListener> LISTENERS = new ArrayList<>();
+    private static DialogCallback dialogCallback;
     private static boolean firstLaunch = false;
     private static String ps2IPAddress = "192.168.0.01";
     private static String oplFolder;
@@ -61,7 +62,13 @@ public class PopsGameManager {
     
     
     public static void addListener(MyListener listener) {LISTENERS.add(listener);}                                          // Adds callback LISTENERS to the list
-    
+
+    public static void setDialogCallback(DialogCallback callback) {dialogCallback = callback;}                              // Registers the UI layer's dialog callback (see DialogCallback)
+    public static void showInfoDialog(String message, String title) {if (dialogCallback != null) {dialogCallback.info(message, title);}}
+    public static void showWarningDialog(String message, String title) {if (dialogCallback != null) {dialogCallback.warn(message, title);}}
+    public static void showErrorDialog(String message, String title) {if (dialogCallback != null) {dialogCallback.error(message, title);}}
+    public static boolean confirmDialog(String message, String title) {return dialogCallback != null && dialogCallback.confirm(message, title);}
+
     public static void setDebugMode(boolean debugMode) {DebugMode = debugMode;}                                             // Set debug mode on or off (if debug on, most of the exception messages will be printed)
     public static void setCurrentConsole(String console){currentConsole = console;}                                         // This sets the current console and saves it to the settings.xml file
     public static void setFisrtLaunch(boolean first) {firstLaunch = first;}                                                 // This sets the first launch boolean value

@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  * Uploads PS2 games to the console via hdl_dump (single or batch), tracking
@@ -119,7 +118,7 @@ public class HDLDumpManager {
                 while ((line = stdError.readLine()) != null) {errorConnecting = true;}
                 closeQuietly(stdInput, stdError);
 
-                if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);
+                if (errorConnecting) PopsGameManager.showErrorDialog("HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!");
 
             // END OF LOOP!!
             }
@@ -199,7 +198,7 @@ public class HDLDumpManager {
             while ((line = stdError.readLine()) != null) {errorConnecting = true;}
             closeQuietly(stdInput, stdError);
 
-            if (errorConnecting) JOptionPane.showMessageDialog(null, "HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!", JOptionPane.ERROR_MESSAGE);
+            if (errorConnecting) PopsGameManager.showErrorDialog("HDL_Dump reported an error! \n\nPlease ensure that you have HDL_Server running on your PlayStation 2 console. \nAlso make sure that you have enetered the correct IP address.", " HDL_Dump Error!");
         }
         catch (Exception ex) {
             PopsGameManager.displayErrorMessageDebug(ex.toString());

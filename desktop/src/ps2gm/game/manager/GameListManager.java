@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 public class GameListManager {
 
@@ -326,7 +325,7 @@ public class GameListManager {
             if (badGameListPS1.size() > 0) {
                 StringBuilder badGames = new StringBuilder();
                 badGameListPS1.forEach((game) -> {badGames.append(game).append("\n");});
-                JOptionPane.showMessageDialog(null,"The system was unable to detect the unique game ID for the following PS1 games:\n" + badGames," Unable to Detect Game ID!",JOptionPane.WARNING_MESSAGE);
+                PopsGameManager.showWarningDialog("The system was unable to detect the unique game ID for the following PS1 games:\n" + badGames," Unable to Detect Game ID!");
             }
 
             totalGameSizeRawPS1 = totalSize;
@@ -345,8 +344,7 @@ public class GameListManager {
     private static void checkInvalidGamesPS1(){
 
         // Ask the user if they want to try and rename the game files
-        int dialogResult = JOptionPane.showConfirmDialog (null, "Some of your PS1 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names",JOptionPane.YES_NO_OPTION);
-        if(dialogResult == JOptionPane.YES_OPTION){
+        if (PopsGameManager.confirmDialog("Some of your PS1 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names")){
             // Ported to JavaFX (Swing GameRenamingScreenPS1 kept until the migration lands).
             ps2gm.game.manager.fx.GameRenamingScreen.openPS1(invalidGameListPS1);
         }
@@ -421,7 +419,7 @@ public class GameListManager {
         if (badGameListPS2.size() > 0) {
             StringBuilder badGames = new StringBuilder();
             badGameListPS2.forEach((game) -> {badGames.append(game).append("\n");});
-            JOptionPane.showMessageDialog(null,"The system was unable to detect the unique game ID for the following PS2 games:\n" + badGames," Unable to Detect Game ID!",JOptionPane.WARNING_MESSAGE);
+            PopsGameManager.showWarningDialog("The system was unable to detect the unique game ID for the following PS2 games:\n" + badGames," Unable to Detect Game ID!");
         }
 
         // If any of the games are not correctly named with the game ID, call the invalid games function
@@ -451,8 +449,7 @@ public class GameListManager {
     private static void checkInvalidGamesPS2(long totalSize){
 
         // Ask the user if they want to try and rename the game files
-        int dialogResult = JOptionPane.showConfirmDialog (null, "Some of your PS2 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names",JOptionPane.YES_NO_OPTION);
-        if(dialogResult == JOptionPane.YES_OPTION){
+        if (PopsGameManager.confirmDialog("Some of your PS2 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names")){
             // Ported to JavaFX (Swing GameRenamingScreenPS2 kept until the migration lands).
             ps2gm.game.manager.fx.GameRenamingScreen.openPS2(invalidGameListPS2);
         }

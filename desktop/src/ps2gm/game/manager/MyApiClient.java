@@ -17,7 +17,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
-import javax.swing.JOptionPane;
 
 /**
  * Talks to the HTTP API ({@code api/}). See {@link BackendClient} for the
@@ -73,8 +72,7 @@ public class MyApiClient implements BackendClient {
         File jarFile = new File(filePath);
         if (jarFile.exists() && jarFile.length() == expectedLength) {
             long jarFileSize = jarFile.length();
-            int dialogResult = JOptionPane.showConfirmDialog(null, "The update was successfully downloaded!  (size = " + PopsGameManager.bytesToHuman(jarFileSize) + "). \n\nDo you want to launch the new version now?", " Update Downloaded", JOptionPane.YES_NO_OPTION);
-            if (dialogResult == JOptionPane.YES_OPTION) {
+            if (PopsGameManager.confirmDialog("The update was successfully downloaded!  (size = " + PopsGameManager.bytesToHuman(jarFileSize) + "). \n\nDo you want to launch the new version now?", " Update Downloaded")) {
                 int endIndex = filePath.lastIndexOf(File.separator);
                 if (endIndex != -1) {
                     String jarPath = filePath.substring(0, endIndex + 1);
@@ -90,7 +88,7 @@ public class MyApiClient implements BackendClient {
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(null, "There was a problem downloading the update, please try again later!.", " Update Failed!", JOptionPane.ERROR_MESSAGE);
+            PopsGameManager.showErrorDialog("There was a problem downloading the update, please try again later!.", " Update Failed!");
         }
     }
 
@@ -157,7 +155,7 @@ public class MyApiClient implements BackendClient {
             Map<String, Object> obj = getJson("/games/" + gameID + "/artwork/" + kind, DEFAULT_TIMEOUT);
             return obj == null ? 0 : MiniJson.intVal(obj, "count", 0);
         } catch (IOException | InterruptedException ex) {
-            if (!batchMode) JOptionPane.showMessageDialog(null, "The server does not seem to be responding at the moment, please try again later.", " Server Not Responding!", JOptionPane.WARNING_MESSAGE);
+            if (!batchMode) PopsGameManager.showWarningDialog("The server does not seem to be responding at the moment, please try again later.", " Server Not Responding!");
             return 0;
         }
     }
@@ -173,7 +171,7 @@ public class MyApiClient implements BackendClient {
             if (resp.statusCode() == 200) {
                 Files.write(Paths.get(localConfigPath), resp.body());
             } else if (!batchMode) {
-                JOptionPane.showMessageDialog(null, "There is no config file available in the database for this game.", " No CFG Available!", JOptionPane.WARNING_MESSAGE);
+                PopsGameManager.showWarningDialog("There is no config file available in the database for this game.", " No CFG Available!");
                 return;
             } else {
                 return;
@@ -224,7 +222,7 @@ public class MyApiClient implements BackendClient {
             HttpResponse<byte[]> resp = get("/games/" + gameID + "/vmc/" + vmcId, BodyHandlers.ofByteArray(), DEFAULT_TIMEOUT);
             if (resp.statusCode() == 200 && resp.body().length > 0) {
                 Files.write(Paths.get(localVMCPath), resp.body());
-                JOptionPane.showMessageDialog(null, "The VMC file has been successfully downloaded.", " VMC File Downloaded", JOptionPane.PLAIN_MESSAGE);
+                PopsGameManager.showInfoDialog("The VMC file has been successfully downloaded.", " VMC File Downloaded");
             }
         } catch (IOException | InterruptedException ex) {
             PopsGameManager.displayErrorMessageDebug(ex.toString());
