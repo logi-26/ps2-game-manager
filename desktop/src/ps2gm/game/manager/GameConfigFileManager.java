@@ -206,7 +206,7 @@ public class GameConfigFileManager {
     // The per-game .cfg path, PS1 and PS2 naming conventions differ (see GameArtFileManager for
     // the equivalent ART-naming split) - factored out since every method above needed it.
     private static File resolveGameConfigFile(String gameID, String gameName){
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             return new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg");
         }
         return new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg");

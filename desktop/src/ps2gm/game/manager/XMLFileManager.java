@@ -64,12 +64,12 @@ public class XMLFileManager {
 
         // Currentconsole element
         Element currentConsole = doc.createElement("currentconsole");
-        currentConsole.appendChild(doc.createTextNode(PopsGameManager.getCurrentConsole()));
+        currentConsole.appendChild(doc.createTextNode(PopsGameManager.getCurrentConsole().name()));
         rootElement.appendChild(currentConsole);
 
         // Currentmode element
         Element currentMode = doc.createElement("currentmode");
-        currentMode.appendChild(doc.createTextNode(PopsGameManager.getCurrentMode()));
+        currentMode.appendChild(doc.createTextNode(PopsGameManager.getCurrentMode().name()));
         rootElement.appendChild(currentMode);
 
         // Useemulator ps2 element
@@ -186,8 +186,8 @@ public class XMLFileManager {
                                     // General settings
                                     PopsGameManager.setPS2IP(eElement.getElementsByTagName("consoleaddress").item(0).getTextContent());
                                     PopsGameManager.setOPLFolder(eElement.getElementsByTagName("oplfolder").item(0).getTextContent());
-                                    PopsGameManager.setCurrentMode(eElement.getElementsByTagName("currentmode").item(0).getTextContent());
-                                    PopsGameManager.setCurrentConsole(eElement.getElementsByTagName("currentconsole").item(0).getTextContent());
+                                    PopsGameManager.setCurrentMode(parseMode(eElement.getElementsByTagName("currentmode").item(0).getTextContent()));
+                                    PopsGameManager.setCurrentConsole(parseConsole(eElement.getElementsByTagName("currentconsole").item(0).getTextContent()));
 
                                     // PS2 emulator settings
                                     if (eElement.getElementsByTagName("useemulatorps2").item(0).getTextContent().equals("false")) PopsGameManager.setEmulatorInUsePS2(false);
@@ -248,6 +248,20 @@ public class XMLFileManager {
     }
     
     
+    // Parses a <currentconsole> text value, treating missing/blank/unrecognized text as unset
+    // rather than throwing - the file may be from an older build or hand-edited.
+    private static Console parseConsole(String text) {
+        try {return (text == null || text.isBlank()) ? null : Console.valueOf(text.trim());}
+        catch (IllegalArgumentException ex) {return null;}
+    }
+
+    // Parses a <currentmode> text value - see parseConsole above.
+    private static Mode parseMode(String text) {
+        try {return (text == null || text.isBlank()) ? null : Mode.valueOf(text.trim());}
+        catch (IllegalArgumentException ex) {return null;}
+    }
+
+
     // Encrypt the setting .xml file
     private static void encryptSettingsFile(){
         try {

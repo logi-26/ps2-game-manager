@@ -25,7 +25,7 @@ public final class GameArtFileManager {
     // The base OPL ART filename for a game's art of the given kind, without extension.
     // e.g. PS1: "<prefix><name>-<id>.ELF_COV", PS2: "<id>_COV"
     public static String baseName(Game game, String suffix) {
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             return PopsGameManager.getFilePrefix() + game.getGameName() + "-" + game.getGameID() + ".ELF" + suffix;
         }
         return game.getGameID() + suffix;

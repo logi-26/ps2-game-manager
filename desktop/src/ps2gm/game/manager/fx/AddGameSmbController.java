@@ -16,8 +16,10 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
+import ps2gm.game.manager.Mode;
 import ps2gm.game.manager.PopsGameManager;
 
 /**
@@ -50,7 +52,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
     @Override
     public void stageReady(Stage stage) {
         this.stage = stage;
-        stage.setTitle("PS1".equals(PopsGameManager.getCurrentConsole()) ? " Add PlayStation Game" : " Add PlayStation 2 Game");
+        stage.setTitle(PopsGameManager.getCurrentConsole() == Console.PS1 ? " Add PlayStation Game" : " Add PlayStation 2 Game");
         if (selectedFile != null) { outerPane.setText(selectedFile.getName()); }
         // The Swing X-close just told the user to wait; do the same.
         stage.setOnCloseRequest(e -> {
@@ -58,7 +60,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
             alert(Alert.AlertType.WARNING, "Please wait for the process to complete, this window should close automatically.", " Performing Operation!");
         });
 
-        int playstation = "PS1".equals(PopsGameManager.getCurrentConsole()) ? 1 : 2;
+        int playstation = PopsGameManager.getCurrentConsole() == Console.PS1 ? 1 : 2;
         Thread t = new Thread(() -> {
             try {
                 if (!batchMode) { addGame(playstation); } else { batchAddGame(playstation); }
@@ -130,9 +132,9 @@ public class AddGameSmbController implements FxScreens.StageAware {
         String newFileName = AddGameManager.truncate(isoFile.getName(), isoFile.getName().length() - 3);
         String newFileFullName = newFileName + fileExtension.toLowerCase();
 
-        if ("SMB".equals(PopsGameManager.getCurrentMode())) {
+        if (PopsGameManager.getCurrentMode() == Mode.SMB) {
             copyThenRefresh(true, isoFile.getAbsolutePath(), PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator + newFileFullName, newFileName, false);
-        } else if ("HDD_USB".equals(PopsGameManager.getCurrentMode())) {
+        } else if (PopsGameManager.getCurrentMode() == Mode.HDD_USB) {
             // USB mode: a straight move, no progress copy (matches the Swing shortcut).
             if (fileExtension.equalsIgnoreCase("zso")) {
                 isoFile.renameTo(new File(PopsGameManager.getOPLFolder() + File.separator + newFileFullName));
@@ -226,7 +228,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
         try {
             String newFileName = AddGameManager.truncate(new File(inPath).getName(), new File(inPath).getName().length() - 3);
             String gameID;
-            if ("PS1".equals(PopsGameManager.getCurrentConsole())) { gameID = GameListManager.getPS1GameIDFromVCD(new File(inPath)); }
+            if (PopsGameManager.getCurrentConsole() == Console.PS1) { gameID = GameListManager.getPS1GameIDFromVCD(new File(inPath)); }
             else { gameID = GameListManager.getPS2GameIDFromArchive(inPath); }
 
             if (gameID == null) {
@@ -237,7 +239,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
 
             setGameName(" " + selectedFile.getName().substring(0, selectedFile.getName().length() - 4) + " - (" + gameID + ")");
 
-            if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+            if (PopsGameManager.getCurrentConsole() == Console.PS1) {
                 if (!outPath.contains(gameID)) { outPath = outPath.substring(0, outPath.length() - 4) + "-" + gameID + ".VCD"; }
             } else {
                 if (!outPath.contains(gameID)) {
@@ -248,7 +250,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
             File originalPath = new File(inPath);
             copyWithProgress(originalPath, new File(outPath));
 
-            if ("PS1".equals(PopsGameManager.getCurrentConsole()) && new File(outPath).isFile()) {
+            if (PopsGameManager.getCurrentConsole() == Console.PS1 && new File(outPath).isFile()) {
                 AddGameManager.generateElf(PopsGameManager.getFilePrefix() + newFileName.substring(0, newFileName.length() - 1) + "-" + gameID + ".ELF",
                         PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator);
             }
@@ -268,7 +270,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
                 String newFileFullName;
                 String inPath;
                 String outPath;
-                if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+                if (PopsGameManager.getCurrentConsole() == Console.PS1) {
                     newFileName = AddGameManager.truncate(sel.getName(), sel.getName().length() - 3);
                     newFileFullName = newFileName + "VCD";
                     inPath = AddGameManager.truncate(sel.toString(), sel.toString().length() - newFileFullName.length()) + newFileFullName;
@@ -281,7 +283,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
                 }
 
                 String gameID;
-                if ("PS1".equals(PopsGameManager.getCurrentConsole())) { gameID = GameListManager.getPS1GameIDFromVCD(new File(inPath)); }
+                if (PopsGameManager.getCurrentConsole() == Console.PS1) { gameID = GameListManager.getPS1GameIDFromVCD(new File(inPath)); }
                 else { gameID = GameListManager.getPS2GameIDFromArchive(inPath); }
 
                 if (gameID == null) {
@@ -291,13 +293,13 @@ public class AddGameSmbController implements FxScreens.StageAware {
 
                 setGameName(" " + sel.getName().substring(0, sel.getName().length() - 4) + " - (" + gameID + ")");
 
-                if ("PS1".equals(PopsGameManager.getCurrentConsole())) { outPath = outPath.substring(0, outPath.length() - 4) + "-" + gameID + ".VCD"; }
+                if (PopsGameManager.getCurrentConsole() == Console.PS1) { outPath = outPath.substring(0, outPath.length() - 4) + "-" + gameID + ".VCD"; }
                 else { outPath = outPath.substring(0, outPath.lastIndexOf(File.separator) + 1) + gameID + "." + newFileFullName; }
 
                 File originalPath = new File(inPath);
                 copyWithProgress(originalPath, new File(outPath));
 
-                if ("PS1".equals(PopsGameManager.getCurrentConsole()) && new File(outPath).isFile()) {
+                if (PopsGameManager.getCurrentConsole() == Console.PS1 && new File(outPath).isFile()) {
                     AddGameManager.generateElf(PopsGameManager.getFilePrefix() + newFileName.substring(0, newFileName.length() - 1) + "-" + gameID + ".ELF",
                             PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator);
                 }
@@ -364,7 +366,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
     private void finish() {
         if (finished) { return; }
         finished = true;
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             GameListManager.createGameListsPS1();
             GameListManager.writeConfigELM();
         } else {

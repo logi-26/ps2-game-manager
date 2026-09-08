@@ -27,14 +27,14 @@ public final class RemoteFileCleaner {
     /** Deletes every file in {@code directory}, local and/or remote depending on the current mode. */
     public static void deleteAllFiles(String directory) {
 
-        if (PopsGameManager.getCurrentMode().equals("SMB") || PopsGameManager.getCurrentMode().equals("HDD_USB")) {
+        if (PopsGameManager.getCurrentMode() == Mode.SMB || PopsGameManager.getCurrentMode() == Mode.HDD_USB) {
 
             File selectedFolder = new File(PopsGameManager.getOPLFolder() + File.separator + directory);
             if (selectedFolder.exists() && selectedFolder.isDirectory()) {
                 deleteAllLocalFiles(selectedFolder);
                 PopsGameManager.callbackToUpdateGUIGameList(null, -1);
             }
-        } else if (PopsGameManager.getCurrentMode().equals("HDD")) {
+        } else if (PopsGameManager.getCurrentMode() == Mode.HDD) {
 
             MyFTPClient myFTP = new MyFTPClient();
 
@@ -91,13 +91,13 @@ public final class RemoteFileCleaner {
         GameListManager.getGameListPS1().forEach((game) -> allGameList.add(game.getGameID()));
         GameListManager.getGameListPS2().forEach((game) -> allGameList.add(game.getGameID()));
 
-        if (PopsGameManager.getCurrentMode().equals("SMB") || PopsGameManager.getCurrentMode().equals("HDD_USB")) {
+        if (PopsGameManager.getCurrentMode() == Mode.SMB || PopsGameManager.getCurrentMode() == Mode.HDD_USB) {
 
             File selectedFolder = new File(PopsGameManager.getOPLFolder() + File.separator + directory);
             if (selectedFolder.exists() && selectedFolder.isDirectory()) {
                 deleteUnreferencedLocalFiles(selectedFolder, allGameList);
             }
-        } else if (PopsGameManager.getCurrentMode().equals("HDD")) {
+        } else if (PopsGameManager.getCurrentMode() == Mode.HDD) {
 
             MyFTPClient myFTP = new MyFTPClient();
 

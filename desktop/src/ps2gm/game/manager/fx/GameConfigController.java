@@ -28,6 +28,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameConfigFileManager;
 import ps2gm.game.manager.GameListManager;
@@ -230,7 +231,7 @@ public class GameConfigController implements FxScreens.StageAware {
 
     /** Called from the façade before the window is shown. */
     void init(int gameIndex) {
-        List<Game> src = "PS1".equals(PopsGameManager.getCurrentConsole())
+        List<Game> src = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         if (src != null) { gameList.addAll(src); }
         Game g = gameList.get(Math.max(0, gameIndex));
@@ -510,7 +511,7 @@ public class GameConfigController implements FxScreens.StageAware {
 
     private boolean memoryCardExists(String name) {
         String loc;
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             loc = PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator
                     + gameList.get(currentListIndex).getGameName() + File.separator + name + ".bin";
         } else {
@@ -521,7 +522,7 @@ public class GameConfigController implements FxScreens.StageAware {
     }
 
     private void generateVMC(String vmcName) {
-        if (!"PS2".equals(PopsGameManager.getCurrentConsole())) { return; }
+        if (PopsGameManager.getCurrentConsole() != Console.PS2) { return; }
         File vmcFolder = new File(PopsGameManager.getOPLFolder() + File.separator + "VMC");
         if (!vmcFolder.isDirectory()) { vmcFolder.mkdir(); }
 
@@ -754,7 +755,7 @@ public class GameConfigController implements FxScreens.StageAware {
 
     @FXML
     private void onVmc0() {
-        if (!"PS2".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() != Console.PS2) {
             vmc0Check.setSelected(false);
             alert(Alert.AlertType.ERROR, "This application cannot yet generate PS1 Virtual Memory Cards.", " Unable to Upload PS1 Cheat File!");
             return;
@@ -770,7 +771,7 @@ public class GameConfigController implements FxScreens.StageAware {
 
     @FXML
     private void onVmc1() {
-        if (!"PS2".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() != Console.PS2) {
             vmc1Check.setSelected(false);
             alert(Alert.AlertType.ERROR, "This application cannot yet generate PS1 Virtual Memory Cards.", " Unable to Upload PS1 Cheat File!");
             return;

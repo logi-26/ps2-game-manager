@@ -232,11 +232,11 @@ public class GameListManager {
     private static void createGameListPS1() throws IOException {
 
         switch (PopsGameManager.getCurrentMode()) {
-            case "HDD_USB":
-            case "SMB":
+            case HDD_USB:
+            case SMB:
                 createPS1ListFromSMB();
                 break;
-            case "HDD":
+            case HDD:
                 createGameListFromFile("PS1", GameListPersistence.gameListFilePS1());
                 break;
             default:
@@ -355,14 +355,14 @@ public class GameListManager {
     private static void createGameListPS2(boolean checkBadGames) throws IOException {
 
         switch (PopsGameManager.getCurrentMode()) {
-            case "HDD_USB":
+            case HDD_USB:
                 createPS2ListFromSMB(checkBadGames);
                 break;
-            case "SMB":
+            case SMB:
                 createPS2ListFromSMB(checkBadGames);
                 readPS2GamesFromULCFG();
                 break;
-            case "HDD":
+            case HDD:
                 createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));
                 break;
             default:

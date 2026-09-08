@@ -14,9 +14,11 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.HDLDumpManager;
+import ps2gm.game.manager.Mode;
 import ps2gm.game.manager.PopsGameManager;
 import ps2gm.game.manager.XMLFileManager;
 
@@ -38,9 +40,9 @@ public class SetModeController implements FxScreens.StageAware {
     @FXML private Button smbBrowseButton, usbBrowseButton, connectButton, saveButton, cancelButton;
 
     private Stage stage;
-    private String currentlySelectedMode;
+    private Mode currentlySelectedMode;
     private String oplFolder;
-    private String selectedConsole = "PS2";
+    private Console selectedConsole = Console.PS2;
     private List<Game> gameListPS1 = new ArrayList<>();
     private List<Game> gameListPS2 = new ArrayList<>();
 
@@ -57,26 +59,26 @@ public class SetModeController implements FxScreens.StageAware {
     /** Called from the façade before the window is shown. */
     void init() {
         if (PopsGameManager.getFisrtLaunch()) {
-            currentlySelectedMode = "SMB";
-            PopsGameManager.setCurrentConsole("PS2");
+            currentlySelectedMode = Mode.SMB;
+            PopsGameManager.setCurrentConsole(Console.PS2);
             PopsGameManager.setFisrtLaunch(false);
         } else if (currentlySelectedMode == null) {
             currentlySelectedMode = PopsGameManager.getCurrentMode();
         }
 
-        smbRadio.setOnAction(e -> { currentlySelectedMode = "SMB"; applyMode(); });
-        usbRadio.setOnAction(e -> { currentlySelectedMode = "HDD_USB"; applyMode(); });
-        hddRadio.setOnAction(e -> { currentlySelectedMode = "HDD"; applyMode(); });
+        smbRadio.setOnAction(e -> { currentlySelectedMode = Mode.SMB; applyMode(); });
+        usbRadio.setOnAction(e -> { currentlySelectedMode = Mode.HDD_USB; applyMode(); });
+        hddRadio.setOnAction(e -> { currentlySelectedMode = Mode.HDD; applyMode(); });
 
         applyMode();
     }
 
     // Radio-driven section enable/disable + path prefills (mirrors the Swing initialiseGUI switch).
     private void applyMode() {
-        if (currentlySelectedMode == null) { currentlySelectedMode = "SMB"; }
-        boolean smb = "SMB".equals(currentlySelectedMode);
-        boolean usb = "HDD_USB".equals(currentlySelectedMode);
-        boolean hdd = "HDD".equals(currentlySelectedMode);
+        if (currentlySelectedMode == null) { currentlySelectedMode = Mode.SMB; }
+        boolean smb = currentlySelectedMode == Mode.SMB;
+        boolean usb = currentlySelectedMode == Mode.HDD_USB;
+        boolean hdd = currentlySelectedMode == Mode.HDD;
 
         smbRadio.setSelected(smb);
         usbRadio.setSelected(usb);
@@ -98,7 +100,7 @@ public class SetModeController implements FxScreens.StageAware {
 
         boolean oplSet = PopsGameManager.isOPLFolderSet()
                 && PopsGameManager.getCurrentMode() != null
-                && PopsGameManager.getCurrentMode().equals(currentlySelectedMode);
+                && PopsGameManager.getCurrentMode() == currentlySelectedMode;
 
         if (smb) {
             smbPathField.setText(oplSet ? PopsGameManager.getOPLFolder() : "");
@@ -159,7 +161,7 @@ public class SetModeController implements FxScreens.StageAware {
 
         new Thread(() -> {
             if (wantPs2) {
-                selectedConsole = "PS2";
+                selectedConsole = Console.PS2;
                 try {
                     gameListPS2 = new HDLDumpManager().hdlDumpGetTOC(ip);
                     if (gameListPS2 != null) { GameListManager.writeGameListFilePS2(gameListPS2); }
@@ -170,7 +172,7 @@ public class SetModeController implements FxScreens.StageAware {
                 }
             }
             if (wantPs1) {
-                selectedConsole = "PS1";
+                selectedConsole = Console.PS1;
                 gameListPS1 = GameListManager.getGameListFromConsolePS1();
                 if (gameListPS1 != null) { GameListManager.writeGameListFilePS1(gameListPS1); }
             }
@@ -195,22 +197,22 @@ public class SetModeController implements FxScreens.StageAware {
             File f = new File(oplFolder + File.separator + sub);
             if (!f.exists()) { f.mkdir(); }
         }
-        if (!"HDD_USB".equals(currentlySelectedMode)) {
+        if (currentlySelectedMode != Mode.HDD_USB) {
             for (String sub : new String[] {"CD", "DVD"}) {
                 File f = new File(oplFolder + File.separator + sub);
                 if (!f.exists()) { f.mkdir(); }
             }
         }
 
-        if ("HDD".equals(currentlySelectedMode)) { PopsGameManager.setPS2IP(ipField.getText()); }
+        if (currentlySelectedMode == Mode.HDD) { PopsGameManager.setPS2IP(ipField.getText()); }
 
         switch (currentlySelectedMode) {
-            case "HDD":
+            case HDD:
                 try { GameListManager.createGameListFromFile("PS1", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1")); } catch (IOException ex) { PopsGameManager.displayErrorMessageDebug("Error creating the PS1 game list from file!\n\n" + ex.toString()); }
                 try { GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2")); } catch (IOException ex) { PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString()); }
                 break;
-            case "HDD_USB":
-            case "SMB":
+            case HDD_USB:
+            case SMB:
                 try {
                     GameListManager.createGameListsPS1();
                     GameListManager.createGameListsPS2(true);
@@ -222,10 +224,10 @@ public class SetModeController implements FxScreens.StageAware {
                 break;
         }
 
-        if ("HDD".equals(currentlySelectedMode)) {
+        if (currentlySelectedMode == Mode.HDD) {
             PopsGameManager.setCurrentConsole(selectedConsole);
-            if ("PS1".equals(selectedConsole) && gameListPS1 != null) { GameListManager.setGameListPS1(gameListPS1); }
-            if ("PS2".equals(selectedConsole) && gameListPS2 != null) { GameListManager.setGameListPS2(gameListPS2); }
+            if (selectedConsole == Console.PS1 && gameListPS1 != null) { GameListManager.setGameListPS1(gameListPS1); }
+            if (selectedConsole == Console.PS2 && gameListPS2 != null) { GameListManager.setGameListPS2(gameListPS2); }
         }
 
         try {

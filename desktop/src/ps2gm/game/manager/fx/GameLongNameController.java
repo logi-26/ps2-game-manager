@@ -10,6 +10,7 @@ import javafx.scene.control.TextFormatter;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.GameLongNameRenamer;
+import ps2gm.game.manager.Mode;
 import ps2gm.game.manager.PopsGameManager;
 
 /**
@@ -80,16 +81,16 @@ public class GameLongNameController {
 
         Game game = longNameList.get(idx);
         GameLongNameRenamer renamer = new GameLongNameRenamer(game, oldTitleField.getText(), newTitle);
-        String mode = PopsGameManager.getCurrentMode();
+        Mode mode = PopsGameManager.getCurrentMode();
 
         if ("PS1".equals(console)) {
             if (nameAlreadyUsed(GameListManager.getGameListPS1(), newTitle)) {
                 return;
             }
             switch (mode) {
-                case "SMB":     if (renamer.renameLocalPS1("SB.")) { onRenamed(idx); } break;
-                case "HDD_USB": if (renamer.renameLocalPS1("XX.")) { onRenamed(idx); } break;
-                case "HDD":     renamer.ftpRenamePS1(); break;
+                case SMB:     if (renamer.renameLocalPS1("SB.")) { onRenamed(idx); } break;
+                case HDD_USB: if (renamer.renameLocalPS1("XX.")) { onRenamed(idx); } break;
+                case HDD:     renamer.ftpRenamePS1(); break;
                 default: break;
             }
         } else if ("PS2".equals(console)) {
@@ -97,11 +98,11 @@ public class GameLongNameController {
                 return;
             }
             switch (mode) {
-                case "SMB":
-                case "HDD_USB":
+                case SMB:
+                case HDD_USB:
                     if (renamer.renameLocalPS2()) { onRenamed(idx); }
                     break;
-                case "HDD":
+                case HDD:
                     new Alert(Alert.AlertType.ERROR,
                             "The application cannot currently rename a PS2 game in HDD mode!").showAndWait();
                     break;

@@ -226,7 +226,7 @@ public class MyFTPClient {
         if (localArtFiles != null) {for (File file : localArtFiles) {if (file.isFile() && !file.isDirectory()) {localDirectoryList.add(file.getName());}}}
          
         // If there is a file in the local directory that is not on the console, this downloads the file from the console
-        if (!localDirectoryList.isEmpty()) {localDirectoryList.stream().filter((fileName) -> (!remoteDirectoryList.contains(fileName))).forEach((fileName) -> {addFileToPS2(localDirectory, fileName, remoteDirectory, PopsGameManager.getCurrentConsole().equals("PS1"));});}
+        if (!localDirectoryList.isEmpty()) {localDirectoryList.stream().filter((fileName) -> (!remoteDirectoryList.contains(fileName))).forEach((fileName) -> {addFileToPS2(localDirectory, fileName, remoteDirectory, PopsGameManager.getCurrentConsole() == Console.PS1);});}
     }
     
     

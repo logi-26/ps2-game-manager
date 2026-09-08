@@ -26,8 +26,8 @@ public class PopsGameManager {
     private static boolean firstLaunch = false;
     private static String ps2IPAddress = "192.168.0.01";
     private static String oplFolder;
-    private static String currentConsole;
-    private static String currentMode;
+    private static Console currentConsole;
+    private static Mode currentMode;
     
     private static boolean emulatorInUsePS1 = false; 
     private static String emulatorPathPS1 = ""; 
@@ -71,10 +71,10 @@ public class PopsGameManager {
     public static void showTimedInfoDialog(String message, String title, int seconds) {if (dialogCallback != null) {dialogCallback.infoTimed(message, title, seconds);}}
 
     public static void setDebugMode(boolean debugMode) {DebugMode = debugMode;}                                             // Set debug mode on or off (if debug on, most of the exception messages will be printed)
-    public static void setCurrentConsole(String console){currentConsole = console;}                                         // This sets the current console and saves it to the settings.xml file
+    public static void setCurrentConsole(Console console){currentConsole = console;}                                        // This sets the current console and saves it to the settings.xml file
     public static void setFisrtLaunch(boolean first) {firstLaunch = first;}                                                 // This sets the first launch boolean value
-    public static void setPS2IP(String ipAddress) {ps2IPAddress = ipAddress;}                                               // Sets the PS2 IP address  
-    public static void setCurrentMode(String mode) {currentMode = mode;}                                                    // This sets the current mode and saves it to the settings.xml file
+    public static void setPS2IP(String ipAddress) {ps2IPAddress = ipAddress;}                                               // Sets the PS2 IP address
+    public static void setCurrentMode(Mode mode) {currentMode = mode;}                                                      // This sets the current mode and saves it to the settings.xml file
     public static void setOPLFolder(String oplDirectory) {oplFolder = oplDirectory;}                                        // Sets the OPL folder               
     public static void setEmulatorInUsePS1(boolean useEmulator) {emulatorInUsePS1 = useEmulator;}
     public static void setEmulatorPathPS1(String path) {emulatorPathPS1 = path;}
@@ -97,8 +97,8 @@ public class PopsGameManager {
     public static String getApplicationReleaseDate() {return AppBootstrap.RELEASE_DATE;}                                    // Returns the application release date
     public static String getPS2IP() {return ps2IPAddress;}                                                                  // Returns the PS2 IP address
     public static String getOPLFolder() {return oplFolder;}                                                                 // Returns the OPL folder
-    public static String getCurrentMode() {return currentMode;}                                                             // Returns current mode
-    public static String getCurrentConsole() {return currentConsole;}                                                       // Returns current console
+    public static Mode getCurrentMode() {return currentMode;}                                                               // Returns current mode
+    public static Console getCurrentConsole() {return currentConsole;}                                                      // Returns current console
     public static String getOSType() {return userOperatingSystem;}                                                          // Returns the OS type (windows, linux etc)
     static String getOSVersion() {return userOperatingSystemVersion;}                                                       // Returns the OS version (xp, 7, 10, ubuntu etc) - only used by AppBootstrap's debug print
     static String getOSArchitecture() {return userOSArchitecture;}                                                          // Returns the OS architecture (64bit or 86bit) - only used by AppBootstrap's debug print
@@ -168,10 +168,10 @@ public class PopsGameManager {
     public static String getFilePrefix(){
         String filePrefix = null;
         switch (getCurrentMode()) {
-            case "SMB":
+            case SMB:
                 filePrefix = "SB.";
                 break;
-            case "HDD_USB":
+            case HDD_USB:
                 filePrefix = "XX.";
                 break;
             default:

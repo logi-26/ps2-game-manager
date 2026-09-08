@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.PopsGameManager;
 
@@ -56,7 +57,7 @@ public class HashCheckerController implements FxScreens.StageAware {
         Task<String> idTask = new Task<>() {
             @Override
             protected String call() throws Exception {
-                if (PopsGameManager.getCurrentConsole().equals("PS1")) {
+                if (PopsGameManager.getCurrentConsole() == Console.PS1) {
                     return GameListManager.getPS1GameIDFromVCD(file);
                 }
                 return GameListManager.getPS2GameIDFromArchive(file.getAbsolutePath());

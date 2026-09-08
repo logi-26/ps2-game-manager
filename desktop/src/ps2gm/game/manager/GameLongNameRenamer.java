@@ -142,7 +142,7 @@ public final class GameLongNameRenamer {
     private void renameGameART() {
 
         switch (PopsGameManager.getCurrentMode()) {
-            case "SMB":
+            case SMB:
                 renameArtPS1("SB.", "COV");
                 renameArtPS1("SB.", "COV2");
                 renameArtPS1("SB.", "BG");
@@ -150,7 +150,7 @@ public final class GameLongNameRenamer {
                 renameArtPS1("SB.", "SCR");
                 renameArtPS1("SB.", "SCR2");
                 break;
-            case "HDD_USB":
+            case HDD_USB:
                 renameArtPS1("XX.", "COV");
                 renameArtPS1("XX.", "COV2");
                 renameArtPS1("XX.", "BG");
@@ -158,7 +158,7 @@ public final class GameLongNameRenamer {
                 renameArtPS1("XX.", "SCR");
                 renameArtPS1("XX.", "SCR2");
                 break;
-            case "HDD":
+            case HDD:
                 break;
         }
     }

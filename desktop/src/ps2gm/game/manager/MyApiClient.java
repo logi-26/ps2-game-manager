@@ -126,9 +126,9 @@ public class MyApiClient implements BackendClient {
         // transparency); everything else is JPG.
         String ext = isPngArt(coverPath) ? ".png" : ".jpg";
         String localImagePath = null;
-        if (PopsGameManager.getCurrentConsole().equals("PS1")) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             localImagePath = PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverPath + ext;
-        } else if (PopsGameManager.getCurrentConsole().equals("PS2")) {
+        } else if (PopsGameManager.getCurrentConsole() == Console.PS2) {
             localImagePath = PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + gameID + coverPath + ext;
         }
 
@@ -162,7 +162,7 @@ public class MyApiClient implements BackendClient {
 
     @Override
     public void getConfigFromServer(String gameRegion, String gameID, String gameName, boolean batchMode) {
-        String localConfigPath = PopsGameManager.getCurrentConsole().equals("PS1")
+        String localConfigPath = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF.cfg"
                 : PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg";
 
@@ -199,9 +199,9 @@ public class MyApiClient implements BackendClient {
     @Override
     public void getVMCFromServer(String gameRegion, String vmcName, String gameName, String gameID) {
         String localVMCPath = null;
-        if (PopsGameManager.getCurrentConsole().equals("PS2")) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS2) {
             localVMCPath = PopsGameManager.getOPLFolder() + File.separator + "VMC" + File.separator + vmcName + ".bin";
-        } else if (PopsGameManager.getCurrentConsole().equals("PS1")) {
+        } else if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             localVMCPath = PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + gameName + "-" + gameID + File.separator + vmcName + ".VMC";
             File gameFolder = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + gameName + "-" + gameID + File.separator);
             if (!gameFolder.exists()) gameFolder.mkdir();

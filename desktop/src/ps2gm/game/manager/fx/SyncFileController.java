@@ -15,7 +15,9 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.GameListManager;
+import ps2gm.game.manager.Mode;
 import ps2gm.game.manager.MyFTPClient;
 import ps2gm.game.manager.PopsGameManager;
 import ps2gm.game.manager.XMLFileManager;
@@ -119,7 +121,7 @@ public class SyncFileController implements FxScreens.StageAware {
     @FXML private void onCfg() { fileFilterChanged("Config"); }
     @FXML private void onCht() { fileFilterChanged("Cheat"); }
     @FXML private void onVmc() {
-        if (!"PS1".equals(PopsGameManager.getCurrentConsole())) { fileFilterChanged("VMC"); }
+        if (PopsGameManager.getCurrentConsole() != Console.PS1) { fileFilterChanged("VMC"); }
         else {
             vmcRadio.setSelected(false);
             if (myFTP != null && myFTP.isFTPConnected()) {
@@ -141,7 +143,7 @@ public class SyncFileController implements FxScreens.StageAware {
                     composeRemoteFileList(LOCAL_DIRECTORY_CONFIG);
                     break;
                 case "Cheat":
-                    if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+                    if (PopsGameManager.getCurrentConsole() == Console.PS1) {
                         composeLocalCheatListPS1();
                         composeRemoteCheatListPS1();
                     } else {
@@ -174,9 +176,9 @@ public class SyncFileController implements FxScreens.StageAware {
             for (File file : listOfFiles) {
                 if (!file.isFile()) { continue; }
                 if (directory.equals(LOCAL_DIRECTORY_ART)) {
-                    if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+                    if (PopsGameManager.getCurrentConsole() == Console.PS1) {
                         if (file.getName().length() >= 3) {
-                            if ("SMB".equals(PopsGameManager.getCurrentMode()) || "HDD_USB".equals(PopsGameManager.getCurrentMode())) {
+                            if (PopsGameManager.getCurrentMode() == Mode.SMB || PopsGameManager.getCurrentMode() == Mode.HDD_USB) {
                                 if (file.getName().substring(0, 3).equals(PopsGameManager.getFilePrefix())) { out.add(file.getName()); }
                             } else {
                                 out.add(file.getName());
@@ -199,7 +201,7 @@ public class SyncFileController implements FxScreens.StageAware {
         if (localDirectory.equals(LOCAL_DIRECTORY_ART)) {
             if (myFTP.isFTPConnected()) {
                 List<String> temp = myFTP.listRemoteDirectory(remoteArt, selectedPartition, true);
-                boolean wantRegion = "PS2".equals(PopsGameManager.getCurrentConsole());
+                boolean wantRegion = PopsGameManager.getCurrentConsole() == Console.PS2;
                 if (temp != null) {
                     for (String name : temp) {
                         boolean hasRegion = false;
@@ -305,7 +307,7 @@ public class SyncFileController implements FxScreens.StageAware {
     }
 
     private void copyFileToConsole(String local) {
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
         if (currentLocalDirectory.equals(LOCAL_DIRECTORY_ART) && myFTP.isFTPConnected()) { myFTP.addFileToPS2(LOCAL_DIRECTORY_ART, local, remoteArt, ps1); }
         else if (currentLocalDirectory.equals(LOCAL_DIRECTORY_CONFIG) && myFTP.isFTPConnected()) { myFTP.addFileToPS2(LOCAL_DIRECTORY_CONFIG, local, remoteConfig, ps1); }
         else if (currentLocalDirectory.equals(LOCAL_DIRECTORY_CHEAT_PS2) && myFTP.isFTPConnected()) { myFTP.addFileToPS2(LOCAL_DIRECTORY_CHEAT_PS2, local, remoteCheat, ps1); }

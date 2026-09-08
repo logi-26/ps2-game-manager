@@ -16,7 +16,7 @@ public final class AddGameSmbScreen {
     private AddGameSmbScreen() {}
 
     public static void open(boolean batchMode, String fileExtension, File selectedFile) {
-        String title = "PS1".equals(ps2gm.game.manager.PopsGameManager.getCurrentConsole())
+        String title = ps2gm.game.manager.PopsGameManager.getCurrentConsole() == ps2gm.game.manager.Console.PS1
                 ? " Add PlayStation Game" : " Add PlayStation 2 Game";
         FxScreens.open("AddGameSmbScreen.fxml", title, false,
                 (AddGameSmbController c) -> c.init(batchMode, fileExtension, selectedFile));

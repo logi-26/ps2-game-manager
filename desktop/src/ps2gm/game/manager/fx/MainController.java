@@ -40,6 +40,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.DeviceCompatFormatter;
 import ps2gm.game.manager.DialogCallback;
 import ps2gm.game.manager.Game;
@@ -49,6 +50,7 @@ import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.GameLongNameRenamer;
 import ps2gm.game.manager.GenerateSpineART;
 import ps2gm.game.manager.HDLDumpManager;
+import ps2gm.game.manager.Mode;
 import ps2gm.game.manager.MyFTPClient;
 import ps2gm.game.manager.MyListener;
 import ps2gm.game.manager.PopsGameManager;
@@ -137,7 +139,7 @@ public class MainController implements MyListener {
                 if (gameList.getSelectionModel().getSelectedIndex() != -1) { deleteGame(); }
                 else { warn("You need to select a game before you can perform this action.", " No game selected!"); }
             } else if (e.getCode() == KeyCode.ENTER) {
-                if ("PS1".equals(PopsGameManager.getCurrentConsole())) { launchEmulatorPS1(); }
+                if (PopsGameManager.getCurrentConsole() == Console.PS1) { launchEmulatorPS1(); }
                 else { launchEmulatorPS2(); }
             }
         });
@@ -184,7 +186,7 @@ public class MainController implements MyListener {
         }
 
         try {
-            boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+            boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
             suppressSelectionEvents = true;
             rmiPlaystation1.setSelected(ps1);
             rmiPlaystation2.setSelected(!ps1);
@@ -215,8 +217,8 @@ public class MainController implements MyListener {
     }
 
     private void applyGameListUpdate(String gameID, int listIndex) {
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
-        switchConsole(ps1 ? "PS1" : "PS2");
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
+        switchConsole(ps1 ? Console.PS1 : Console.PS2);
 
         if (gameID == null) {
             int idx = listIndex;
@@ -247,7 +249,7 @@ public class MainController implements MyListener {
 
     private void updateList() {
         if (!(PopsGameManager.isOPLFolderSet() && PopsGameManager.isCurrentConsoleSet())) { return; }
-        List<Game> src = "PS1".equals(PopsGameManager.getCurrentConsole())
+        List<Game> src = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         List<String> names = new ArrayList<>();
         if (src != null) { for (Game g : src) { names.add(g.getGameName()); } }
@@ -264,10 +266,10 @@ public class MainController implements MyListener {
     }
 
     private void updateMainLabel() {
-        String console = PopsGameManager.getCurrentConsole();
-        String mode = PopsGameManager.getCurrentMode();
-        String label = "PS1".equals(console) ? "PlayStation 1" : "PlayStation 2";
-        if ("SMB".equals(mode) || "HDD".equals(mode)) { consoleLabel.setText(label + "  -  " + mode); }
+        Console console = PopsGameManager.getCurrentConsole();
+        Mode mode = PopsGameManager.getCurrentMode();
+        String label = console == Console.PS1 ? "PlayStation 1" : "PlayStation 2";
+        if (mode == Mode.SMB || mode == Mode.HDD) { consoleLabel.setText(label + "  -  " + mode); }
         else { consoleLabel.setText(label + "  -  USB"); }
     }
 
@@ -281,7 +283,7 @@ public class MainController implements MyListener {
     }
 
     private void updateCoverLayout() {
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
         // Lock the cover to a fixed width and let height follow the aspect ratio
         // (fitHeight 0 = unconstrained). If both dimensions were set, a taller PS2
         // cover would become height-limited and render narrower than a PS1 cover,
@@ -300,7 +302,7 @@ public class MainController implements MyListener {
     private Game selectedGame() {
         int i = gameList.getSelectionModel().getSelectedIndex();
         if (i < 0) { return null; }
-        List<Game> list = "PS1".equals(PopsGameManager.getCurrentConsole())
+        List<Game> list = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         return (list != null && i < list.size()) ? list.get(i) : null;
     }
@@ -308,7 +310,7 @@ public class MainController implements MyListener {
     private void displayGameDetails() {
         Game g = selectedGame();
         if (g == null) { clearGameConfigDetails(); return; }
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
 
         displayGameImages(g, ps1);
         gameTitleField.setText(" " + g.getGameName());
@@ -379,13 +381,13 @@ public class MainController implements MyListener {
         gameNumberField.setText("0/0");
         gameIdField.setText("");
         gameSizeField.setText("");
-        setCover("PS1".equals(PopsGameManager.getCurrentConsole()) ? NO_IMAGE_PS1_COVER : NO_IMAGE_PS2_COVER);
+        setCover(PopsGameManager.getCurrentConsole() == Console.PS1 ? NO_IMAGE_PS1_COVER : NO_IMAGE_PS2_COVER);
     }
 
     // compat-colour styling for a list row, mirroring the Swing DefaultListCellRenderer.
     private String rowStyle(int index) {
         try {
-            if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+            if (PopsGameManager.getCurrentConsole() == Console.PS1) {
                 Game g = GameListManager.getGameListPS1().get(index);
                 if (PopsGameManager.getGameCompatabilityPS1()) {
                     switch (g.getCompatibleHDD()) {
@@ -413,7 +415,7 @@ public class MainController implements MyListener {
 
     // ---------------------------------------------------- console / menu state
 
-    private void switchConsole(String console) {
+    private void switchConsole(Console console) {
         updateCoverLayout();
         PopsGameManager.setCurrentConsole(console);
         updateMainLabel();
@@ -425,10 +427,10 @@ public class MainController implements MyListener {
 
     private void updateMenuItems() {
         if (PopsGameManager.getFisrtLaunch()) { return; }
-        String mode = PopsGameManager.getCurrentMode();
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        Mode mode = PopsGameManager.getCurrentMode();
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
 
-        boolean hdd = "HDD".equals(mode);
+        boolean hdd = mode == Mode.HDD;
         menuConsoleFileTransfer.setVisible(hdd);
         miRefreshGameList.setVisible(hdd);
 
@@ -442,9 +444,9 @@ public class MainController implements MyListener {
         miPs1Emulator.setVisible(ps1);
         miPs2Emulator.setVisible(!ps1);
 
-        boolean smb = "SMB".equals(mode);
+        boolean smb = mode == Mode.SMB;
         miGenerateUlConf.setVisible(!ps1 && smb);
-        menuPs2IdPos.setVisible(!ps1 && ("SMB".equals(mode) || "HDD_USB".equals(mode)));
+        menuPs2IdPos.setVisible(!ps1 && (mode == Mode.SMB || mode == Mode.HDD_USB));
 
         suppressSelectionEvents = true;
         rmiPlaystation1.setSelected(ps1);
@@ -464,14 +466,14 @@ public class MainController implements MyListener {
     // UL->ISO needs a UL game with a known size.
     private void refreshRowMenuState() {
         Game g = selectedGame();
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
-        String mode = PopsGameManager.getCurrentMode();
-        boolean smb = "SMB".equals(mode);
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
+        Mode mode = PopsGameManager.getCurrentMode();
+        boolean smb = mode == Mode.SMB;
         boolean ul = g != null && Boolean.TRUE.equals(g.getULGame());
 
         // Run in Emulator needs SMB/USB mode and a configured emulator (the
         // Emulator Settings screen keeps "in use" and the path in lock-step).
-        boolean emuMode = smb || "HDD_USB".equals(mode);
+        boolean emuMode = smb || mode == Mode.HDD_USB;
         boolean emuInUse = ps1 ? Boolean.TRUE.equals(PopsGameManager.getEmulatorInUsePS1())
                                : Boolean.TRUE.equals(PopsGameManager.getEmulatorInUsePS2());
         String emuPath = ps1 ? PopsGameManager.getEmulatorPathPS1() : PopsGameManager.getEmulatorPathPS2();
@@ -487,7 +489,7 @@ public class MainController implements MyListener {
 
     @FXML private void onArt() {
         if (gameList.getSelectionModel().getSelectedIndex() != -1) {
-            GameImageScreen.open(PopsGameManager.getCurrentConsole(), gameList.getSelectionModel().getSelectedIndex());
+            GameImageScreen.open(PopsGameManager.getCurrentConsole().name(), gameList.getSelectionModel().getSelectedIndex());
         } else { warn("You need to select a game before you can manage the game ART.", " No game selected!"); }
     }
 
@@ -544,8 +546,8 @@ public class MainController implements MyListener {
     private void applyPs2IdPosition(String target) {
         if (target.equals(PopsGameManager.getGameIDPositionPS2())) { return; }   // no change
 
-        String mode = PopsGameManager.getCurrentMode();
-        if (!"SMB".equals(mode) && !"HDD_USB".equals(mode)) {
+        Mode mode = PopsGameManager.getCurrentMode();
+        if (mode != Mode.SMB && mode != Mode.HDD_USB) {
             warn("Switching the game ID position renames the game files on disk, which is only possible in SMB or USB mode.",
                     " PS2 Game ID Position");
             revertPs2IdPosRadio();
@@ -592,8 +594,8 @@ public class MainController implements MyListener {
 
     @FXML private void onSelectPs1() {
         if (suppressSelectionEvents) { return; }
-        if ("PS2".equals(PopsGameManager.getCurrentConsole())) {
-            switchConsole("PS1");
+        if (PopsGameManager.getCurrentConsole() == Console.PS2) {
+            switchConsole(Console.PS1);
             selectIndex(0);
             updateGameStats();
             displayGameDetails();
@@ -601,8 +603,8 @@ public class MainController implements MyListener {
     }
     @FXML private void onSelectPs2() {
         if (suppressSelectionEvents) { return; }
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
-            switchConsole("PS2");
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
+            switchConsole(Console.PS2);
             selectIndex(0);
             updateGameStats();
             displayGameDetails();
@@ -617,7 +619,7 @@ public class MainController implements MyListener {
     @FXML private void onGenerateConfElm() { GameListManager.writeConfigELM(); }
     @FXML private void onAddGame() { displayAddGameScreen(); }
     @FXML private void onBatchAddGame() { displayBatchAddGameScreen(); }
-    @FXML private void onBatchDownload() { BatchDownloadScreen.open(PopsGameManager.getCurrentConsole()); }
+    @FXML private void onBatchDownload() { BatchDownloadScreen.open(PopsGameManager.getCurrentConsole().name()); }
     @FXML private void onCheckGameNames() { checkLongGameNames(); }
     @FXML private void onGeneratePs1Elf() { runBg(this::generateNewElfFiles); }
     @FXML private void onCheckUpdate() { runBg(this::checkForUpdate); }
@@ -627,7 +629,7 @@ public class MainController implements MyListener {
     private void onMd5() {
         Game g = selectedGame();
         if (g == null) { return; }
-        File file = "PS1".equals(PopsGameManager.getCurrentConsole())
+        File file = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + g.getGameName() + "-" + g.getGameID() + ".VCD")
                 : new File(g.getGamePath());
         if (file.exists()) { HashCheckerScreen.open(file); }
@@ -656,7 +658,7 @@ public class MainController implements MyListener {
 
     @FXML private void onGenerateSpine() {
         GenerateSpineART gen = new GenerateSpineART();
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) { gen.generateForPS1(); } else { gen.generateForPS2(); }
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) { gen.generateForPS1(); } else { gen.generateForPS2(); }
     }
 
     @FXML private void onDeleteAllSpineArt() { new GenerateSpineART().deleteForPS2(); }
@@ -674,8 +676,8 @@ public class MainController implements MyListener {
 
     private void deleteFilesPrompt(String type, boolean all) {
         String kind = all ? "" : "unused ";
-        String mode = PopsGameManager.getCurrentMode();
-        String msg = "HDD".equals(mode)
+        Mode mode = PopsGameManager.getCurrentMode();
+        String msg = mode == Mode.HDD
                 ? "Are you sure that you want to delete all of the " + kind + type + " files on your console?\n\nFTP server must be running on your console in order to perform this task."
                 : "Are you sure that you want to delete all of the " + kind + type + " files?";
         if (confirm(msg, " Delete " + (all ? "" : "Unused ") + type)) {
@@ -684,8 +686,8 @@ public class MainController implements MyListener {
     }
 
     @FXML private void onDeleteAllElf() {
-        String mode = PopsGameManager.getCurrentMode();
-        if (!("SMB".equals(mode) || "HDD_USB".equals(mode))) { return; }
+        Mode mode = PopsGameManager.getCurrentMode();
+        if (!(mode == Mode.SMB || mode == Mode.HDD_USB)) { return; }
         if (!confirm("Are you sure that you want to delete all of the ELF files in the POPS directory?", " Delete All ELF Files")) { return; }
         File folder = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS");
         File[] files = folder.listFiles();
@@ -700,7 +702,7 @@ public class MainController implements MyListener {
 
     private void displayAddGameScreen() {
         File popstarter = new File(PopsGameManager.getCurrentDirectory() + File.separator + "POPSTARTER" + File.separator + "POPSTARTER.ELF");
-        if ("PS1".equals(PopsGameManager.getCurrentConsole()) && !popstarter.exists()) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1 && !popstarter.exists()) {
             error("Could not locate POPSTARTER.ELF in the POPSTARTER directory.", " Missing POPSTARTER.ELF!");
             return;
         }
@@ -709,7 +711,7 @@ public class MainController implements MyListener {
         FileChooser chooser = new FileChooser();
         File start = selectedGameFolder != null ? selectedGameFolder : new File(PopsGameManager.getOPLFolder());
         if (start.isDirectory()) { chooser.setInitialDirectory(start); }
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
         chooser.setTitle(ps1 ? "Select PS1 Game" : "Select PS2 Game");
         chooser.getExtensionFilters().add(ps1
                 ? new FileChooser.ExtensionFilter("PS1 GAMES", "*.VCD", "*.vcd", "*.CUE", "*.cue")
@@ -721,11 +723,11 @@ public class MainController implements MyListener {
         selectedGameFolder = chosen.getParentFile();
 
         switch (PopsGameManager.getCurrentMode()) {
-            case "HDD":
-                AddGameHddScreen.open(PopsGameManager.getCurrentConsole(), false, null, chosen);
+            case HDD:
+                AddGameHddScreen.open(PopsGameManager.getCurrentConsole().name(), false, null, chosen);
                 break;
-            case "HDD_USB":
-            case "SMB":
+            case HDD_USB:
+            case SMB:
                 AddGameSmbScreen.open(false, ext, chosen);
                 break;
             default:
@@ -735,7 +737,7 @@ public class MainController implements MyListener {
 
     private void displayBatchAddGameScreen() {
         File popstarter = new File(PopsGameManager.getCurrentDirectory() + File.separator + "POPSTARTER" + File.separator + "POPSTARTER.ELF");
-        if ("PS1".equals(PopsGameManager.getCurrentConsole()) && !popstarter.exists()) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1 && !popstarter.exists()) {
             error("Could not locate POPSTARTER.ELF in the POPSTARTER directory.", " Missing POPSTARTER.ELF!");
             return;
         }
@@ -747,10 +749,10 @@ public class MainController implements MyListener {
         File dir = chooser.showDialog(stage);
         if (dir == null) { return; }
         selectedGameFolder = dir;
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
 
         switch (PopsGameManager.getCurrentMode()) {
-            case "HDD": {
+            case HDD: {
                 boolean hasFiles = false;
                 File[] files = dir.listFiles();
                 if (files != null) {
@@ -758,12 +760,12 @@ public class MainController implements MyListener {
                         if (f.isFile() && f.getAbsolutePath().toUpperCase().endsWith(ps1 ? "VCD" : "ISO")) { hasFiles = true; }
                     }
                 }
-                if (hasFiles) { AddGameHddScreen.open(PopsGameManager.getCurrentConsole(), true, dir.getPath(), dir); }
+                if (hasFiles) { AddGameHddScreen.open(PopsGameManager.getCurrentConsole().name(), true, dir.getPath(), dir); }
                 else { warn("This directory does not appear to contain any " + (ps1 ? "VCD" : "ISO") + " files!", " No Games Detected!"); }
                 break;
             }
-            case "HDD_USB":
-            case "SMB":
+            case HDD_USB:
+            case SMB:
                 AddGameSmbScreen.open(true, null, dir);
                 break;
             default:
@@ -778,7 +780,7 @@ public class MainController implements MyListener {
         ctxRun = new MenuItem("Run in Emulator");
         ctxRun.setOnAction(e -> {
             if (gameList.getSelectionModel().getSelectedIndex() == -1) { return; }
-            if ("PS1".equals(PopsGameManager.getCurrentConsole())) { launchEmulatorPS1(); }
+            if (PopsGameManager.getCurrentConsole() == Console.PS1) { launchEmulatorPS1(); }
             else { launchEmulatorPS2(); }
         });
         MenuItem rename = new MenuItem("Rename");
@@ -806,10 +808,10 @@ public class MainController implements MyListener {
     private void renameSelectedGame() {
         Game g = selectedGame();
         if (g == null) { return; }
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
-        String mode = PopsGameManager.getCurrentMode();
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
+        Mode mode = PopsGameManager.getCurrentMode();
 
-        if (!ps1 && "HDD".equals(mode)) {
+        if (!ps1 && mode == Mode.HDD) {
             error("Renaming a PS2 game in HDD mode is not supported.", " Rename Game");
             return;
         }
@@ -843,9 +845,9 @@ public class MainController implements MyListener {
         boolean regenerate = false;
         if (ps1) {
             switch (mode) {
-                case "SMB":     regenerate = renamer.renameLocalPS1("SB."); break;
-                case "HDD_USB": regenerate = renamer.renameLocalPS1("XX."); break;
-                case "HDD":     renamer.ftpRenamePS1(); break;   // async, refreshes itself
+                case SMB:     regenerate = renamer.renameLocalPS1("SB."); break;
+                case HDD_USB: regenerate = renamer.renameLocalPS1("XX."); break;
+                case HDD:     renamer.ftpRenamePS1(); break;   // async, refreshes itself
                 default: break;
             }
         } else {
@@ -871,11 +873,11 @@ public class MainController implements MyListener {
         String name = g.getGameName();
         String id = g.getGameID();
         int idx = gameList.getSelectionModel().getSelectedIndex();
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
-        String mode = PopsGameManager.getCurrentMode();
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
+        Mode mode = PopsGameManager.getCurrentMode();
 
         if (ps1) {
-            if ("HDD_USB".equals(mode) || "SMB".equals(mode)) {
+            if (mode == Mode.HDD_USB || mode == Mode.SMB) {
                 if (!confirm("Are you sure you want to delete - " + name + " ?", " Delete Game")) { return; }
                 File vcd = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + name + "-" + id + ".VCD");
                 if (vcd.exists()) {
@@ -887,12 +889,12 @@ public class MainController implements MyListener {
                     updateGameList(null, idx - 1);
                     GameListManager.writeConfigELM();
                 }
-            } else if ("HDD".equals(mode)) {
+            } else if (mode == Mode.HDD) {
                 if (!confirm("Are you sure you want to delete - " + name + " ?\n\nFTP Server must be running on your console in order to perform this task!", " Connect to PlayStation 2")) { return; }
                 runBg(() -> deletePs1GameOverFtp(name, id, idx));
             }
         } else {
-            if ("HDD_USB".equals(mode) || "SMB".equals(mode)) {
+            if (mode == Mode.HDD_USB || mode == Mode.SMB) {
                 if (!confirm("Are you sure you want to delete - " + name + " ?", " Delete Game")) { return; }
                 File file = new File(g.getGamePath());
                 if (file.exists()) {
@@ -900,7 +902,7 @@ public class MainController implements MyListener {
                     GameListManager.createGameListsPS2(false);
                     updateGameList(null, idx - 1);
                 }
-            } else if ("HDD".equals(mode)) {
+            } else if (mode == Mode.HDD) {
                 error("This application cannot yet delete PS2 games from the consoles internal hdd.", " Delete Game");
             }
         }
@@ -945,7 +947,7 @@ public class MainController implements MyListener {
     // ------------------------------------------------------ console refresh
 
     private void refreshGameListFromConsole() {
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
         if (ps1) {
             if (!confirmFx("FTP server must be running on your console in order to perform this task!", " Refresh PS1 Game List")) { return; }
             List<Game> list = GameListManager.getGameListFromConsolePS1();
@@ -974,8 +976,8 @@ public class MainController implements MyListener {
     // ------------------------------------------------------- generate ELF
 
     private void generateNewElfFiles() {
-        String mode = PopsGameManager.getCurrentMode();
-        if ("SMB".equals(mode) || "HDD_USB".equals(mode)) {
+        Mode mode = PopsGameManager.getCurrentMode();
+        if (mode == Mode.SMB || mode == Mode.HDD_USB) {
             List<String> vcdFiles = new ArrayList<>();
             try (Stream<Path> paths = Files.walk(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator))) {
                 paths.forEach(p -> {
@@ -1006,7 +1008,7 @@ public class MainController implements MyListener {
                 if (!new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + elfName).exists()) { ok = false; }
             }
             if (ok) { Platform.runLater(() -> info("The new ELF files have been generated!.", " ELF Files Generated")); }
-        } else if ("HDD".equals(mode)) {
+        } else if (mode == Mode.HDD) {
             if (!confirmFx("FTP server must be running on your console in order to perform this task.", " Generate New ELF Files")) { return; }
             File tmp = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + "ELF_TEMP");
             if (tmp.mkdir()) {
@@ -1023,7 +1025,7 @@ public class MainController implements MyListener {
                 if (files != null) {
                     for (File f : files) {
                         myFTP.deleteRemoteFile("/pfs/0/APPS/" + f.getName());
-                        myFTP.addFileToPS2(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + "ELF_TEMP" + File.separator, f.getName(), "/pfs/0/APPS/", "PS1".equals(PopsGameManager.getCurrentConsole()));
+                        myFTP.addFileToPS2(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator + "ELF_TEMP" + File.separator, f.getName(), "/pfs/0/APPS/", PopsGameManager.getCurrentConsole() == Console.PS1);
                     }
                 }
                 myFTP.disconnectFromConsole();
@@ -1035,8 +1037,8 @@ public class MainController implements MyListener {
     // ------------------------------------------------------- emulator launch
 
     private void launchEmulatorPS2() {
-        String mode = PopsGameManager.getCurrentMode();
-        if (!("SMB".equals(mode) || "HDD_USB".equals(mode))) {
+        Mode mode = PopsGameManager.getCurrentMode();
+        if (!(mode == Mode.SMB || mode == Mode.HDD_USB)) {
             error("PS2 emulator can only be used in \"SMB\" mode.", " Cannot Use Emulator!");
             return;
         }
@@ -1059,8 +1061,8 @@ public class MainController implements MyListener {
     }
 
     private void launchEmulatorPS1() {
-        String mode = PopsGameManager.getCurrentMode();
-        if (!("SMB".equals(mode) || "HDD_USB".equals(mode))) {
+        Mode mode = PopsGameManager.getCurrentMode();
+        if (!(mode == Mode.SMB || mode == Mode.HDD_USB)) {
             error("PS1 emulator can only be used in \"SMB\" mode.", " Cannot Use Emulator!");
             return;
         }
@@ -1148,10 +1150,10 @@ public class MainController implements MyListener {
 
     private void checkLongGameNames() {
         List<Game> longNames = new ArrayList<>();
-        List<Game> src = "PS1".equals(PopsGameManager.getCurrentConsole())
+        List<Game> src = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         if (src != null) { for (Game g : src) { if (g.getGameName().length() > 32) { longNames.add(g); } } }
-        if (!longNames.isEmpty()) { GameLongNameScreen.open(PopsGameManager.getCurrentConsole(), longNames); }
+        if (!longNames.isEmpty()) { GameLongNameScreen.open(PopsGameManager.getCurrentConsole().name(), longNames); }
         else { info("You do not have any " + PopsGameManager.getCurrentConsole() + " games with names greater than 32 characters in length.", " No Games To Rename"); }
     }
 

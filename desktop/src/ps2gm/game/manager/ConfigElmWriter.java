@@ -30,7 +30,7 @@ public final class ConfigElmWriter {
         List<String> configElmList = new ArrayList<>();
 
         switch (PopsGameManager.getCurrentMode()) {
-            case "SMB":
+            case SMB:
                 if (new File(PopsGameManager.getOPLFolder() + File.separator + "POPS").exists()){
                     try {
                         List<File> filesInFolder = Files.walk(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "POPS")).filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
@@ -40,7 +40,7 @@ public final class ConfigElmWriter {
                     } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
                 }
                 break;
-            case "HDD_USB":
+            case HDD_USB:
 
                 if (new File(PopsGameManager.getOPLFolder() + File.separator + "POPS").exists()){
                     try {
@@ -56,7 +56,7 @@ public final class ConfigElmWriter {
                     } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
                 }
                 break;
-            case "HDD":
+            case HDD:
                 if (new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1.dat").exists()){
 
                     try (Stream<String> lines = Files.lines(Paths.get(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1.dat"), StandardCharsets.UTF_8)){
@@ -92,7 +92,7 @@ public final class ConfigElmWriter {
         }
 
         // If HDD mode, ask user if they want to upload the conf_apps file to the console via FTP
-        if (PopsGameManager.getCurrentMode().equals("HDD")){
+        if (PopsGameManager.getCurrentMode() == Mode.HDD){
 
             if (PopsGameManager.confirmDialog("Do you want to upload conf_apps.cfg to your console?\n\nFTP Server must be running on your console in order to perform this task!"," Connect to PlayStation 2")){
 

@@ -28,6 +28,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.PopsGameManager;
@@ -116,7 +117,7 @@ public class GameCheatController implements FxScreens.StageAware {
     /** Called from the façade before the window is shown. */
     void init(int gameIndex) {
         currentListIndex = gameIndex;
-        List<Game> src = "PS1".equals(PopsGameManager.getCurrentConsole())
+        List<Game> src = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         if (src != null) { gameList.addAll(src); }
         refreshGameHeader();
@@ -158,7 +159,7 @@ public class GameCheatController implements FxScreens.StageAware {
 
     private File cheatFile() {
         Game g = gameList.get(currentListIndex);
-        if ("PS1".equals(PopsGameManager.getCurrentConsole())) {
+        if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             return new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator
                     + g.getGameName() + "-" + g.getGameID() + File.separator + "CHEATS.TXT");
         }
@@ -173,7 +174,7 @@ public class GameCheatController implements FxScreens.StageAware {
     private void loadCheatContent() {
         cheatContentArea.setText("");
         File file = cheatFile();
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
 
         if (file.isFile()) {
             List<String> lines = new ArrayList<>();
@@ -208,7 +209,7 @@ public class GameCheatController implements FxScreens.StageAware {
     // Compare the editor against the file; prompt to save / create if it differs.
     private void compareCheatFile() {
         File file = cheatFile();
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
 
         if (file.isFile()) {
             List<String> onDisk = new ArrayList<>();
@@ -249,7 +250,7 @@ public class GameCheatController implements FxScreens.StageAware {
             if (confirm("Are you sure that you want to delete this cheat file?", " Delete Cheat File!")) {
                 file.delete();
             }
-            cheatContentArea.setText("PS1".equals(PopsGameManager.getCurrentConsole()) ? "" : ps2Placeholder());
+            cheatContentArea.setText(PopsGameManager.getCurrentConsole() == Console.PS1 ? "" : ps2Placeholder());
         }
     }
 
@@ -259,7 +260,7 @@ public class GameCheatController implements FxScreens.StageAware {
         serverCheatList.getItems().clear();
         serverCheatGroups.clear();
         Game game = gameList.get(currentListIndex);
-        String console = PopsGameManager.getCurrentConsole();
+        String console = PopsGameManager.getCurrentConsole().name();
         new Thread(() -> {
             List<String> index = downloadServerCheatIndex(console);
             List<String> lines = downloadCheatsForGame(game, console, index);
@@ -374,7 +375,7 @@ public class GameCheatController implements FxScreens.StageAware {
     // Colour classification, mirroring getCheatsFromServer()'s doc.insertString branches.
     private Color styleFor(String line) {
         if (line == null) { return null; }
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
         int first = displayedLines.indexOf(line);
         if (ps1 && first == 0 && line.equals("IGR - In Game Reset Codes")) { return COLOUR_IGR_TITLE; }
         if (line.equals("Widescreen 16:9")) { return COLOUR_WIDESCREEN; }
@@ -389,7 +390,7 @@ public class GameCheatController implements FxScreens.StageAware {
     private void onAddSelected() {
         List<Integer> indices = new ArrayList<>(serverCheatList.getSelectionModel().getSelectedIndices());
         if (indices.isEmpty()) { return; }
-        boolean ps1 = "PS1".equals(PopsGameManager.getCurrentConsole());
+        boolean ps1 = PopsGameManager.getCurrentConsole() == Console.PS1;
         StringBuilder sb = new StringBuilder(cheatContentArea.getText());
         for (int i : indices) {
             if (i < 0 || i >= serverCheatGroups.size()) { continue; }

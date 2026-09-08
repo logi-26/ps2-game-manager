@@ -13,6 +13,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.PopsGameManager;
@@ -67,7 +68,7 @@ public class GameVmcController implements FxScreens.StageAware {
     }
 
     private void loadServerListInBackground() {
-        String console = PopsGameManager.getCurrentConsole();
+        String console = PopsGameManager.getCurrentConsole().name();
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() {
@@ -171,7 +172,7 @@ public class GameVmcController implements FxScreens.StageAware {
     }
 
     private static List<Game> currentGames() {
-        List<Game> games = "PS1".equals(PopsGameManager.getCurrentConsole())
+        List<Game> games = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1()
                 : GameListManager.getGameListPS2();
         return games != null ? games : new ArrayList<>();

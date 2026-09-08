@@ -43,12 +43,12 @@ public final class ImageArtProcessor {
                     scaledImage = scaleImage(image, 250, 188);                                                    // Screenshot images
                     break;
                 case "_COV":
-                    if (PopsGameManager.getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 front cover image
-                    else if (PopsGameManager.getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 140, 200);}      // PS2 front cover image
+                    if (PopsGameManager.getCurrentConsole() == Console.PS1) {scaledImage = scaleImage(image, 140, 140);}           // PS1 front cover image
+                    else if (PopsGameManager.getCurrentConsole() == Console.PS2) {scaledImage = scaleImage(image, 140, 200);}      // PS2 front cover image
                     break;
                     case "_COV2":
-                    if (PopsGameManager.getCurrentConsole().equals("PS1")) {scaledImage = scaleImage(image, 140, 140);}           // PS1 rear cover image
-                    else if (PopsGameManager.getCurrentConsole().equals("PS2")) {scaledImage = scaleImage(image, 242, 344);}      // PS2 rear cover image
+                    if (PopsGameManager.getCurrentConsole() == Console.PS1) {scaledImage = scaleImage(image, 140, 140);}           // PS1 rear cover image
+                    else if (PopsGameManager.getCurrentConsole() == Console.PS2) {scaledImage = scaleImage(image, 242, 344);}      // PS2 rear cover image
                     break;
                 case "_LAB":
                 case "_LGO":
@@ -71,7 +71,7 @@ public final class ImageArtProcessor {
             // Copy the re-scaled image file to the OPL ART directory
             if (imageExtension != null) {
 
-                if (PopsGameManager.getCurrentConsole().equals("PS1")){
+                if (PopsGameManager.getCurrentConsole() == Console.PS1){
 
                     if (imageExtension.equals("png")) {
 
@@ -90,7 +90,7 @@ public final class ImageArtProcessor {
                         ImageIO.write(scaledImage, "jpg",new File(PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator + PopsGameManager.getFilePrefix() + gameName + "-" + gameID + ".ELF" + coverType + ".jpg"));
                     }
                 }
-                else if (PopsGameManager.getCurrentConsole().equals("PS2")){
+                else if (PopsGameManager.getCurrentConsole() == Console.PS2){
 
                     if (imageExtension.equals("png")) {
 
