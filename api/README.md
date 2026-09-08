@@ -1,8 +1,7 @@
 # api/ — HTTP API + database
 
-Database-backed replacement for the original raw-TCP file server (retired).
-FastAPI + SQLAlchemy 2.0 + Alembic. Read-only: it serves the imported
-catalogue, nothing writes to it at runtime.
+The PS2GM catalogue API — FastAPI + SQLAlchemy 2.0 + Alembic. Read-only: it
+serves the imported catalogue, nothing writes to it at runtime.
 
 > **Not meant to be self-hosted.** This source is included for transparency
 > and so developers can run a local instance to test API changes. The PS2GM
@@ -44,6 +43,7 @@ throwaway Postgres + MinIO for that). See `api/app/config.py` for the full list.
 api/
   app/            FastAPI app, models, routers
   alembic/        migrations
-  scripts/        import_content.py - legacy "Server Content" -> DB + blobs
+  scripts/        import_content.py - imports the "Server Content" folder -> DB + blobs
+  tests/          pytest -q
   var/            dev.db + blobs/  (gitignored)
 ```

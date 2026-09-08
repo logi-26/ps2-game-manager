@@ -215,7 +215,7 @@ if you're doing that kind of development.
 | `desktop/` | The desktop app (`ps2gm.game.manager`, Java + JavaFX). Build with `desktop/build.ps1`. |
 | `api/` | Source for the hosted API (art/config/cheat/VMC content). Included for transparency / local dev testing, not for self-hosting. See [`api/README.md`](api/README.md). |
 | `local-dev/` | Scripts to run the app and API together on localhost. |
-| `docs/` | Design and migration notes. |
+| `docs/` | Design notes. |
 
 ## Credits
 

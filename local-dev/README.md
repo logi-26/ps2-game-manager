@@ -1,11 +1,8 @@
 # Local dev runbook
 
-The desktop app (`desktop/`) talks to the HTTP API (`api/`) via `MyApiClient`,
-the only `BackendClient` implementation (the original raw-TCP server and its
-`MyTCPClient` client were retired once the API backend had had enough
-real-world runway — see `docs/plan.html`). `desktop`'s `MyFTPClient` is
-unrelated to any of this — it talks to a real PS2 console running OPL over
-FTP, port 21, and is left as-is.
+The desktop app (`desktop/`) talks to the HTTP API (`api/`) via `MyApiClient`.
+`desktop`'s `MyFTPClient` is unrelated to any of this — it talks to a real PS2
+console running OPL over FTP, port 21.
 
 ---
 
@@ -21,7 +18,7 @@ FTP, port 21, and is left as-is.
 ## Run it
 
 Needs `api/`'s venv set up once (see `api/README.md` "Quick start" +
-"Load the legacy data" — `alembic upgrade head` then
+"Load test data" — `alembic upgrade head` then
 `python -m scripts.import_content --content-dir "../Server Content"`).
 
 ```powershell
@@ -51,39 +48,14 @@ into it.
 
 ---
 
-## Source changes carried into this repo
-
-**Part 1** — build on a modern JDK:
-- `javax/swing/JCheckBoxList.java` → `ps2gm/game/manager/JCheckBoxList.java`
-  — a user class can't live in the `javax.swing` package under the module
-  system (JDK 9+). `TestScreen` (dead code), its one importer, updated.
-
-**Part 2** — the API backend:
-- `BackendClient` interface; `MyApiClient` is the HTTP implementation
-  (`java.net.http.HttpClient`, no new dependency — see `MiniJson` for why).
-  All call sites go through `PopsGameManager.newBackendClient()`.
-- User uploads and bad-file reports removed as a feature, desktop and API
-  side both — the API is read-only.
-- `MyAPIClient.java` (the old empty stub) deleted.
-
-**Part 2 (retire)** — the raw-TCP server:
-- `server/` (the `tcpserver` project), `MyTCPClient.java`, and the TCP-only
-  dev scripts (`run-server.ps1`, `setup-serverdata.ps1`, `protocol-check.py`)
-  deleted. `-Backend`/`-Server`/`-Port` flags dropped from every build script
-  (`desktop/build.ps1`, `package.ps1`, `bundle-jar.ps1`, `release.ps1`,
-  `run-manager.ps1`) along with `PopsGameManager.getServerAddress()` /
-  `getServerPort()` / `getBackendMode()` / `TestMode` — the API is now the
-  only backend, so there's nothing left to switch between.
-
----
-
 ## Known rough edges (noted, not fixed)
 
-- Swing on JDK 25 / Win10 looks dated; HiDPI scaling may be off. Not blocking.
+- JavaFX/AtlantaFX on JDK 25 / Win10 looks dated in places; HiDPI scaling may
+  be off. Not blocking.
 - `sevenzipjbinding` native load can fail on modern Windows → PS2 game-ID
-  detection breaks silently. Usually caused by another PS2GM instance (old
-  or new) holding the native library's temp folder locked — don't run two at
-  once; clearing `%LOCALAPPDATA%\Temp\SevenZipJBinding-*` also helps.
+  detection breaks silently. Usually caused by another PS2GM instance holding
+  the native library's temp folder locked — don't run two at once; clearing
+  `%LOCALAPPDATA%\Temp\SevenZipJBinding-*` also helps.
 - `java.net.http.HttpClient` defaults to an HTTP/2 upgrade attempt that
   uvicorn's dev server mishandles (drops POST bodies) — `MyApiClient` pins
   `HTTP_1_1`.
