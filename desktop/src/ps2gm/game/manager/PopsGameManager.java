@@ -170,7 +170,7 @@ public class PopsGameManager {
     // Override with -Dps2gm.api.baseurl=http://host:8000/v1 (or the PS2GM_API_BASEURL env var)
     public static String getApiBaseUrl(){
         String override = System.getProperty("ps2gm.api.baseurl", System.getenv("PS2GM_API_BASEURL"));
-        return (override != null && !override.trim().isEmpty()) ? override.trim() : "http://127.0.0.1:8000/v1";
+        return (override != null && !override.trim().isEmpty()) ? override.trim() : "https://ps2gm.logi26.co.uk/v1";
     }
 
     // Creates a fresh backend client. Every screen should get its client
