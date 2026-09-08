@@ -40,9 +40,9 @@ public final class GameListPersistence {
     }
 
     /** Encrypts and writes {@code gameList} to its gameListPSx.dat file, returning whether the file now exists. */
-    public static boolean writeGameListFile(String console, List<Game> gameList) {
-        File file = console.equals("PS1") ? gameListFilePS1 : gameListFilePS2;
-        File key = console.equals("PS1") ? keyFilePS1 : keyFilePS2;
+    public static boolean writeGameListFile(Console console, List<Game> gameList) {
+        File file = console == Console.PS1 ? gameListFilePS1 : gameListFilePS2;
+        File key = console == Console.PS1 ? keyFilePS1 : keyFilePS2;
 
         List<String> lines = new ArrayList<>();
         for (Game game : gameList) {
@@ -56,8 +56,8 @@ public final class GameListPersistence {
     }
 
     /** Decrypts and reads a gameListPSx.dat-style file into games + their combined raw size. */
-    public static ReadResult readGameListFile(String console, File file) throws IOException {
-        File key = console.equals("PS1") ? keyFilePS1 : keyFilePS2;
+    public static ReadResult readGameListFile(Console console, File file) throws IOException {
+        File key = console == Console.PS1 ? keyFilePS1 : keyFilePS2;
         FileEncryptor encryptor = new FileEncryptor();
         List<String> decryptedList = encryptor.DecryptData(file.getAbsolutePath(), key.getAbsolutePath());
 
@@ -71,7 +71,7 @@ public final class GameListPersistence {
             long gameRawSize = Long.parseLong(splitLines[1]);
             totalSize += gameRawSize;
 
-            if (console.equals("PS1")) {
+            if (console == Console.PS1) {
                 // This sets the PS1 game compatability values from the text file within the resources
                 PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 

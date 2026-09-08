@@ -7,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.GameLongNameRenamer;
@@ -26,7 +27,7 @@ public class GameLongNameController {
     @FXML private TextField newTitleField;
     @FXML private ListView<String> gameListView;
 
-    private String console;
+    private Console console;
     private final List<Game> longNameList = new ArrayList<>();
 
     @FXML
@@ -37,7 +38,7 @@ public class GameLongNameController {
     }
 
     /** Called from the façade before the window is shown. */
-    void init(String console, List<Game> longNameGames) {
+    void init(Console console, List<Game> longNameGames) {
         this.console = console;
         this.longNameList.clear();
         this.longNameList.addAll(longNameGames);
@@ -83,7 +84,7 @@ public class GameLongNameController {
         GameLongNameRenamer renamer = new GameLongNameRenamer(game, oldTitleField.getText(), newTitle);
         Mode mode = PopsGameManager.getCurrentMode();
 
-        if ("PS1".equals(console)) {
+        if (console == Console.PS1) {
             if (nameAlreadyUsed(GameListManager.getGameListPS1(), newTitle)) {
                 return;
             }
@@ -93,7 +94,7 @@ public class GameLongNameController {
                 case HDD:     renamer.ftpRenamePS1(); break;
                 default: break;
             }
-        } else if ("PS2".equals(console)) {
+        } else if (console == Console.PS2) {
             if (nameAlreadyUsed(GameListManager.getGameListPS2(), newTitle)) {
                 return;
             }
@@ -128,10 +129,10 @@ public class GameLongNameController {
     private void onRenamed(int idx) {
         longNameList.remove(idx);
 
-        if ("PS1".equals(console)) {
+        if (console == Console.PS1) {
             GameListManager.createGameListsPS1();
             GameListManager.writeConfigELM();
-        } else if ("PS2".equals(console)) {
+        } else if (console == Console.PS2) {
             GameListManager.createGameListsPS2(false);
         }
         PopsGameManager.callbackToUpdateGUIGameList(null, -1);

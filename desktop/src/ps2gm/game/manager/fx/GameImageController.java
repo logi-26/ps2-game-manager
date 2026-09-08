@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameArtFileManager;
 import ps2gm.game.manager.GameListManager;
@@ -62,7 +63,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
     @FXML private TextField gameNameField, gameNumberField;
 
     private Stage stage;
-    private String console;
+    private Console console;
     private int[] coverPreview;
     private int[] spinePreview;
     private String noImageCover;
@@ -77,9 +78,9 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
     }
 
     /** Called from the façade before the window is shown. {@code console} is "PS1" or "PS2". */
-    void init(String console, int gameIndex) {
+    void init(Console console, int gameIndex) {
         this.console = console;
-        boolean ps1 = "PS1".equals(console);
+        boolean ps1 = console == Console.PS1;
         this.coverPreview = ps1 ? new int[] {130, 160} : new int[] {130, 210};
         // Decode hint only - the on-screen size of every preview comes from the
         // fixed pane box in the FXML (the ImageView fit is bound to it there).

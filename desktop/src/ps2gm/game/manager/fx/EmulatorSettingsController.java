@@ -8,6 +8,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.PopsGameManager;
 import ps2gm.game.manager.XMLFileManager;
 
@@ -29,7 +30,7 @@ public class EmulatorSettingsController implements FxScreens.StageAware {
     @FXML private Button browseButton;
 
     private Stage stage;
-    private String console;      // "PS1" | "PS2"
+    private Console console;
     private String emulatorName; // "PCSXR" | "PCSX2"
 
     @Override
@@ -39,26 +40,26 @@ public class EmulatorSettingsController implements FxScreens.StageAware {
     }
 
     /** Called from the façade before the window is shown. */
-    void setConsole(String console) {
+    void setConsole(Console console) {
         this.console = console;
-        this.emulatorName = "PS1".equals(console) ? "PCSXR" : "PCSX2";
+        this.emulatorName = console == Console.PS1 ? "PCSXR" : "PCSX2";
 
         useEmulatorCheck.setText("Use " + emulatorName);
-        fullscreenCheck.setVisible(!"PS1".equals(console));
+        fullscreenCheck.setVisible(console != Console.PS1);
 
-        boolean inUse = "PS1".equals(console)
+        boolean inUse = console == Console.PS1
                 ? PopsGameManager.getEmulatorInUsePS1()
                 : PopsGameManager.getEmulatorInUsePS2();
         useEmulatorCheck.setSelected(inUse);
 
         if (inUse) {
-            String path = "PS1".equals(console)
+            String path = console == Console.PS1
                     ? PopsGameManager.getEmulatorPathPS1()
                     : PopsGameManager.getEmulatorPathPS2();
             if (path != null) {
                 pathField.setText(path);
             }
-            boolean full = "PS1".equals(console)
+            boolean full = console == Console.PS1
                     ? PopsGameManager.getEmulatorFullScreenPS1()
                     : PopsGameManager.getEmulatorFullScreenPS2();
             fullscreenCheck.setSelected(full);
@@ -95,7 +96,7 @@ public class EmulatorSettingsController implements FxScreens.StageAware {
 
     @FXML
     private void onSave() {
-        boolean ps1 = "PS1".equals(console);
+        boolean ps1 = console == Console.PS1;
 
         if (useEmulatorCheck.isSelected()) {
             String path = pathField.getText() == null ? "" : pathField.getText().trim();

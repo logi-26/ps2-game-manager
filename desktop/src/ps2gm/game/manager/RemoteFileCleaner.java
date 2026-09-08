@@ -73,14 +73,14 @@ public final class RemoteFileCleaner {
 
         if (ps1GameList.exists() && ps1GameList.isFile()) {
             try {
-                GameListManager.createGameListFromFile("PS1", new File(PopsGameManager.getOPLFolder() + File.separator + "gameListPS1"));
+                GameListManager.createGameListFromFile(Console.PS1, new File(PopsGameManager.getOPLFolder() + File.separator + "gameListPS1"));
             } catch (IOException ex) {
                 PopsGameManager.displayErrorMessageDebug("Error creating PS1 game list from file!\n\n" + ex.toString());
             }
         }
         if (ps2GameList.exists() && ps2GameList.isFile()) {
             try {
-                GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getOPLFolder() + File.separator + "gameListPS2"));
+                GameListManager.createGameListFromFile(Console.PS2, new File(PopsGameManager.getOPLFolder() + File.separator + "gameListPS2"));
             } catch (IOException ex) {
                 PopsGameManager.displayErrorMessageDebug("Error creating PS2 game list from file!\n\n" + ex.toString());
             }

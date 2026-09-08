@@ -120,25 +120,25 @@ public class GameListManager {
     // This creates the gameListPS2.dat for storing the list of PS2 games that are currently on the console - see GameListPersistence.
     public static boolean writeGameListFilePS2(List<Game> ps2GameList){
         if (ps2GameList == null) {ps2GameList = gameListPS2;}
-        return GameListPersistence.writeGameListFile("PS2", ps2GameList);
+        return GameListPersistence.writeGameListFile(Console.PS2, ps2GameList);
     }
 
 
     // This creates the gameListPS1.dat for storing the list of PS1 games that are currently on the console - see GameListPersistence.
     public static boolean writeGameListFilePS1(List<Game> ps1GameList){
         if (ps1GameList == null) {ps1GameList = gameListPS1;}
-        return GameListPersistence.writeGameListFile("PS1", ps1GameList);
+        return GameListPersistence.writeGameListFile(Console.PS1, ps1GameList);
     }
 
 
     // Creates the game list from a file - see GameListPersistence.
-    public static void createGameListFromFile(String console, File file) throws IOException {
+    public static void createGameListFromFile(Console console, File file) throws IOException {
         GameListPersistence.ReadResult result = GameListPersistence.readGameListFile(console, file);
-        if (console.equals("PS1")) {
+        if (console == Console.PS1) {
             gameListPS1 = result.games();
             totalGameSizeRawPS1 = result.totalRawSize();
             totalGameSizeDisplayPS1 = PopsGameManager.bytesToHuman(result.totalRawSize());
-        } else if (console.equals("PS2")) {
+        } else if (console == Console.PS2) {
             gameListPS2 = result.games();
             totalGameSizeRawPS2 = result.totalRawSize();
             totalGameSizeDisplayPS2 = PopsGameManager.bytesToHuman(result.totalRawSize());
@@ -237,7 +237,7 @@ public class GameListManager {
                 createPS1ListFromSMB();
                 break;
             case HDD:
-                createGameListFromFile("PS1", GameListPersistence.gameListFilePS1());
+                createGameListFromFile(Console.PS1, GameListPersistence.gameListFilePS1());
                 break;
             default:
                 break;
@@ -363,7 +363,7 @@ public class GameListManager {
                 readPS2GamesFromULCFG();
                 break;
             case HDD:
-                createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));
+                createGameListFromFile(Console.PS2, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));
                 break;
             default:
                 break;

@@ -2,6 +2,7 @@ package ps2gm.game.manager.fx;
 
 import java.io.File;
 import java.util.function.Consumer;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.ImageChangedListener;
 import ps2gm.game.manager.ImageSelectListener;
 
@@ -17,7 +18,7 @@ public final class GameImageSelectorScreen {
 
     private GameImageSelectorScreen() {}
 
-    public static void open(ImageSelectListener sel, ImageChangedListener chg, String imageType, String console,
+    public static void open(ImageSelectListener sel, ImageChangedListener chg, String imageType, Console console,
                             File image, int numberOfImages, int currentImageNumber,
                             Consumer<GameImageSelectorController> ready) {
         FxScreens.open("GameImageSelectorScreen.fxml", " Images Selector", false,

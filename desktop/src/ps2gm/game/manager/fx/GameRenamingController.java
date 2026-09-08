@@ -11,6 +11,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.PopsGameManager;
@@ -37,7 +38,7 @@ public class GameRenamingController implements FxScreens.StageAware {
     @FXML private Button renameAllButton;
 
     private Stage stage;
-    private String console;                       // "PS1" | "PS2"
+    private Console console;
     private final List<File> invalid = new ArrayList<>();
     private final List<Game> games = new ArrayList<>();
 
@@ -53,9 +54,9 @@ public class GameRenamingController implements FxScreens.StageAware {
     }
 
     /** Called from the façade before the window is shown. */
-    void init(String console, List<File> invalidFiles) {
+    void init(Console console, List<File> invalidFiles) {
         this.console = console;
-        boolean ps1 = "PS1".equals(console);
+        boolean ps1 = console == Console.PS1;
         elfLabel.setVisible(ps1);
         elfLabel.setManaged(ps1);
         elfNameField.setVisible(ps1);
@@ -71,7 +72,7 @@ public class GameRenamingController implements FxScreens.StageAware {
         for (File f : invalid) {
             String id = null;
             try {
-                id = "PS1".equals(console)
+                id = console == Console.PS1
                         ? GameListManager.getPS1GameIDFromVCD(f)
                         : GameListManager.getPS2GameIDFromArchive(f.getAbsolutePath());
             } catch (Exception ex) {
@@ -106,7 +107,7 @@ public class GameRenamingController implements FxScreens.StageAware {
         sizeField.setText(g.getGameReadableSize());
         oldTitleField.setText(orig.getName());
 
-        if ("PS1".equals(console)) {
+        if (console == Console.PS1) {
             newTitleField.setText(g.getGameName() + "-" + g.getGameID() + ".VCD");
             elfNameField.setText(PopsGameManager.getFilePrefix() + g.getGameName() + "-" + g.getGameID() + ".ELF");
         } else {
@@ -140,7 +141,7 @@ public class GameRenamingController implements FxScreens.StageAware {
             return;
         }
         String ext = newName.substring(newName.length() - 4);
-        boolean ps1 = "PS1".equals(console);
+        boolean ps1 = console == Console.PS1;
         boolean extOk = ps1 ? (ext.equals(".vcd") || ext.equals(".VCD"))
                             : (ext.equalsIgnoreCase(".iso") || ext.equalsIgnoreCase(".zso"));
         if (!extOk) {
@@ -190,7 +191,7 @@ public class GameRenamingController implements FxScreens.StageAware {
 
     @FXML
     private void onRenameAll() {
-        boolean ps1 = "PS1".equals(console);
+        boolean ps1 = console == Console.PS1;
         List<File> stillInvalid = new ArrayList<>();
 
         for (File f : new ArrayList<>(invalid)) {

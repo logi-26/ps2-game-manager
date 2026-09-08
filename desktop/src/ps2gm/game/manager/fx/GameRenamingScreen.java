@@ -2,6 +2,7 @@ package ps2gm.game.manager.fx;
 
 import java.io.File;
 import java.util.List;
+import ps2gm.game.manager.Console;
 
 /**
  * JavaFX replacement for the Swing {@code GameRenamingScreenPS1 / PS2} (fix
@@ -13,14 +14,14 @@ public final class GameRenamingScreen {
     private GameRenamingScreen() {}
 
     public static void openPS1(List<File> invalidGames) {
-        open("PS1", invalidGames);
+        open(Console.PS1, invalidGames);
     }
 
     public static void openPS2(List<File> invalidGames) {
-        open("PS2", invalidGames);
+        open(Console.PS2, invalidGames);
     }
 
-    private static void open(String console, List<File> invalidGames) {
+    private static void open(Console console, List<File> invalidGames) {
         FxScreens.openModal("GameRenamingScreen.fxml", " Rename Games", false,
                 (GameRenamingController c) -> c.init(console, invalidGames));
     }

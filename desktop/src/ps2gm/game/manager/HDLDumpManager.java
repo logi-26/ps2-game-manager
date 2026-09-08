@@ -148,7 +148,7 @@ public class HDLDumpManager {
                     GameListManager.writeGameListFilePS2(gameList);
 
                     // Try and load the game data from the PS2 game list file
-                    try {GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString());}
+                    try {GameListManager.createGameListFromFile(Console.PS2, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString());}
                 }
             }
             catch (IOException | InterruptedException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
@@ -225,7 +225,7 @@ public class HDLDumpManager {
                     GameListManager.writeGameListFilePS2(gameList);
 
                     // Try and load the game data from the PS2 game list file
-                    try {GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString());}
+                    try {GameListManager.createGameListFromFile(Console.PS2, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString());}
                 }
             }
             catch (IOException | InterruptedException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}

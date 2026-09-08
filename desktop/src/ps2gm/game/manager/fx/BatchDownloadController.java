@@ -17,6 +17,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameArtFileManager;
 import ps2gm.game.manager.GameConfigFileManager;
@@ -41,7 +42,7 @@ public class BatchDownloadController implements FxScreens.StageAware {
     @FXML private ListView<String> processedListView;
 
     private Stage stage;
-    private String console;
+    private Console console;
     private final List<Game> gameList = new ArrayList<>();
     private final List<String> artList = new ArrayList<>();
     private final List<String> configList = new ArrayList<>();
@@ -62,9 +63,9 @@ public class BatchDownloadController implements FxScreens.StageAware {
     }
 
     /** Called from the façade before the window is shown. */
-    void init(String console) {
+    void init(Console console) {
         this.console = console;
-        List<Game> src = "PS1".equals(console) ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
+        List<Game> src = console == Console.PS1 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         if (src != null) {
             gameList.addAll(src);
         }
@@ -230,7 +231,7 @@ public class BatchDownloadController implements FxScreens.StageAware {
     }
 
     private int coverW() { return 160; }
-    private int coverH() { return "PS1".equals(console) ? 160 : 210; }
+    private int coverH() { return console == Console.PS1 ? 160 : 210; }
 
     private static void setImage(ImageView view, File file, int w, int h) {
         if (file != null && file.isFile()) {

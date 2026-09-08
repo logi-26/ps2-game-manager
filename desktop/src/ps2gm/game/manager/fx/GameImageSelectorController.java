@@ -8,6 +8,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import ps2gm.game.manager.Console;
 import ps2gm.game.manager.ImageChangedListener;
 import ps2gm.game.manager.ImageSelectListener;
 
@@ -41,7 +42,7 @@ public class GameImageSelectorController implements FxScreens.StageAware {
     private ImageSelectListener selectListener;
     private ImageChangedListener changedListener;
     private String imageType;
-    private String console;
+    private Console console;
     private File image;
     private int numberOfImages;
     private int currentImageNumber = 1;
@@ -63,7 +64,7 @@ public class GameImageSelectorController implements FxScreens.StageAware {
         });
     }
 
-    void setup(ImageSelectListener sel, ImageChangedListener chg, String imageType, String console,
+    void setup(ImageSelectListener sel, ImageChangedListener chg, String imageType, Console console,
                File image, int numberOfImages, int currentImageNumber) {
         this.selectListener = sel;
         this.changedListener = chg;
@@ -84,7 +85,7 @@ public class GameImageSelectorController implements FxScreens.StageAware {
 
     private int[] sizeFor(String type) {
         int[] size = SIZES.getOrDefault(type, new int[] {200, 200});
-        if (("_COV".equals(type) || "_COV2".equals(type)) && "PS1".equals(console)) {
+        if (("_COV".equals(type) || "_COV2".equals(type)) && console == Console.PS1) {
             return new int[] {160, 160};
         }
         return size;

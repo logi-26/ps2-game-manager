@@ -208,8 +208,8 @@ public class SetModeController implements FxScreens.StageAware {
 
         switch (currentlySelectedMode) {
             case HDD:
-                try { GameListManager.createGameListFromFile("PS1", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1")); } catch (IOException ex) { PopsGameManager.displayErrorMessageDebug("Error creating the PS1 game list from file!\n\n" + ex.toString()); }
-                try { GameListManager.createGameListFromFile("PS2", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2")); } catch (IOException ex) { PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString()); }
+                try { GameListManager.createGameListFromFile(Console.PS1, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1")); } catch (IOException ex) { PopsGameManager.displayErrorMessageDebug("Error creating the PS1 game list from file!\n\n" + ex.toString()); }
+                try { GameListManager.createGameListFromFile(Console.PS2, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2")); } catch (IOException ex) { PopsGameManager.displayErrorMessageDebug("Error creating the PS2 game list from file!\n\n" + ex.toString()); }
                 break;
             case HDD_USB:
             case SMB:

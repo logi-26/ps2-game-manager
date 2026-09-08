@@ -489,7 +489,7 @@ public class MainController implements MyListener {
 
     @FXML private void onArt() {
         if (gameList.getSelectionModel().getSelectedIndex() != -1) {
-            GameImageScreen.open(PopsGameManager.getCurrentConsole().name(), gameList.getSelectionModel().getSelectedIndex());
+            GameImageScreen.open(PopsGameManager.getCurrentConsole(), gameList.getSelectionModel().getSelectedIndex());
         } else { warn("You need to select a game before you can manage the game ART.", " No game selected!"); }
     }
 
@@ -619,12 +619,12 @@ public class MainController implements MyListener {
     @FXML private void onGenerateConfElm() { GameListManager.writeConfigELM(); }
     @FXML private void onAddGame() { displayAddGameScreen(); }
     @FXML private void onBatchAddGame() { displayBatchAddGameScreen(); }
-    @FXML private void onBatchDownload() { BatchDownloadScreen.open(PopsGameManager.getCurrentConsole().name()); }
+    @FXML private void onBatchDownload() { BatchDownloadScreen.open(PopsGameManager.getCurrentConsole()); }
     @FXML private void onCheckGameNames() { checkLongGameNames(); }
     @FXML private void onGeneratePs1Elf() { runBg(this::generateNewElfFiles); }
     @FXML private void onCheckUpdate() { runBg(this::checkForUpdate); }
-    @FXML private void onPs1EmulatorSettings() { EmulatorSettingsScreen.open("PS1"); }
-    @FXML private void onPs2EmulatorSettings() { EmulatorSettingsScreen.open("PS2"); }
+    @FXML private void onPs1EmulatorSettings() { EmulatorSettingsScreen.open(Console.PS1); }
+    @FXML private void onPs2EmulatorSettings() { EmulatorSettingsScreen.open(Console.PS2); }
 
     private void onMd5() {
         Game g = selectedGame();
@@ -724,7 +724,7 @@ public class MainController implements MyListener {
 
         switch (PopsGameManager.getCurrentMode()) {
             case HDD:
-                AddGameHddScreen.open(PopsGameManager.getCurrentConsole().name(), false, null, chosen);
+                AddGameHddScreen.open(PopsGameManager.getCurrentConsole(), false, null, chosen);
                 break;
             case HDD_USB:
             case SMB:
@@ -760,7 +760,7 @@ public class MainController implements MyListener {
                         if (f.isFile() && f.getAbsolutePath().toUpperCase().endsWith(ps1 ? "VCD" : "ISO")) { hasFiles = true; }
                     }
                 }
-                if (hasFiles) { AddGameHddScreen.open(PopsGameManager.getCurrentConsole().name(), true, dir.getPath(), dir); }
+                if (hasFiles) { AddGameHddScreen.open(PopsGameManager.getCurrentConsole(), true, dir.getPath(), dir); }
                 else { warn("This directory does not appear to contain any " + (ps1 ? "VCD" : "ISO") + " files!", " No Games Detected!"); }
                 break;
             }
@@ -939,7 +939,7 @@ public class MainController implements MyListener {
 
         List<Game> list = GameListManager.getGameListFromConsolePS1();
         GameListManager.writeGameListFilePS1(list);
-        try { GameListManager.createGameListFromFile("PS1", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1")); }
+        try { GameListManager.createGameListFromFile(Console.PS1, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1")); }
         catch (IOException ex) { PopsGameManager.displayErrorMessageDebug(ex.toString()); }
         updateGameList(null, idx - 1);
     }
@@ -1153,7 +1153,7 @@ public class MainController implements MyListener {
         List<Game> src = PopsGameManager.getCurrentConsole() == Console.PS1
                 ? GameListManager.getGameListPS1() : GameListManager.getGameListPS2();
         if (src != null) { for (Game g : src) { if (g.getGameName().length() > 32) { longNames.add(g); } } }
-        if (!longNames.isEmpty()) { GameLongNameScreen.open(PopsGameManager.getCurrentConsole().name(), longNames); }
+        if (!longNames.isEmpty()) { GameLongNameScreen.open(PopsGameManager.getCurrentConsole(), longNames); }
         else { info("You do not have any " + PopsGameManager.getCurrentConsole() + " games with names greater than 32 characters in length.", " No Games To Rename"); }
     }
 

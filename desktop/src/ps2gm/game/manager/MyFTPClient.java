@@ -445,7 +445,7 @@ public class MyFTPClient {
                 GameListManager.writeGameListFilePS1(gameList);
 
                 // Try and load the game data from the PS1 game list file
-                try {GameListManager.createGameListFromFile("PS1", new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error reading the PS1 game list from file!\n\n" + ex.toString());}
+                try {GameListManager.createGameListFromFile(Console.PS1, new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1"));} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error reading the PS1 game list from file!\n\n" + ex.toString());}
             }
 
             if (gameList != null && gameList.size()>0){PopsGameManager.callbackToUpdateGUIGameList(null, gameList.size()-1);}
