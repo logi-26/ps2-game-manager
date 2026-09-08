@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.PopsGameManager;
@@ -122,8 +123,6 @@ public class HashCheckerController implements FxScreens.StageAware {
     }
 
     private static void runDaemon(Task<?> task) {
-        Thread t = new Thread(task, "fx-hash-checker");
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("fx-hash-checker", task);
     }
 }

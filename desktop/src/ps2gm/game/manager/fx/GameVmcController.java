@@ -13,6 +13,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
@@ -101,9 +102,7 @@ public class GameVmcController implements FxScreens.StageAware {
                 return null;
             }
         };
-        Thread t = new Thread(task, "fx-vmc-list");
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("fx-vmc-list", task);
     }
 
     private void onGameSelected() {
@@ -166,9 +165,7 @@ public class GameVmcController implements FxScreens.StageAware {
             PopsGameManager.displayErrorMessageDebug(String.valueOf(task.getException()));
             downloadButton.setDisable(false);
         });
-        Thread t = new Thread(task, "fx-vmc-download");
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("fx-vmc-download", task);
     }
 
     private static List<Game> currentGames() {

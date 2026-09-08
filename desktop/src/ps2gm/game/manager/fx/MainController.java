@@ -40,6 +40,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.DeviceCompatFormatter;
 import ps2gm.game.manager.DialogCallback;
@@ -1160,11 +1161,9 @@ public class MainController implements MyListener {
     // ------------------------------------------------------------ helpers
 
     private void runBg(Runnable r) {
-        Thread t = new Thread(() -> {
+        BackgroundTasks.runDaemon("fx-main-bg", () -> {
             try { r.run(); } catch (Exception ex) { PopsGameManager.displayErrorMessageDebug(ex.toString()); }
-        }, "fx-main-bg");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 
     private static void deleteTree(File root) {

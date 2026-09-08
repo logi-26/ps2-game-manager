@@ -26,9 +26,7 @@ public final class IsoMerger implements Runnable {
 
     /** Starts the merge on a new daemon thread. */
     public static void start(SplitMergeProgress ui, String gameID) {
-        Thread t = new Thread(new IsoMerger(ui, gameID), "usbutil-merge");
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("usbutil-merge", new IsoMerger(ui, gameID));
     }
 
     @Override

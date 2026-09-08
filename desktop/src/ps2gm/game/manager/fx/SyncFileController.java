@@ -15,6 +15,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.GameListManager;
 import ps2gm.game.manager.Mode;
@@ -380,12 +381,10 @@ public class SyncFileController implements FxScreens.StageAware {
     // --- helpers --------------------------------------------------
 
     private void runFtp(Runnable r) {
-        Thread t = new Thread(() -> {
+        BackgroundTasks.runDaemon("fx-sync-file", () -> {
             try { r.run(); }
             catch (Exception ex) { PopsGameManager.displayErrorMessageDebug(ex.toString()); }
-        }, "fx-sync-file");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 
     private static List<String> orEmpty(List<String> list) { return list != null ? list : new ArrayList<>(); }

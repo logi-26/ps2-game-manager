@@ -70,9 +70,7 @@ public class MyFTPClient {
     
     // This adds a PS1 game to the console using FTP in a background thread
     public void addGameToPS2(FtpTransferProgress progress, List<File> fileList, boolean includeElf){
-        Thread worker = new Thread(() -> runUpload(progress, fileList, includeElf), "ftp-add-game-ps1");
-        worker.setDaemon(true);
-        worker.start();
+        BackgroundTasks.runDaemon("ftp-add-game-ps1", () -> runUpload(progress, fileList, includeElf));
     }
     
     

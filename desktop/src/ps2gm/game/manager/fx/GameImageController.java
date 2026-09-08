@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameArtFileManager;
@@ -167,12 +168,10 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
             return;
         }
 
-        Thread t = new Thread(() -> {
+        BackgroundTasks.runDaemon("fx-game-art-file", () -> {
             ImageArtProcessor.applySelectedImage(imageFile, coverType, game.getGameName(), game.getGameID());
             Platform.runLater(this::displayGameImages);
-        }, "fx-game-art-file");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 
     @FXML
@@ -198,7 +197,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
     private void getImageFromServer(String coverType, String coverPath, int startIndex) {
         Game game = gameList.get(currentListIndex);
         String region = PopsGameManager.determineGameRegion(game.getGameID().split("_")[0]);
-        Thread t = new Thread(() -> {
+        BackgroundTasks.runDaemon("fx-game-art-auto", () -> {
             BackendClient api = PopsGameManager.newBackendClient();
             int count = api.getImagesAvailableOnServer(game, region, game.getGameID(), game.getGameName(), coverType, false);
             if (count <= 0) {
@@ -210,15 +209,13 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
             if (image != null) {
                 Platform.runLater(() -> openSelector(coverPath, image, count, startIndex + 1));
             }
-        }, "fx-game-art-auto");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 
     private void getNextImageFromServer(String coverType, int currentImageNumber) {
         Game game = gameList.get(currentListIndex);
         String region = PopsGameManager.determineGameRegion(game.getGameID().split("_")[0]);
-        Thread t = new Thread(() -> {
+        BackgroundTasks.runDaemon("fx-game-art-next", () -> {
             BackendClient api = PopsGameManager.newBackendClient();
             api.getImageFromServer(game, region, game.getGameID(), game.getGameName(),
                     coverType, coverType, currentImageNumber - 1, false);
@@ -230,9 +227,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
                     }
                 });
             }
-        }, "fx-game-art-next");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 
     private void openSelector(String coverPath, File image, int count, int currentImageNumber) {

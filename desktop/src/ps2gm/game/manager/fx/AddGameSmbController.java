@@ -16,6 +16,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameListManager;
@@ -61,16 +62,14 @@ public class AddGameSmbController implements FxScreens.StageAware {
         });
 
         int playstation = PopsGameManager.getCurrentConsole() == Console.PS1 ? 1 : 2;
-        Thread t = new Thread(() -> {
+        BackgroundTasks.runDaemon("fx-add-game-smb", () -> {
             try {
                 if (!batchMode) { addGame(playstation); } else { batchAddGame(playstation); }
             } catch (Exception ex) {
                 PopsGameManager.displayErrorMessageDebug(ex.toString());
                 finish();
             }
-        }, "fx-add-game-smb");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 
     // --- port of addGame(int) ----------------------------------------------

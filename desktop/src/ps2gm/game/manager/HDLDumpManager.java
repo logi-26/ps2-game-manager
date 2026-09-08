@@ -35,18 +35,14 @@ public class HDLDumpManager {
     // Upload a PS2 game to the console using HDL_Dump (on a daemon thread; reports through FtpTransferProgress)
     public void hdlDumpUploadGame(FtpTransferProgress progress, String destination, String gameName, String gamePath) throws IOException, InterruptedException{
         timeRemaining = "0:00";
-        Thread worker = new Thread(() -> runUpload(progress, destination, gameName, gamePath), "hdl-dump-upload");
-        worker.setDaemon(true);
-        worker.start();
+        BackgroundTasks.runDaemon("hdl-dump-upload", () -> runUpload(progress, destination, gameName, gamePath));
     }
 
 
     // Batch upload PS2 games to the console using HDL_Dump (on a daemon thread; reports through FtpTransferProgress)
     public void hdlDumpUploadGameBatch(FtpTransferProgress progress, String destination, ArrayList<Path> gamePathList) throws IOException, InterruptedException{
         timeRemaining = "0:00";
-        Thread worker = new Thread(() -> runBatchUpload(progress, destination, gamePathList), "hdl-dump-upload-batch");
-        worker.setDaemon(true);
-        worker.start();
+        BackgroundTasks.runDaemon("hdl-dump-upload-batch", () -> runBatchUpload(progress, destination, gamePathList));
     }
 
 

@@ -27,9 +27,7 @@ public final class IsoSplitter implements Runnable {
 
     /** Starts the split on a new daemon thread. */
     public static void start(SplitMergeProgress ui, Game selectedGame) {
-        Thread t = new Thread(new IsoSplitter(ui, selectedGame), "usbutil-split");
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("usbutil-split", new IsoSplitter(ui, selectedGame));
     }
 
     @Override

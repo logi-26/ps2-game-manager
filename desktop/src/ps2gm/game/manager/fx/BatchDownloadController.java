@@ -17,6 +17,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.Game;
 import ps2gm.game.manager.GameArtFileManager;
@@ -114,9 +115,7 @@ public class BatchDownloadController implements FxScreens.StageAware {
         downloadButton.setDisable(true);
         processed.clear();
         processedListView.getItems().clear();
-        Thread t = new Thread(() -> runBatch(cov, cov2, spine, logo, disc, scr, bg, cfg), "fx-batch-download");
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("fx-batch-download", () -> runBatch(cov, cov2, spine, logo, disc, scr, bg, cfg));
     }
 
     private void runBatch(boolean cov, boolean cov2, boolean spine, boolean logo, boolean disc, boolean scr, boolean bg, boolean cfg) {
@@ -167,9 +166,7 @@ public class BatchDownloadController implements FxScreens.StageAware {
     }
 
     private void spawn(Game game, String fileType) {
-        Thread t = new Thread(() -> downloadOne(game, fileType), "fx-batch-" + fileType);
-        t.setDaemon(true);
-        t.start();
+        BackgroundTasks.runDaemon("fx-batch-" + fileType, () -> downloadOne(game, fileType));
     }
 
     private void downloadOne(Game game, String fileType) {
