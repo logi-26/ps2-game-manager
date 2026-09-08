@@ -210,7 +210,10 @@ def import_vmcs(db: Session, root: Path, only_console: str | None) -> None:
             continue
         if only_console and console != only_console:
             continue
-        label = vmc.stem
+        # Source files still use the pre-rebrand "_oplpops_" infix; normalize
+        # to "_ps2gm_" (matching the already-migrated DB rows, see alembic
+        # a27a211a27ad) before deriving game_id from it.
+        label = vmc.stem.replace("_oplpops_", "_ps2gm_")
         game_id = re.split(r"_ps2gm_?\d*$", label)[0] or label
         desc_path = vmc.with_suffix(".txt")
         description = (
