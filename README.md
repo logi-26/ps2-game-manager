@@ -43,7 +43,8 @@ on the PS2's internal hard drive over the network — for both PS1 (POPS) and PS
   - **PS2** — from an ISO, copied to the PS2 HDD with `hdl_dump`.
   - **Batch** add many at once, and **batch download** art/config/cheats for the
     whole list.
-- **UL format** — convert a PS2 ISO to OPL's split "UL" format and back.
+- **UL format** — convert a PS2 ISO to OPL's split "UL" format and back, from
+  the game-list right-click menu.
 - **ISO/ZSO conversion** — convert a PS2 ISO to OPL's LZ4-compressed ZSO
   format and back, from the game-list right-click menu.
 - **Generate** `conf_apps.cfg`, `ul.cfg`, PS1 ELF files and spine artwork.
@@ -125,8 +126,9 @@ are transferred from an ISO. Batch variants handle a whole folder at once.
 
 ##### UL format
 
-*Tools → Convert ISO to UL Format* splits a PS2 ISO into OPL's `UL.<...>` chunks
-and updates `ul.cfg`; *Convert UL Format to ISO* rebuilds a single ISO.
+Right-click a PS2 game and choose *Convert ISO to UL Format* to split it into
+OPL's `UL.<...>` chunks and update `ul.cfg`, or *Convert UL Format to ISO* to
+rebuild a single ISO.
 
 ##### ISO/ZSO conversion
 
