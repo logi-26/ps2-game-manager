@@ -10,7 +10,7 @@ public final class BadGameListScreen {
     private BadGameListScreen() {}
 
     public static void open(Console console, String message, List<File> badFiles) {
-        FxScreens.open("BadGameListScreen.fxml", " Unable to Detect Game ID - " + console, true,
+        FxScreens.open("BadGameListScreen.fxml", " Unable to Detect Game ID - " + console, false,
                 (BadGameListController c) -> c.init(console, message, badFiles));
     }
 }

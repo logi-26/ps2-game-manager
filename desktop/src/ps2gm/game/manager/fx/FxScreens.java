@@ -101,6 +101,11 @@ final class FxScreens {
                 // window's title is actually committed, so FindWindow-by-title misses it.
                 stage.show();
                 WindowsDarkTitleBar.apply(stage, dark);
+                // Apply the dark title bar first - it does a native hide/show toggle
+                // to force DWM to repaint, which resets the window's foreground/
+                // z-order state and would undo a toFront()/requestFocus() done before it.
+                stage.toFront();
+                stage.requestFocus();
             }
         } catch (Exception ex) {
             PopsGameManager.displayErrorMessageDebug("FX screen '" + fxmlResource + "' failed to open: " + ex);
