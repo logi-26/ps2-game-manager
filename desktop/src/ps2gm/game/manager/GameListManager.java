@@ -433,11 +433,19 @@ public class GameListManager {
     // This adds all PS2 games from the ul.cfg file to the PS2 game list
     private static void readPS2GamesFromULCFG() {
 
-        // If the ul.cfg file exists and contains games
-        if (!USBUtil.readULCFG().isEmpty()){
+        List<Game> ulGames = USBUtil.readULCFG();
 
-            // Add each game from the ul.cfg file to the PS2 game list
-            USBUtil.readULCFG().forEach((ulGame) -> {gameListPS2.add(ulGame);});
+        // If the ul.cfg file exists and contains games
+        if (!ulGames.isEmpty()){
+
+            // Add each game from the ul.cfg file to the PS2 game list, and its size to the running
+            // total - createPS2ListFromSMB (called just before this) only totals the SMB-listed
+            // ISOs, so without this the stats panel silently undercounts by every ul.cfg game.
+            for (Game ulGame : ulGames) {
+                gameListPS2.add(ulGame);
+                totalGameSizeRawPS2 += ulGame.getGameRawSize();
+            }
+            totalGameSizeDisplayPS2 = PopsGameManager.bytesToHuman(totalGameSizeRawPS2);
 
             // This reorganizes the PS2 game list in alphaetical order after the UL games have been added
             Collections.sort(gameListPS2, new ListOrganiser());

@@ -203,6 +203,12 @@ public class GameConfigFileManager {
     }
 
 
+    // True if a game's own .cfg file exists on disk - e.g. to confirm a batch download actually
+    // wrote one, since getConfigFromServer() reports no success/failure of its own.
+    public static boolean exists(String gameID, String gameName){
+        return resolveGameConfigFile(gameID, gameName).isFile();
+    }
+
     // The per-game .cfg path, PS1 and PS2 naming conventions differ (see GameArtFileManager for
     // the equivalent ART-naming split) - factored out since every method above needed it.
     private static File resolveGameConfigFile(String gameID, String gameName){

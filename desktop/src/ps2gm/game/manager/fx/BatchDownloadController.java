@@ -34,7 +34,14 @@ import ps2gm.game.manager.PopsGameManager;
  */
 public class BatchDownloadController implements FxScreens.StageAware {
 
-    @FXML private ImageView frontCoverView, rearCoverView, spineView, logoView, discView, screenshot1View, screenshot2View, backgroundView;
+    // Preview sizes, matching GameImageController's (the per-game ART screen this mirrors).
+    private static final int[] BG_PREVIEW    = {380, 170};
+    private static final int[] DISC_PREVIEW  = {70, 70};
+    private static final int[] SCR_PREVIEW   = {300, 170};
+    private static final int[] SPINE_PREVIEW = {20, 260};
+    private static final int[] LOGO_PREVIEW  = {195, 93};
+
+    @FXML private ImageView covView, cov2View, spineView1, logoView1, discView1, scr1View, scr2View, bgView;
     @FXML private CheckBox frontCoverCheck, rearCoverCheck, spineCheck, logoCheck, discCheck, screenshotCheck, backgroundCheck, configCheck;
     @FXML private Label missingLabel;
     @FXML private Button downloadButton;
@@ -192,13 +199,22 @@ public class BatchDownloadController implements FxScreens.StageAware {
                     break;
             }
 
+            // The API calls above report no success/failure of their own (a missing server-side
+            // file is a silent no-op, not an error) - check disk directly so a game that had
+            // nothing to download doesn't show up as "processed".
+            boolean downloaded = fileType.equals("CONFIG")
+                    ? GameConfigFileManager.exists(game.getGameID(), game.getGameName())
+                    : GameArtFileManager.resolve(game, fileType) != null;
+
             Platform.runLater(() -> {
                 currentGameField.setText(" " + game.getGameName() + " : " + game.getGameID());
-                if (!processed.contains(game.getGameName())) {
-                    processed.add(game.getGameName());
-                    processedListView.getItems().setAll(processed);
+                if (downloaded) {
+                    if (!processed.contains(game.getGameName())) {
+                        processed.add(game.getGameName());
+                        processedListView.getItems().setAll(processed);
+                    }
+                    updatePreview(game, fileType);
                 }
-                updatePreview(game, fileType);
             });
         } catch (Exception ex) {
             PopsGameManager.displayErrorMessageDebug(ex.toString());
@@ -214,27 +230,25 @@ public class BatchDownloadController implements FxScreens.StageAware {
     }
 
     private void updatePreview(Game game, String fileType) {
+        int[] coverPreview = console == Console.PS1 ? new int[] {130, 160} : new int[] {130, 210};
         switch (fileType) {
-            case "_COV":  setImage(frontCoverView, GameArtFileManager.resolve(game, "_COV"), coverW(), coverH()); break;
-            case "_COV2": setImage(rearCoverView, GameArtFileManager.resolve(game, "_COV2"), coverW(), coverH()); break;
-            case "_BG":   setImage(backgroundView, GameArtFileManager.resolve(game, "_BG"), 300, 170); break;
-            case "_ICO":  setImage(discView, GameArtFileManager.resolve(game, "_ICO"), 70, 70); break;
-            case "_SCR":  setImage(screenshot1View, GameArtFileManager.resolve(game, "_SCR"), 225, 170); break;
-            case "_SCR2": setImage(screenshot2View, GameArtFileManager.resolve(game, "_SCR2"), 225, 170); break;
-            case "_LAB":  setImage(spineView, GameArtFileManager.resolve(game, "_LAB"), 20, 260); break;
-            case "_LGO":  setImage(logoView, GameArtFileManager.resolve(game, "_LGO"), 195, 93); break;
+            case "_COV":  setImage(covView, GameArtFileManager.resolve(game, "_COV"), coverPreview); break;
+            case "_COV2": setImage(cov2View, GameArtFileManager.resolve(game, "_COV2"), coverPreview); break;
+            case "_BG":   setImage(bgView, GameArtFileManager.resolve(game, "_BG"), BG_PREVIEW); break;
+            case "_ICO":  setImage(discView1, GameArtFileManager.resolve(game, "_ICO"), DISC_PREVIEW); break;
+            case "_SCR":  setImage(scr1View, GameArtFileManager.resolve(game, "_SCR"), SCR_PREVIEW); break;
+            case "_SCR2": setImage(scr2View, GameArtFileManager.resolve(game, "_SCR2"), SCR_PREVIEW); break;
+            case "_LAB":  setImage(spineView1, GameArtFileManager.resolve(game, "_LAB"), new int[] {SPINE_PREVIEW[0], coverPreview[1]}); break;
+            case "_LGO":  setImage(logoView1, GameArtFileManager.resolve(game, "_LGO"), LOGO_PREVIEW); break;
             default: break;
         }
     }
 
-    private int coverW() { return 160; }
-    private int coverH() { return console == Console.PS1 ? 160 : 210; }
-
-    private static void setImage(ImageView view, File file, int w, int h) {
+    // The ImageViews' own fitWidth/fitHeight are bound to their containing StackPane in FXML
+    // (matching GameImageScreen.fxml) - the size passed here is just ImageIO's decode-size hint.
+    private static void setImage(ImageView view, File file, int[] size) {
         if (file != null && file.isFile()) {
-            view.setFitWidth(w);
-            view.setFitHeight(h);
-            view.setImage(new Image(file.toURI().toString(), w, h, false, true));
+            view.setImage(new Image(file.toURI().toString(), size[0], size[1], true, true));
         }
     }
 }
