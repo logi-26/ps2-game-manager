@@ -56,6 +56,7 @@ $libJars = @(
     'sevenzipjbinding-AllPlatforms.jar'
     'jna-5.14.0.jar'
     'jna-platform-5.14.0.jar'
+    'lz4-java-1.8.0.jar'
 ) + $javafxJars
 
 $cp = ($libJars | ForEach-Object { Join-Path $libDir $_ }) -join ';'
@@ -138,6 +139,7 @@ if ($Run -or $Stage) {
     Copy-Item (Join-Path $libDir 'sevenzipjbinding-AllPlatforms.jar') (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'jna-5.14.0.jar')                   (Join-Path $runDir 'lib') -Force
     Copy-Item (Join-Path $libDir 'jna-platform-5.14.0.jar')          (Join-Path $runDir 'lib') -Force
+    Copy-Item (Join-Path $libDir 'lz4-java-1.8.0.jar')               (Join-Path $runDir 'lib') -Force
     New-Item -ItemType Directory -Force -Path (Join-Path $runDir 'lib\javafx') | Out-Null
     Copy-Item (Join-Path $libDir 'javafx\*.jar') (Join-Path $runDir 'lib\javafx') -Force
     # lib\javafx now holds every JavaFX classifier. package.ps1 / -Run only need

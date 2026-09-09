@@ -103,7 +103,7 @@ public class MainController implements MyListener {
             miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miCheckUpdate;
 
     // Game-list right-click items whose enablement depends on the selected game.
-    private MenuItem ctxRun, ctxSplit, ctxMerge, ctxMd5;
+    private MenuItem ctxRun, ctxSplit, ctxMerge, ctxMd5, ctxConvert;
     @FXML private Menu menuConsoleFileTransfer, menuTheme, menuPs2IdPos;
 
     private Stage stage;
@@ -490,6 +490,11 @@ public class MainController implements MyListener {
         ctxSplit.setVisible(g != null && !ps1 && smb && !ul);
         ctxMerge.setVisible(g != null && !ps1 && smb && ul && g.getGameRawSize() > 0);
         ctxMd5.setVisible(g != null && smb && !ul);
+
+        boolean isZso = g != null && g.getGamePath() != null && g.getGamePath().toLowerCase().endsWith(".zso");
+        boolean isIso = g != null && g.getGamePath() != null && g.getGamePath().toLowerCase().endsWith(".iso");
+        ctxConvert.setVisible(g != null && !ps1 && smb && !ul && (isZso || isIso));
+        ctxConvert.setText(isZso ? "Convert ZSO to ISO Format" : "Convert ISO to ZSO Format");
     }
 
     // ----------------------------------------------------------- toolbar
@@ -664,6 +669,15 @@ public class MainController implements MyListener {
         SplitMergeScreen.open(GameListManager.getGameListPS2().get(i), "Merge");
     }
 
+    private void onConvertIsoZso() {
+        int i = gameList.getSelectionModel().getSelectedIndex();
+        if (i < 0) { return; }
+        Game g = GameListManager.getGameListPS2().get(i);
+        if (g.getGamePath() == null) { return; }
+        boolean toZso = !g.getGamePath().toLowerCase().endsWith(".zso");
+        ConvertIsoZsoScreen.open(g, toZso);
+    }
+
     @FXML private void onGenerateSpine() {
         GenerateSpineART gen = new GenerateSpineART();
         if (PopsGameManager.getCurrentConsole() == Console.PS1) { gen.generateForPS1(); } else { gen.generateForPS2(); }
@@ -796,6 +810,8 @@ public class MainController implements MyListener {
 
         ctxSplit = new MenuItem("Convert ISO to UL Format");
         ctxSplit.setOnAction(e -> onSplitPs2Game());
+        ctxConvert = new MenuItem("Convert ISO to ZSO Format");
+        ctxConvert.setOnAction(e -> onConvertIsoZso());
         ctxMerge = new MenuItem("Convert UL Format to ISO");
         ctxMerge.setOnAction(e -> onMergePs2Game());
         ctxMd5 = new MenuItem("Perform MD5 Hash");
@@ -806,7 +822,7 @@ public class MainController implements MyListener {
             if (gameList.getSelectionModel().getSelectedIndex() != -1) { deleteGame(); }
         });
 
-        ContextMenu menu = new ContextMenu(ctxRun, rename, ctxSplit, ctxMerge, ctxMd5,
+        ContextMenu menu = new ContextMenu(ctxRun, rename, ctxSplit, ctxConvert, ctxMerge, ctxMd5,
                 new SeparatorMenuItem(), delete);
         menu.setOnShowing(e -> refreshRowMenuState());
         return menu;
