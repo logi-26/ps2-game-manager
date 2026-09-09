@@ -44,10 +44,13 @@ on the PS2's internal hard drive over the network — for both PS1 (POPS) and PS
   - **Batch** add many at once, and **batch download** art/config/cheats for the
     whole list.
 - **UL format** — convert a PS2 ISO to OPL's split "UL" format and back.
+- **ISO/ZSO conversion** — compress a PS2 ISO to OPL's LZ4-compressed ZSO
+  format, or convert a ZSO back to ISO, from the game-list right-click menu.
 - **Generate** `conf_apps.cfg`, `ul.cfg`, PS1 ELF files and spine artwork.
 - **Housekeeping** — find and delete unused or all ART / CFG / CHT / ELF / spine
-  files; rename games (32-char limit); fix mis-named VCD/ISO files; MD5-hash a
-  game.
+  files; rename games (32-char limit); fix mis-named VCD/ISO/ZSO files, with ID
+  suggestions looked up by fuzzy-matching the filename against a reference
+  catalogue of known titles; MD5-hash a game.
 - **Launch** the selected game in your configured PS1 or PS2 emulator, or from
   the game-list right-click menu.
 - **File transfer** — browse the PS2 over FTP and push files to it, or set the
@@ -124,6 +127,25 @@ are transferred from an ISO. Batch variants handle a whole folder at once.
 
 *Tools → Convert ISO to UL Format* splits a PS2 ISO into OPL's `UL.<...>` chunks
 and updates `ul.cfg`; *Convert UL Format to ISO* rebuilds a single ISO.
+
+##### ISO/ZSO conversion
+
+Right-click a PS2 game and choose *Convert ISO to ZSO Format* or *Convert ZSO
+to ISO Format* to compress or decompress it in place, with a progress popup.
+ZSO is OPL's LZ4-compressed ISO container. A freshly-converted file is
+verified by decompressing it back and checksumming it against the source
+before the original is deleted, so a failed conversion never touches the
+original file.
+
+##### Fixing unrecognised game files
+
+If a game file's ID can't be detected from its name at all, a *Bad Game List*
+screen opens automatically once the scan that found them finishes, and lets
+you rename each one — including suggested IDs looked up by fuzzy-matching the
+filename against a reference catalogue of known titles. A suggestion only
+fills in the proposed name; you still confirm the rename yourself, since a
+name match alone can't tell a multi-disc game's discs apart (each disc is
+listed as a separate suggestion to choose from).
 
 ##### Files the app writes
 
