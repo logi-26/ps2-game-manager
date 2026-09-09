@@ -16,6 +16,13 @@ on the PS2's internal hard drive over the network — for both PS1 (POPS) and PS
 > **Beta.** PS2GM can write to your PS2's internal HDD. There is a real risk of
 > data corruption. Use it at your own risk and keep backups.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/main-screen-ps2.png" alt="PS2GM main screen, PlayStation 2 game selected" width="49%">
+  <img src="docs/screenshots/main-screen-ps1.png" alt="PS2GM main screen, PlayStation 1 game selected" width="49%">
+</p>
+
 ## Features
 
 - **Game list** for PS1 and PS2, read straight from your OPL folder, with
@@ -215,7 +222,7 @@ if you're doing that kind of development.
 | `desktop/` | The desktop app (`ps2gm.game.manager`, Java + JavaFX). Build with `desktop/build.ps1`. |
 | `api/` | Source for the hosted API (art/config/cheat/VMC content). Included for transparency / local dev testing, not for self-hosting. See [`api/README.md`](api/README.md). |
 | `local-dev/` | Scripts to run the app and API together on localhost. |
-| `docs/` | Design notes. |
+| `docs/` | Design notes and README screenshots. |
 
 ## Credits
 
