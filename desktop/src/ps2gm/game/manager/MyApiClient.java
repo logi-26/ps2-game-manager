@@ -2,7 +2,10 @@ package ps2gm.game.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -11,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -47,6 +51,8 @@ public class MyApiClient implements BackendClient {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration DOWNLOAD_TIMEOUT = Duration.ofSeconds(60);
+    // App update packages are much larger than any other download this client does.
+    private static final Duration UPDATE_DOWNLOAD_TIMEOUT = Duration.ofMinutes(5);
 
     public MyApiClient() {}
 
@@ -55,41 +61,72 @@ public class MyApiClient implements BackendClient {
     // =====================================================================
 
     @Override
-    public void getJarFileFromServer(String newVersionNumber) {
+    public AppReleaseInfo getLatestAppRelease(String channel) {
         try {
-            byte[] data = getBytes("/app/releases/" + newVersionNumber + "/download", DOWNLOAD_TIMEOUT);
-            if (data == null) return;
-
-            String jarPath = PopsGameManager.getCurrentDirectory() + File.separator + "PS2GM_" + newVersionNumber + ".jar";
-            Files.write(Paths.get(jarPath), data);
-            checkJarFile(jarPath, data.length);
+            Map<String, Object> json = getJson("/app/latest?channel=" + urlEncode(channel), DEFAULT_TIMEOUT);
+            return json == null ? null : AppReleaseInfo.fromJson(json);
         } catch (IOException | InterruptedException ex) {
             PopsGameManager.displayErrorMessageDebug(ex.toString());
+            return null;
         }
     }
 
-    private void checkJarFile(String filePath, int expectedLength) {
-        File jarFile = new File(filePath);
-        if (jarFile.exists() && jarFile.length() == expectedLength) {
-            long jarFileSize = jarFile.length();
-            if (PopsGameManager.confirmDialog("The update was successfully downloaded!  (size = " + PopsGameManager.bytesToHuman(jarFileSize) + "). \n\nDo you want to launch the new version now?", " Update Downloaded")) {
-                int endIndex = filePath.lastIndexOf(File.separator);
-                if (endIndex != -1) {
-                    String jarPath = filePath.substring(0, endIndex + 1);
-                    String jarName = filePath.substring(endIndex + 1);
-                    ProcessBuilder pb = new ProcessBuilder("java", "-jar", jarPath + jarName);
-                    pb.directory(new File(PopsGameManager.getCurrentDirectory()));
-                    try {
-                        pb.start();
-                        System.exit(0);
-                    } catch (IOException ex) {
-                        PopsGameManager.displayErrorMessageDebug(ex.toString());
+    @Override
+    public boolean downloadAppUpdatePackage(String version, AppPlatformAsset asset, File destZip, AppUpdateProgress progress) {
+        String path = "/app/releases/" + urlEncode(version) + "/download?platform=" + urlEncode(asset.platform());
+        File partial = new File(destZip.getPath() + ".part");
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl() + path))
+                    .timeout(UPDATE_DOWNLOAD_TIMEOUT)
+                    .GET()
+                    .build();
+            HttpResponse<InputStream> resp = HTTP.send(request, BodyHandlers.ofInputStream());
+            if (resp.statusCode() != 200) {
+                return false;
+            }
+
+            long expectedBytes = asset.bytes();
+            long copied = 0;
+            try (InputStream in = resp.body();
+                 OutputStream out = Files.newOutputStream(partial.toPath())) {
+                byte[] buffer = new byte[64 * 1024];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                    copied += read;
+                    if (progress != null && expectedBytes > 0) {
+                        progress.setProgress(Math.min(1.0, copied / (double) expectedBytes));
                     }
                 }
             }
-        } else {
-            PopsGameManager.showErrorDialog("There was a problem downloading the update, please try again later!.", " Update Failed!");
+
+            if (expectedBytes > 0 && copied != expectedBytes) {
+                Files.deleteIfExists(partial.toPath());
+                return false;
+            }
+            Files.move(partial.toPath(), destZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (IOException | InterruptedException ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+            try {Files.deleteIfExists(partial.toPath());} catch (IOException ignored) {}
+            return false;
         }
+    }
+
+    @Override
+    public String downloadChecksumText(String version, AppPlatformAsset asset) {
+        String path = "/app/releases/" + urlEncode(version) + "/checksum?platform=" + urlEncode(asset.platform());
+        try {
+            byte[] data = getBytes(path, DEFAULT_TIMEOUT);
+            return data == null ? null : new String(data, StandardCharsets.UTF_8);
+        } catch (IOException | InterruptedException ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+            return null;
+        }
+    }
+
+    private static String urlEncode(String s) {
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
     @Override

@@ -134,6 +134,11 @@ public final class MiniJson {
         return v instanceof Number ? ((Number) v).intValue() : def;
     }
 
+    public static long longVal(Map<String, Object> obj, String key, long def) {
+        Object v = obj.get(key);
+        return v instanceof Number ? ((Number) v).longValue() : def;
+    }
+
     @SuppressWarnings("unchecked")
     public static List<Object> list(Map<String, Object> obj, String key) {
         Object v = obj.get(key);

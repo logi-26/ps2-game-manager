@@ -1,5 +1,7 @@
 package ps2gm.game.manager;
 
+import java.io.File;
+
 /**
  * Everything the desktop app needs from a shared-content backend: art,
  * configs, cheats, VMCs, and app/tool updates.
@@ -18,7 +20,12 @@ package ps2gm.game.manager;
 public interface BackendClient {
 
     // ---- app / tool updates -------------------------------------------------
-    void getJarFileFromServer(String newVersionNumber);
+    /** {@code GET /app/latest?channel=...}, or null if unreachable/no release on that channel. */
+    AppReleaseInfo getLatestAppRelease(String channel);
+    /** Streams the update package for {@code version}/{@code asset} into {@code destZip}, reporting progress. False on any failure (destZip is not left partially written). */
+    boolean downloadAppUpdatePackage(String version, AppPlatformAsset asset, File destZip, AppUpdateProgress progress);
+    /** The raw text of the asset's .sha256 sidecar, or null if unreachable. */
+    String downloadChecksumText(String version, AppPlatformAsset asset);
     void getCue2PopsFromServer(String cue2popsPath, String cue2popsMD5);
 
     // ---- downloading game content -------------------------------------------------

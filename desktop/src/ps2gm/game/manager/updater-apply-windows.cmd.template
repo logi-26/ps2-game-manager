@@ -1,0 +1,47 @@
+@echo off
+setlocal enabledelayedexpansion
+
+set "PID=@@PID@@"
+set "INSTALL_ROOT=@@INSTALL_ROOT@@"
+set "FINAL_DIR=@@FINAL_DIR@@"
+set "OLD_DIR=@@OLD_DIR@@"
+set "STAGING_DIR=@@STAGING_DIR@@"
+set "RELAUNCH_CMD=@@RELAUNCH_CMD@@"
+set "LOG=%STAGING_DIR%\ps2gm-update-failed.log"
+
+set /a COUNT=0
+:waitloop
+tasklist /FI "PID eq %PID%" 2>NUL | find "%PID%" >NUL
+if "%ERRORLEVEL%"=="0" (
+    set /a COUNT+=1
+    if !COUNT! GEQ 120 goto timeout_fail
+    timeout /t 1 /nobreak >NUL
+    goto waitloop
+)
+
+move "%INSTALL_ROOT%" "%OLD_DIR%" >NUL
+if errorlevel 1 goto move_out_failed
+
+move "%FINAL_DIR%" "%INSTALL_ROOT%" >NUL
+if errorlevel 1 goto move_in_failed
+
+rmdir /s /q "%OLD_DIR%" >NUL 2>&1
+start "" %RELAUNCH_CMD%
+rmdir /s /q "%STAGING_DIR%" >NUL 2>&1
+goto end
+
+:timeout_fail
+echo Timed out waiting for PS2GM (pid %PID%) to exit. > "%LOG%"
+goto end
+
+:move_out_failed
+echo Failed to move the current install aside - nothing was changed. > "%LOG%"
+goto end
+
+:move_in_failed
+move "%OLD_DIR%" "%INSTALL_ROOT%" >NUL
+echo Failed to move the new version into place - rolled back to the previous install. > "%LOG%"
+goto end
+
+:end
+(goto) 2>nul & del "%~f0"

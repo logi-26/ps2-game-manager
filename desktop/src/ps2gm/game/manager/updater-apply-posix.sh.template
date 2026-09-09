@@ -1,0 +1,35 @@
+#!/bin/sh
+set -u
+
+PID="@@PID@@"
+INSTALL_ROOT="@@INSTALL_ROOT@@"
+FINAL_DIR="@@FINAL_DIR@@"
+OLD_DIR="@@OLD_DIR@@"
+STAGING_DIR="@@STAGING_DIR@@"
+RELAUNCH_CMD="@@RELAUNCH_CMD@@"
+LOG="$STAGING_DIR/ps2gm-update-failed.log"
+
+count=0
+while kill -0 "$PID" 2>/dev/null; do
+    count=$((count + 1))
+    if [ "$count" -ge 120 ]; then
+        echo "Timed out waiting for PS2GM (pid $PID) to exit." > "$LOG"
+        exit 1
+    fi
+    sleep 1
+done
+
+if ! mv "$INSTALL_ROOT" "$OLD_DIR"; then
+    echo "Failed to move the current install aside - nothing was changed." > "$LOG"
+    exit 1
+fi
+
+if ! mv "$FINAL_DIR" "$INSTALL_ROOT"; then
+    mv "$OLD_DIR" "$INSTALL_ROOT"
+    echo "Failed to move the new version into place - rolled back to the previous install." > "$LOG"
+    exit 1
+fi
+
+rm -rf "$OLD_DIR"
+( sh -c "$RELAUNCH_CMD" >/dev/null 2>&1 & )
+rm -rf "$STAGING_DIR"

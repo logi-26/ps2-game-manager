@@ -304,7 +304,25 @@ public class PopsGameManager {
         
         return fileMD5;
     }
-    
+
+    // SHA-256 of a file, hex-encoded lower-case - used to verify a downloaded app update
+    // package against its checksum sidecar (see AppUpdateDownloader). MD5 above stays as-is
+    // for cue2pops.exe, its existing use; this is the stronger hash for the higher-stakes case.
+    public static String performSha256Check(File selectedFile) {
+        try (FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] dataBytes = new byte[8192];
+            int nread;
+            while ((nread = fileInputStream.read(dataBytes)) != -1) {messageDigest.update(dataBytes, 0, nread);}
+            byte[] digestBytes = messageDigest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digestBytes) {sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));}
+            return sb.toString();
+        } catch (IOException | NoSuchAlgorithmException ex) {
+            displayErrorMessageDebug(ex.toString());
+            return null;
+        }
+    }
 
     // </editor-fold>
 

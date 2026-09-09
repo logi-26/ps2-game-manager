@@ -39,7 +39,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ps2gm.game.manager.AddGameManager;
-import ps2gm.game.manager.BackendClient;
+import ps2gm.game.manager.AppPlatformAsset;
+import ps2gm.game.manager.AppReleaseInfo;
+import ps2gm.game.manager.AppUpdateChecker;
+import ps2gm.game.manager.AppUpdateManager;
 import ps2gm.game.manager.BackgroundTasks;
 import ps2gm.game.manager.Console;
 import ps2gm.game.manager.DeviceCompatFormatter;
@@ -166,6 +169,9 @@ public class MainController implements MyListener {
             @Override public boolean confirm(String message, String title) { return confirmFx(message, title); }
             @Override public void infoTimed(String message, String title, int seconds) { infoTimedFx(message, title, seconds); }
         });
+        // Needs the dialog callback above already registered, so any leftover
+        // ps2gm-update-failed.log from an interrupted update can actually be shown.
+        runBg(AppUpdateManager::cleanupOrphanedArtifacts);
         suppressSelectionEvents = true;
         cmiPs1Compat.setSelected(PopsGameManager.getGameCompatabilityPS1());
         cmiPs2UlHighlight.setSelected(PopsGameManager.getSplitGameDisplayPS2());
@@ -1126,26 +1132,40 @@ public class MainController implements MyListener {
     // ------------------------------------------------------- update check
 
     private void checkForUpdate() {
-        BackendClient api = PopsGameManager.newBackendClient();
-        String response = api.sendMessageToServer("VERSION");
-        if (response == null || "NO_RESPONSE".equals(response)) {
-            Platform.runLater(() -> warn("The server is currently not responding or the connection is being blocked by your firewall!", " Server Not Responding"));
-            return;
-        }
-        String[] parts = response.contains(",") ? response.split(",") : null;
-        if (parts == null || parts.length <= 1) { return; }
-        String newVersion = parts[0];
-        String newDate = parts[1];
+        AppUpdateChecker.Result result = AppUpdateManager.checkForUpdate();
         String current = PopsGameManager.getApplicationVersionNumber();
-        if (current.equals(newVersion)) {
-            Platform.runLater(() -> info("There are currently no updates available!  \n\nApplication Version : " + current + "\nServer Version : " + newVersion, " No Update Available"));
-        } else if (!"NO_RESPONSE".equals(current)) {
-            Platform.runLater(() -> {
-                if (confirm("There is an update available for this software!  \n\nCurrent Version : " + current + "  -  (" + PopsGameManager.getApplicationReleaseDate() + ")  \nLatest Version   : " + newVersion + "  -  (" + newDate + ")  \n\nDo you want to download the update?", " Update Available")) {
-                    runBg(() -> api.getJarFileFromServer(newVersion));
+        switch (result.status()) {
+            case NO_RESPONSE -> Platform.runLater(() ->
+                    warn("The server is currently not responding or the connection is being blocked by your firewall!", " Server Not Responding"));
+            case UP_TO_DATE -> Platform.runLater(() ->
+                    info("There are currently no updates available!  \n\nApplication Version : " + current + "\nServer Version : " + result.release().version(), " No Update Available"));
+            case UPDATE_AVAILABLE_NO_PLATFORM_BUILD -> Platform.runLater(() ->
+                    info("Version " + result.release().version() + " is available, but there isn't a build for this installation type yet.\n\nPlease check back later.", " Update Not Available Yet"));
+            case UPDATE_AVAILABLE -> Platform.runLater(() -> {
+                if (confirm("There is an update available for this software!  \n\nCurrent Version : " + current + "  -  (" + PopsGameManager.getApplicationReleaseDate() + ")  \nLatest Version   : " + result.release().version() + "\n\nDo you want to download the update?", " Update Available")) {
+                    runBg(() -> downloadAndApplyUpdate(result.release(), result.asset()));
                 }
             });
         }
+    }
+
+    private void downloadAndApplyUpdate(AppReleaseInfo release, AppPlatformAsset asset) {
+        UpdateProgressController progress = UpdateProgressScreen.open();
+        AppUpdateManager.StagedUpdate staged = AppUpdateManager.downloadAndStage(release, asset, progress);
+        progress.close();
+
+        if (staged == null) {
+            Platform.runLater(() -> error("The update could not be downloaded or verified. Please try again later.", " Update Failed"));
+            return;
+        }
+
+        Platform.runLater(() -> {
+            if (confirm("The update has been downloaded and verified.\n\nRestart now to apply it?", " Update Ready")) {
+                if (!AppUpdateManager.applyAndExit(staged)) {
+                    error("The update could not be applied. Please try again later.", " Update Failed");
+                }
+            }
+        });
     }
 
     // ------------------------------------------------------- long names
