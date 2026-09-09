@@ -89,6 +89,16 @@ class AppReleaseOut(BaseModel):
     platforms: list[AppPlatformAssetOut]
 
 
+class GameSuggestionOut(BaseModel):
+    """A fuzzy name-match candidate from GET /games/suggest (app/namesearch.py)."""
+
+    game_id: str
+    title: str
+    console: str
+    region: str
+    score: int
+
+
 class ToolReleaseOut(ORMModel):
     id: int
     name: str

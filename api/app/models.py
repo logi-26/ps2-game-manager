@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import (
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -129,6 +130,37 @@ class AppRelease(Base, TimestampMixin):
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class GameListEntry(Base, TimestampMixin):
+    """A name -> game-ID reference row from a user-supplied catalogue list
+    (see scripts/import_gamelists.py), used only to power GET /games/suggest's
+    fuzzy name matching (app/namesearch.py). Deliberately unrelated to Game -
+    keeping this separate means /games keeps meaning "a game we have real
+    content for", not "a game we've merely heard the name of".
+
+    Unique on (console, region, game_id, title) rather than just
+    (console, region, game_id): the real source lists have a real, if small,
+    error rate where the same ID is listed under two genuinely different
+    titles (confirmed - e.g. one ID claimed by both "Dynasty Tactics 2" and
+    "007 - Everything or Nothing" in one region file). Since nothing here
+    can tell which is right, both stay as separate candidate rows rather
+    than one being silently dropped - harmless for fuzzy matching (a human
+    reviews every suggestion), and title in the key still collapses exact
+    duplicate lines (the same id+title repeated verbatim, also seen in the
+    raw data) down to one row."""
+
+    __tablename__ = "game_list_entry"
+    __table_args__ = (
+        UniqueConstraint("console", "region", "game_id", "title", name="uq_gle_console_region_id_title"),
+        Index("ix_gle_console_title", "console", "title"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    console: Mapped[str] = mapped_column(String(3), nullable=False)
+    region: Mapped[str] = mapped_column(String(8), nullable=False)
+    game_id: Mapped[str] = mapped_column(String(16), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
 
 
 class ToolRelease(Base, TimestampMixin):

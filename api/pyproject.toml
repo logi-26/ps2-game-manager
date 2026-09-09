@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.5",
     "python-multipart>=0.0.12",
     "pillow>=10.4",
+    "rapidfuzz>=3.9",
 ]
 
 [project.optional-dependencies]

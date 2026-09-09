@@ -11,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 from app.blobstore import BlobStore
 from app.db import get_db
 from app.main import app
-from app.models import Base, Game
+from app.models import Base, Game, GameListEntry
 
 
 @pytest.fixture()
@@ -59,5 +59,21 @@ def make_game(db_session: Session):
         db_session.commit()
         db_session.refresh(game)
         return game
+
+    return _make
+
+
+@pytest.fixture()
+def make_game_list_entry(db_session: Session):
+    """Insert (and commit) a GameListEntry row, returning it."""
+
+    def _make(
+        game_id: str = "SLUS_207.68", console: str = "PS2", region: str = "NTSCU", title: str = "Test Game"
+    ) -> GameListEntry:
+        entry = GameListEntry(game_id=game_id, console=console, region=region, title=title)
+        db_session.add(entry)
+        db_session.commit()
+        db_session.refresh(entry)
+        return entry
 
     return _make
