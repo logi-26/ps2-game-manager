@@ -15,7 +15,7 @@
     Usage:
         pwsh ./package.ps1                                  # app-image, defaults (127.0.0.1:8000/v1)
         pwsh ./package.ps1 -ApiBaseUrl http://10.0.0.5:8000/v1
-        pwsh ./package.ps1 -Icon path\to\icon.ico
+        pwsh ./package.ps1 -Icon path\to\icon.ico            # defaults to icons/ps2gm.ico
         pwsh ./package.ps1 -Fresh                           # re-stage lib/ hdd/ POPSTARTER/ first
 
     Output: build-local/release/windows/PS2GM/PS2GM.exe
@@ -31,6 +31,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root       = $PSScriptRoot
+if (-not $Icon) { $Icon = Join-Path $root 'icons\ps2gm.ico' }
 $buildLocal = Join-Path $root 'build-local'
 $runDir     = Join-Path $buildLocal 'run'
 $packageDir = Join-Path $buildLocal 'release\windows'

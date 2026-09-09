@@ -29,6 +29,7 @@ public final class MainApp extends Application {
         MainController controller = loader.getController();
 
         primaryStage.setTitle(PopsGameManager.getFormTitle());
+        primaryStage.getIcons().addAll(AppIcons.ALL);
         Scene scene = new Scene(root);
         Themes.decorate(scene);
         primaryStage.setScene(scene);
@@ -36,6 +37,7 @@ public final class MainApp extends Application {
         primaryStage.centerOnScreen();
         controller.init(primaryStage);
         primaryStage.show();
+        WindowsDarkTitleBar.apply(primaryStage, Themes.isDark(PopsGameManager.getThemeName()));
     }
 
     /** Called from {@code Main.main} after the headless setup is done. */

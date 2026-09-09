@@ -74,6 +74,7 @@ final class FxScreens {
             }
             Stage stage = new Stage();
             stage.setTitle(title);
+            stage.getIcons().addAll(AppIcons.ALL);
             stage.setResizable(resizable);
             Scene scene = new Scene(root);
             Themes.decorate(scene);
@@ -88,10 +89,18 @@ final class FxScreens {
             if (controller instanceof StageAware sa) {
                 sa.stageReady(stage);
             }
+            boolean dark = Themes.isDark(PopsGameManager.getThemeName());
             if (modalAndWait) {
+                // showAndWait() blocks until the window closes, so there's no "after show()"
+                // point to call from here - setOnShown is the only option for this branch.
+                stage.setOnShown(e -> WindowsDarkTitleBar.apply(stage, dark));
                 stage.showAndWait();
             } else {
+                // Matches MainApp's primary-stage call exactly: synchronously right after
+                // show() returns, not via setOnShown - that event fires before the native
+                // window's title is actually committed, so FindWindow-by-title misses it.
                 stage.show();
+                WindowsDarkTitleBar.apply(stage, dark);
             }
         } catch (Exception ex) {
             PopsGameManager.displayErrorMessageDebug("FX screen '" + fxmlResource + "' failed to open: " + ex);

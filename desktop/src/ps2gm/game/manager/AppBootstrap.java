@@ -26,7 +26,7 @@ final class AppBootstrap {
     static final String OLD_APP_NAME = "PS2GM_0.6.jar";
     static final String CURRENT_APP_NAME = "PS2GM_0.6.1.jar";
     static final String CURRENT_VERSION_NUMBER = "0.6.1";
-    static final String FORM_TITLE = "PS2GM Game Manager - v0.6.1 (Beta)";
+    static final String FORM_TITLE = "PS2GM v1.0";
     static final String[] ALL_PREVIOUS_VERSIONS = {"0.0","0.1","0.2","0.3","0.4","0.5","0.6"};
 
     // Application start

@@ -28,6 +28,8 @@ $libJars = @(
     'commons-net-3.5.jar'
     'sevenzipjbinding.jar'
     'sevenzipjbinding-AllPlatforms.jar'
+    'jna-5.14.0.jar'
+    'jna-platform-5.14.0.jar'
 ) + $javafxJars
 
 # src is on the classpath directly (not just compiled) so getResourceAsStream(...)

@@ -537,6 +537,7 @@ public class MainController implements MyListener {
         if (name == null) { return; }
         PopsGameManager.setThemeName(name.toString());
         Themes.apply(PopsGameManager.getThemeName());   // re-styles every open window
+        WindowsDarkTitleBar.apply(stage, Themes.isDark(PopsGameManager.getThemeName()));
         saveSettings();
     }
     @FXML private void onIdPosPs2Start() { if (!suppressSelectionEvents && rmiIdPosPs2Start.isSelected()) { applyPs2IdPosition("start"); } }
