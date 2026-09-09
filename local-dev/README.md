@@ -48,6 +48,38 @@ into it.
 
 ---
 
+## Testing app self-update without a real GitHub release
+
+`Check for Updates` normally reads GitHub Releases on this repo
+(`api/app/github.py`) - there's no way to safely exercise a real download +
+install-swap against that without actually cutting a release. Instead, point
+the API at a local fixture directory and it serves everything from there:
+
+```powershell
+$env:OPLAPI_GITHUB_FIXTURE_DIR = "C:\path\to\a\fixture\dir"
+./local-dev/run-api.ps1
+```
+
+That directory needs a `releases.json` shaped like GitHub's own
+`GET /repos/{repo}/releases` response (see `api/tests/test_github.py` for
+the shape), plus the zip + `.sha256` sidecar files its `assets[].
+browser_download_url` fields point at — point those at the API's own
+`GET /v1/app/fixtures/<filename>` endpoint (fixture-mode only, 404s
+otherwise), e.g. `http://127.0.0.1:8000/v1/app/fixtures/PS2GM-jarbundle-1.1-test.zip`.
+The easiest way to get a real, correctly-shaped zip is `desktop/bundle-jar.ps1`'s
+own output — copy it in as a fake "newer" version and reuse its checksum.
+
+Point a build at that API (`./desktop/build.ps1 -Run -ApiBaseUrl
+http://127.0.0.1:8000/v1`) and the whole check → download → verify → stage →
+apply → relaunch flow runs end to end, fully offline. `DistributionType.
+detect()` needs one of the two marker files (`.ps2gm-dist-windows-appimage` /
+`.ps2gm-dist-jar-bundle`) next to the jar to offer an actual apply — a
+`build.ps1 -Run` dev tree doesn't have one, so build/copy a real
+`bundle-jar.ps1` output (or `package.ps1`'s app-image) to test the apply
+step, not the dev tree directly.
+
+---
+
 ## Known rough edges (noted, not fixed)
 
 - JavaFX/AtlantaFX on JDK 25 / Win10 looks dated in places; HiDPI scaling may

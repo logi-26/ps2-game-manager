@@ -18,11 +18,13 @@
         pwsh ./package.ps1 -Icon path\to\icon.ico            # defaults to icons/ps2gm.ico
         pwsh ./package.ps1 -Fresh                           # re-stage lib/ hdd/ POPSTARTER/ first
 
-    Output: build-local/release/windows/PS2GM/PS2GM.exe
-    (zip the PS2GM folder to hand it to someone else)
+    Output: build-local/release/windows/PS2GM/PS2GM.exe                       (run this)
+            build-local/release/windows/PS2GM-windows-<version>.zip          (attach to
+            build-local/release/windows/PS2GM-windows-<version>.zip.sha256    a GitHub Release -
+                                                                                see release.ps1)
 #>
 param(
-    [string]$AppVersion = '0.6.1',
+    [string]$AppVersion = '1.0',
     [string]$Vendor = 'Logi26',
     [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1',
     [string]$Icon,
@@ -44,6 +46,10 @@ $packageDir = Join-Path $buildLocal 'release\windows'
 if (Test-Path $runDir) { Remove-Item -Recurse -Force $runDir }
 & (Join-Path $root 'build.ps1') -Stage -Fresh:$Fresh
 if ($LASTEXITCODE -ne 0) { throw "build.ps1 -Stage failed" }
+
+# Marker file DistributionType.detect() looks for at runtime (lands at PS2GM/app/ once
+# jpackaged, alongside the jar) - see ps2gm.game.manager.DistributionType.
+New-Item -ItemType File -Force -Path (Join-Path $runDir '.ps2gm-dist-windows-appimage') | Out-Null
 
 # 2. Compute the minimal set of JDK modules the app actually needs, instead of
 #    bundling the entire JDK (jpackage's default for a non-modular app).
@@ -90,5 +96,21 @@ if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 
 $exe = Join-Path $packageDir 'PS2GM\PS2GM.exe'
 Write-Host "==> Packaged: $exe"
-Write-Host "    No separate Java install needed. Zip the PS2GM folder to share it."
+Write-Host "    No separate Java install needed."
+
+# 5. Zip PS2GM/'s *contents* (not the folder itself, so the archive's root already matches
+#    what an install directory looks like - see AppUpdateStager) + a sha256 sidecar, both
+#    named per the convention api/app/github.py's asset-name regex expects.
+#    Uses .NET's ZipFile, not Compress-Archive: the latter writes entry names with Windows
+#    backslashes instead of the zip-spec's forward slashes, which java.util.zip.ZipInputStream
+#    (AppUpdateStager's unzip) can't parse correctly - confirmed via an actual dry run.
+$zipName = "PS2GM-windows-$AppVersion.zip"
+$zipPath = Join-Path $packageDir $zipName
+if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $packageDir 'PS2GM'), $zipPath)
+$hash = (Get-FileHash -Algorithm SHA256 $zipPath).Hash.ToLower()
+"$hash  $zipName" | Set-Content -Encoding ascii -NoNewline:$false (Join-Path $packageDir "$zipName.sha256")
+
+Write-Host "==> Release asset: $zipPath"
 Write-Host "    (Mac/Linux users: see bundle-jar.ps1 instead - jpackage doesn't cross-compile.)"

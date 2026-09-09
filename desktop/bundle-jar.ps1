@@ -17,10 +17,12 @@
         pwsh ./bundle-jar.ps1 -ApiBaseUrl http://10.0.0.5:8000/v1
         pwsh ./bundle-jar.ps1 -Fresh                   # re-stage lib/ hdd/ POPSTARTER/ first
 
-    Output: build-local/release/jar/  (zip it and hand it out)
+    Output: build-local/release/jar/                                  (unzipped, for local testing)
+            build-local/release/PS2GM-jarbundle-<version>.zip         (attach to a GitHub
+            build-local/release/PS2GM-jarbundle-<version>.zip.sha256   Release - see release.ps1)
 #>
 param(
-    [string]$AppVersion = '0.6.1',
+    [string]$AppVersion = '1.0',
     [string]$ApiBaseUrl = 'http://127.0.0.1:8000/v1',
     [switch]$Fresh
 )
@@ -49,6 +51,9 @@ Copy-Item (Join-Path $runDir 'lib')        $bundleDir -Recurse
 Copy-Item (Join-Path $runDir 'hdd')        $bundleDir -Recurse
 Copy-Item (Join-Path $runDir 'POPSTARTER') $bundleDir -Recurse
 Copy-Item (Join-Path $runDir 'PS2GM-local.jar') (Join-Path $bundleDir $jarName)
+
+# Marker file DistributionType.detect() looks for at runtime - see ps2gm.game.manager.DistributionType.
+New-Item -ItemType File -Force -Path (Join-Path $bundleDir '.ps2gm-dist-jar-bundle') | Out-Null
 
 # 3. Launch scripts, deliberately NOT named start-ps2gm.sh/.bat: the app
 #    rewrites those two exact filenames on every startup with a bare
@@ -107,4 +112,19 @@ Set-Content -Path (Join-Path $bundleDir 'run.cmd') -Value $cmd -Encoding ascii -
 Write-Host "==> Bundled at $bundleDir  (all JavaFX platforms)"
 Write-Host "    Mac/Linux: chmod +x run.sh && ./run.sh   (needs Java 17+ on PATH)"
 Write-Host "    Windows:   run.cmd"
-Write-Host "    Zip the 'jar' folder (rename it e.g. PS2GM-$AppVersion) to hand it out."
+
+# 4. Zip the bundle's *contents* (not the folder itself, matching package.ps1's convention -
+#    see AppUpdateStager) + a sha256 sidecar, named per api/app/github.py's asset-name regex.
+#    Uses .NET's ZipFile, not Compress-Archive: the latter writes entry names with Windows
+#    backslashes instead of the zip-spec's forward slashes, which java.util.zip.ZipInputStream
+#    (AppUpdateStager's unzip) can't parse correctly - confirmed via an actual dry run.
+$releaseDir = Join-Path $buildLocal 'release'
+$zipName = "PS2GM-jarbundle-$AppVersion.zip"
+$zipPath = Join-Path $releaseDir $zipName
+if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory($bundleDir, $zipPath)
+$hash = (Get-FileHash -Algorithm SHA256 $zipPath).Hash.ToLower()
+"$hash  $zipName" | Set-Content -Encoding ascii -NoNewline:$false (Join-Path $releaseDir "$zipName.sha256")
+
+Write-Host "==> Release asset: $zipPath"

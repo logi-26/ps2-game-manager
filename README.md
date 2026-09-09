@@ -183,6 +183,13 @@ pwsh ./desktop/release.ps1     # builds both artifacts below
 
 Both scripts accept `-ApiBaseUrl` to bake a different default API into the build.
 
+Each also produces a `PS2GM-windows-<version>.zip` / `PS2GM-jarbundle-<version>.zip`
+(plus a `.sha256` sidecar) — these are what the app's self-updater downloads
+(*Check for Updates*), so a release is only picked up as an update once
+these four files are attached to it. `release.ps1` prints the exact
+`gh release create` command with all four paths filled in at the end of its
+run — cutting that release **is** publishing the update, nothing else to do.
+
 ### Editing the UI
 
 Screens are FXML (`desktop/src/ps2gm/game/manager/fx/*.fxml`) and open in
