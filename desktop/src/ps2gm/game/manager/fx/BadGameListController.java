@@ -148,11 +148,22 @@ public class BadGameListController implements FxScreens.StageAware {
         }
 
         String gameId = currentSuggestions.get(idx).gameId();
-        String descriptiveName = GameIdExtractor.deriveDescriptiveName(files.get(fileIdx).getName(), null);
+        String origName = files.get(fileIdx).getName();
+        String descriptiveName = GameIdExtractor.deriveDescriptiveName(origName, null);
         boolean ps1 = console == Console.PS1;
-        String proposedName = ps1
-                ? descriptiveName + "-" + gameId + ".VCD"
-                : gameId + "." + descriptiveName + ".ISO";
+        String proposedName;
+        if (ps1) {
+            proposedName = descriptiveName + "-" + gameId + ".VCD";
+        } else {
+            // Keep the file's own extension (.iso / .zso, as typed) and respect the
+            // user's chosen PS2 ID position (Tools menu / GameIdPositionSwitcher)
+            // instead of always putting the ID first.
+            String ext = origName.length() >= 4 ? origName.substring(origName.length() - 4) : ".ISO";
+            boolean idFirst = !"end".equals(PopsGameManager.getGameIDPositionPS2());
+            proposedName = idFirst
+                    ? gameId + "." + descriptiveName + ext
+                    : descriptiveName + "." + gameId + ext;
+        }
         newNameField.setText(proposedName);
     }
 
