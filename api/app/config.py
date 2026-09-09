@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     github_repo: str = "logi-26/ps2-game-manager"
     github_token: str | None = None
     github_cache_seconds: int = 300
+    # Set to a directory holding a releases.json (shaped like GitHub's own
+    # release-list response) plus the zip/sha256 files it references, to
+    # exercise app-update end to end without a real GitHub release - see
+    # app/github.py and local-dev/README.md.
+    github_fixture_dir: Path | None = None
 
     # Off by default: a solo desktop client doing a batch-download run can
     # easily fire several thousand requests in a few minutes (every art kind

@@ -66,17 +66,27 @@ class VmcOut(ORMModel):
     status: str
 
 
+class AppPlatformAssetOut(BaseModel):
+    platform: str
+    asset_name: str
+    bytes: int
+    checksum_asset_name: str
+
+
 class AppReleaseOut(BaseModel):
     """A GitHub Release, as served by app/github.py - see AppRelease's
-    docstring in models.py for why this isn't a DB-backed model."""
+    docstring in models.py for why this isn't a DB-backed model.
+
+    Deliberately no raw download URLs here - the asset-naming convention and
+    the redirect logic that resolves it stay server-side only
+    (app/routers/releases.py), so the desktop client never has to parse
+    GitHub asset names itself."""
 
     version: str
     channel: str
     notes: str | None
     published_at: str | None
-    asset_name: str
-    bytes: int
-    download_url: str
+    platforms: list[AppPlatformAssetOut]
 
 
 class ToolReleaseOut(ORMModel):

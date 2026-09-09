@@ -15,9 +15,10 @@ from sqlalchemy.orm import Session
 
 from .. import github
 from ..blobstore import get_blobstore
+from ..config import get_settings
 from ..db import get_db
 from ..models import ToolRelease
-from ..schemas import AppReleaseOut, ToolReleaseOut
+from ..schemas import AppPlatformAssetOut, AppReleaseOut, ToolReleaseOut
 
 router = APIRouter(tags=["releases"])
 
@@ -28,9 +29,15 @@ def _to_schema(rel: github.Release) -> AppReleaseOut:
         channel=rel.channel,
         notes=rel.notes,
         published_at=rel.published_at,
-        asset_name=rel.asset_name,
-        bytes=rel.asset_size,
-        download_url=rel.download_url,
+        platforms=[
+            AppPlatformAssetOut(
+                platform=p.platform,
+                asset_name=p.asset_name,
+                bytes=p.size,
+                checksum_asset_name=p.checksum_asset_name,
+            )
+            for p in rel.platforms
+        ],
     )
 
 
@@ -38,16 +45,38 @@ def _to_schema(rel: github.Release) -> AppReleaseOut:
 def app_latest(channel: str = "stable"):
     rel = github.get_latest_release(channel)
     if rel is None:
-        raise HTTPException(404, f"no releases with a .jar asset on channel {channel!r}")
+        raise HTTPException(404, f"no releases with a recognised platform asset on channel {channel!r}")
     return _to_schema(rel)
 
 
 @router.get("/app/releases/{version}/download")
-def app_download(version: str):
-    rel = github.get_release_by_version(version)
-    if rel is None:
-        raise HTTPException(404, "unknown version")
-    return RedirectResponse(rel.download_url, status_code=307)
+def app_download(version: str, platform: str):
+    asset = github.get_release_asset(version, platform)
+    if asset is None:
+        raise HTTPException(404, "unknown version or no build for that platform")
+    return RedirectResponse(asset.download_url, status_code=307)
+
+
+@router.get("/app/releases/{version}/checksum")
+def app_checksum(version: str, platform: str):
+    asset = github.get_release_asset(version, platform)
+    if asset is None:
+        raise HTTPException(404, "unknown version or no build for that platform")
+    return RedirectResponse(asset.checksum_download_url, status_code=307)
+
+
+@router.get("/app/fixtures/{filename}")
+def app_fixture_asset(filename: str):
+    """Serves files straight out of OPLAPI_GITHUB_FIXTURE_DIR - only meaningful
+    when that's set (local end-to-end update testing, see github.py's module
+    docstring). 404s unconditionally otherwise, so this is a no-op in production."""
+    fixture_dir = get_settings().github_fixture_dir
+    if fixture_dir is None:
+        raise HTTPException(404, "fixture mode is not enabled")
+    path = (fixture_dir / filename).resolve()
+    if fixture_dir.resolve() not in path.parents or not path.is_file():
+        raise HTTPException(404, "unknown fixture asset")
+    return FileResponse(path, media_type="application/octet-stream", filename=filename)
 
 
 @router.get("/tools/{name}")
