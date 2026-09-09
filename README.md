@@ -44,8 +44,8 @@ on the PS2's internal hard drive over the network — for both PS1 (POPS) and PS
   - **Batch** add many at once, and **batch download** art/config/cheats for the
     whole list.
 - **UL format** — convert a PS2 ISO to OPL's split "UL" format and back.
-- **ISO/ZSO conversion** — compress a PS2 ISO to OPL's LZ4-compressed ZSO
-  format, or convert a ZSO back to ISO, from the game-list right-click menu.
+- **ISO/ZSO conversion** — convert a PS2 ISO to OPL's LZ4-compressed ZSO
+  format and back, from the game-list right-click menu.
 - **Generate** `conf_apps.cfg`, `ul.cfg`, PS1 ELF files and spine artwork.
 - **Housekeeping** — find and delete unused or all ART / CFG / CHT / ELF / spine
   files; rename games (32-char limit); fix mis-named VCD/ISO/ZSO files, with ID
