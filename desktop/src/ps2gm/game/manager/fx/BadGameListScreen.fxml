@@ -9,49 +9,59 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="ps2gm.game.manager.fx.BadGameListController"
-      spacing="10.0" prefWidth="820.0" prefHeight="460.0">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="556.0" prefWidth="1075.0" spacing="10.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.BadGameListController">
     <padding>
-        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
     </padding>
 
-    <TitledPane text="Games" collapsible="false" prefWidth="320.0">
-        <ListView fx:id="gameListView"/>
-    </TitledPane>
+    <VBox prefHeight="535.0" prefWidth="459.0" spacing="6.0">
+        <Label fx:id="messageLabel" maxWidth="459.0" wrapText="true">
+         <VBox.margin>
+            <Insets top="8.0" />
+         </VBox.margin></Label>
+        <TitledPane collapsible="false" prefWidth="459.0" text="Games" VBox.vgrow="ALWAYS">
+            <ListView fx:id="gameListView" prefHeight="494.0" prefWidth="457.0" />
+        </TitledPane>
+    </VBox>
 
-    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-        <Label fx:id="messageLabel" wrapText="true"/>
-
-        <TitledPane text="Suggestions" collapsible="false" VBox.vgrow="ALWAYS">
+    <VBox prefHeight="518.0" prefWidth="586.0" HBox.hgrow="ALWAYS">
+        <TitledPane collapsible="false" prefHeight="392.0" prefWidth="586.0" text="Suggestions" VBox.vgrow="ALWAYS">
             <VBox spacing="8.0">
-                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="6.0"/></padding>
-                <Label text="Possible IDs for this game's name, from the reference catalogue - never picked automatically, check the region/disc before using one." wrapText="true"/>
-                <ListView fx:id="suggestionListView" VBox.vgrow="ALWAYS"/>
+                <padding><Insets bottom="8.0" left="6.0" right="8.0" top="8.0" /></padding>
+                <Label text="Possible IDs for this game's name:" wrapText="true" />
+                <ListView fx:id="suggestionListView" VBox.vgrow="ALWAYS" />
                 <HBox alignment="CENTER_RIGHT">
-                    <Button fx:id="useSuggestionButton" text="Use This ID" prefWidth="110.0" onAction="#onUseSuggestion"/>
+                    <Button fx:id="useSuggestionButton" onAction="#onUseSuggestion" prefWidth="110.0" text="Use This ID" />
                 </HBox>
             </VBox>
+         <VBox.margin>
+            <Insets top="8.0" />
+         </VBox.margin>
         </TitledPane>
 
-        <TitledPane text="Rename" collapsible="false">
+        <TitledPane collapsible="false" text="Rename">
             <VBox spacing="10.0">
-                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="6.0"/></padding>
+                <padding><Insets bottom="8.0" left="6.0" right="8.0" top="8.0" /></padding>
                 <GridPane hgap="10.0" vgap="8.0">
                     <columnConstraints>
-                        <ColumnConstraints minWidth="70.0" halignment="RIGHT"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints halignment="RIGHT" minWidth="70.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
                     </columnConstraints>
-                    <Label text="Old Name:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                    <TextField fx:id="oldNameField" editable="false" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                    <Label text="New Name:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                    <TextField fx:id="newNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label style="-fx-font-weight: bold;" text="Old Name:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <TextField fx:id="oldNameField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <Label style="-fx-font-weight: bold;" text="New Name:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <TextField fx:id="newNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
-                <HBox spacing="14.0" alignment="CENTER_RIGHT">
-                    <Button fx:id="renameButton" text="Rename" prefWidth="90.0" onAction="#onRename"/>
-                    <Button fx:id="closeButton" text="Close" prefWidth="90.0" onAction="#onClose"/>
+                <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                    <Button fx:id="renameButton" onAction="#onRename" prefWidth="90.0" text="Rename" />
+                    <Button fx:id="closeButton" onAction="#onClose" prefWidth="90.0" text="Close" />
                 </HBox>
             </VBox>
         </TitledPane>
