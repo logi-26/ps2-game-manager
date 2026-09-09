@@ -334,6 +334,21 @@ public class MyApiClient implements BackendClient {
         }
     }
 
+    @Override
+    public List<GameSuggestion> suggestGameIds(Console console, String query) {
+        try {
+            String path = "/games/suggest?console=" + urlEncode(console.name()) + "&q=" + urlEncode(query);
+            List<GameSuggestion> suggestions = new ArrayList<>();
+            for (Object item : getJsonArray(path, DEFAULT_TIMEOUT)) {
+                suggestions.add(GameSuggestion.fromJson(MiniJson.asObject(item)));
+            }
+            return suggestions;
+        } catch (IOException | InterruptedException ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+            return new ArrayList<>();
+        }
+    }
+
     /** Pages through a list endpoint (?console=&amp;limit=&amp;offset=) collecting every item. */
     private List<Map<String, Object>> fetchAllPages(String endpoint, String console) throws IOException, InterruptedException {
         List<Map<String, Object>> all = new ArrayList<>();

@@ -1,6 +1,7 @@
 package ps2gm.game.manager;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Everything the desktop app needs from a shared-content backend: art,
@@ -37,6 +38,9 @@ public interface BackendClient {
 
     // ---- catalogue lists (cached locally as lib/data/lists/<console>_Server*List.dat) ----
     void getListFromServer(String listType, String console);
+
+    /** {@code GET /games/suggest?console=...&amp;q=...} - fuzzy name-match candidates, ranked, never just one. Empty list on any failure. */
+    List<GameSuggestion> suggestGameIds(Console console, String query);
 
     // ---- misc -------------------------------------------------
     /** "RESPOND" -&gt; "RESPONSE"/"NO_RESPONSE"; "VERSION" -&gt; "&lt;version&gt;,&lt;date&gt;"/"NO_RESPONSE". */

@@ -249,7 +249,7 @@ public class GameListManager {
     private static void createPS1ListFromSMB() {
 
         List<String> storedBadGameList = GameListPersistence.readBadGameListFile();
-        List<String> badGameListPS1 = new ArrayList<>();
+        List<File> badGameListPS1 = new ArrayList<>();
         long totalSize = 0;
         File [] files = null;
         try {files = getVCDFiles();} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
@@ -314,18 +314,16 @@ public class GameListManager {
                     else {invalidGameListPS1.add(vcdFile);}
                 }
                 else {
-                    if (!storedBadGameList.contains(vcdFile.getName())){badGameListPS1.add(vcdFile.getName());}
+                    if (!storedBadGameList.contains(vcdFile.getName())){badGameListPS1.add(vcdFile);}
                 }
             }
 
             // Make sure that the the DISC.TXT file is up-to-date for any of the mult-disc games
             MultiDiscGameCatalog.checkMultiDiscFiles(gameListPS1);
 
-            // Display a message to the user, listing any games were the game ID could not be detected
+            // Let the user rename any games whose ID couldn't be detected at all
             if (badGameListPS1.size() > 0) {
-                StringBuilder badGames = new StringBuilder();
-                badGameListPS1.forEach((game) -> {badGames.append(game).append("\n");});
-                PopsGameManager.showWarningDialog("The system was unable to detect the unique game ID for the following PS1 games:\n" + badGames," Unable to Detect Game ID!");
+                ps2gm.game.manager.fx.BadGameListScreen.open(Console.PS1, "The system was unable to detect the unique game ID for the following PS1 games:", badGameListPS1);
             }
 
             totalGameSizeRawPS1 = totalSize;
@@ -375,7 +373,7 @@ public class GameListManager {
     private static void createPS2ListFromSMB(boolean checkBadGames) {
 
         List<String> storedBadGameList = GameListPersistence.readBadGameListFile();
-        List<String> badGameListPS2 = new ArrayList<>();
+        List<File> badGameListPS2 = new ArrayList<>();
         long totalSize = 0;
         File [] files = null;
         try {files = getISOFiles();} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
@@ -409,17 +407,15 @@ public class GameListManager {
                     }
                     else {invalidGameListPS2.add(isoFile);}
                 }
-                else {if (checkBadGames) {if (!storedBadGameList.contains(isoFile.getName())){badGameListPS2.add(isoFile.getName());}}}
+                else {if (checkBadGames) {if (!storedBadGameList.contains(isoFile.getName())){badGameListPS2.add(isoFile);}}}
             }
             totalGameSizeRawPS2 = totalSize;
             totalGameSizeDisplayPS2 = PopsGameManager.bytesToHuman(totalSize);
         }
 
-        // Display a message to the user, listing any games were the game ID could not be detected
+        // Let the user rename any games whose ID couldn't be detected at all
         if (badGameListPS2.size() > 0) {
-            StringBuilder badGames = new StringBuilder();
-            badGameListPS2.forEach((game) -> {badGames.append(game).append("\n");});
-            PopsGameManager.showWarningDialog("The system was unable to detect the unique game ID for the following PS2 games:\n" + badGames," Unable to Detect Game ID!");
+            ps2gm.game.manager.fx.BadGameListScreen.open(Console.PS2, "The system was unable to detect the unique game ID for the following PS2 games:", badGameListPS2);
         }
 
         // If any of the games are not correctly named with the game ID, call the invalid games function

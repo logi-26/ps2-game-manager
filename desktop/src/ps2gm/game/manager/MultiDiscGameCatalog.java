@@ -5,7 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The hardcoded PS1 multi-disc game catalogue (games whose other discs share
@@ -70,6 +72,44 @@ public final class MultiDiscGameCatalog {
             }
         }
         return null;
+    }
+
+    /** One row for {@code BadGameListController}'s suggestions list - see {@link #expandForDisplay}. */
+    public record SuggestionRow(String gameId, String label, boolean multiDisc) {}
+
+    /**
+     * Turns raw name-match candidates from the API into display rows, expanding any
+     * candidate that's part of a known multi-disc game (per {@link #siblingDiscsFor})
+     * into one row per sibling disc ID - never just the one fuzzy hit - since the
+     * reference data a name match comes from only ever lists one ID per title (usually
+     * disc 1's), and silently offering only that one for a different disc's file would
+     * be exactly the wrong-disc mistake this whole feature has to avoid.
+     */
+    public static List<SuggestionRow> expandForDisplay(List<GameSuggestion> rawSuggestions) {
+        List<SuggestionRow> rows = new ArrayList<>();
+        Set<String> seenIds = new LinkedHashSet<>();
+        for (GameSuggestion suggestion : rawSuggestions) {
+            String[] siblings = siblingDiscsFor(suggestion.gameId());
+            if (siblings == null) {
+                if (seenIds.add(suggestion.gameId())) {
+                    rows.add(new SuggestionRow(suggestion.gameId(),
+                            suggestion.gameId() + " — " + suggestion.title() + " (" + suggestion.region() + ")",
+                            false));
+                }
+                continue;
+            }
+            for (int i = 0; i < siblings.length; i++) {
+                String discId = siblings[i];
+                if (!seenIds.add(discId)) {
+                    continue;
+                }
+                String label = discId + " — " + suggestion.title() + " (" + suggestion.region()
+                        + ", Disc " + (i + 1) + " of " + siblings.length
+                        + " — multi-disc, verify you have the right disc)";
+                rows.add(new SuggestionRow(discId, label, true));
+            }
+        }
+        return rows;
     }
 
     /** Ensures each multi-disc game's DISCS.TXT lists all its other discs that are actually in {@code gameListPS1}. */
