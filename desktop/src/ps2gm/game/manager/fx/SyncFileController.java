@@ -398,6 +398,7 @@ public class SyncFileController implements FxScreens.StageAware {
         alert.setHeaderText(null);
         alert.setTitle(title);
         if (stage != null) { alert.initOwner(stage); }
+        WindowsDarkTitleBar.apply(alert);
         return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 
@@ -407,6 +408,7 @@ public class SyncFileController implements FxScreens.StageAware {
             alert.setHeaderText(null);
             alert.setTitle(title);
             if (stage != null) { alert.initOwner(stage); }
+            WindowsDarkTitleBar.apply(alert);
             alert.showAndWait();
         });
     }

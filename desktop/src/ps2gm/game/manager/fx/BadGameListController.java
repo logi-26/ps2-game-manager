@@ -231,10 +231,14 @@ public class BadGameListController implements FxScreens.StageAware {
     }
 
     private static void info(String message) {
-        new Alert(Alert.AlertType.INFORMATION, message).showAndWait();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
+        WindowsDarkTitleBar.apply(alert);
+        alert.showAndWait();
     }
 
     private static void error(String message) {
-        new Alert(Alert.AlertType.ERROR, message).showAndWait();
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
+        WindowsDarkTitleBar.apply(alert);
+        alert.showAndWait();
     }
 }

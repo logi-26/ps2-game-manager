@@ -36,8 +36,10 @@ public class ConvertIsoZsoController implements FxScreens.StageAware, Conversion
         stage.setOnCloseRequest(e -> {
             if (working) {
                 e.consume();
-                new Alert(Alert.AlertType.WARNING,
-                        "This window will automatically close once the conversion has completed.").showAndWait();
+                Alert alert = new Alert(Alert.AlertType.WARNING,
+                        "This window will automatically close once the conversion has completed.");
+                WindowsDarkTitleBar.apply(alert);
+                alert.showAndWait();
             }
         });
     }

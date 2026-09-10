@@ -260,6 +260,7 @@ public class GameImageController implements FxScreens.StageAware, ImageSelectLis
         if (stage != null) {
             alert.initOwner(stage);
         }
+        WindowsDarkTitleBar.apply(alert);
         alert.showAndWait();
     }
 }

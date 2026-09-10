@@ -129,7 +129,9 @@ public class BatchDownloadController implements FxScreens.StageAware {
         BackendClient api = PopsGameManager.newBackendClient();
         if (!"RESPONSE".equals(api.sendMessageToServer("RESPOND"))) {
             Platform.runLater(() -> {
-                new Alert(Alert.AlertType.ERROR, "The server is not responding at the moment!").showAndWait();
+                Alert alert = new Alert(Alert.AlertType.ERROR, "The server is not responding at the moment!");
+                WindowsDarkTitleBar.apply(alert);
+                alert.showAndWait();
                 downloadButton.setDisable(false);
             });
             return;

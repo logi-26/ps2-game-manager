@@ -103,10 +103,13 @@ public class GameLongNameController {
                 case HDD_USB:
                     if (renamer.renameLocalPS2()) { onRenamed(idx); }
                     break;
-                case HDD:
-                    new Alert(Alert.AlertType.ERROR,
-                            "The application cannot currently rename a PS2 game in HDD mode!").showAndWait();
+                case HDD: {
+                    Alert alert = new Alert(Alert.AlertType.ERROR,
+                            "The application cannot currently rename a PS2 game in HDD mode!");
+                    WindowsDarkTitleBar.apply(alert);
+                    alert.showAndWait();
                     break;
+                }
                 default:
                     break;
             }
@@ -117,8 +120,10 @@ public class GameLongNameController {
         if (list != null) {
             for (Game g : list) {
                 if (g.getGameName().equals(newTitle)) {
-                    new Alert(Alert.AlertType.ERROR,
-                            "A game with the same name is already in the game list!").showAndWait();
+                    Alert alert = new Alert(Alert.AlertType.ERROR,
+                            "A game with the same name is already in the game list!");
+                    WindowsDarkTitleBar.apply(alert);
+                    alert.showAndWait();
                     return true;
                 }
             }

@@ -262,6 +262,7 @@ public class SetModeController implements FxScreens.StageAware {
         alert.setHeaderText(null);
         alert.setTitle(title);
         if (stage != null) { alert.initOwner(stage); }
+        WindowsDarkTitleBar.apply(alert);
         return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 
@@ -270,6 +271,7 @@ public class SetModeController implements FxScreens.StageAware {
         alert.setHeaderText(null);
         alert.setTitle(title);
         if (stage != null) { alert.initOwner(stage); }
+        WindowsDarkTitleBar.apply(alert);
         alert.showAndWait();
     }
 }

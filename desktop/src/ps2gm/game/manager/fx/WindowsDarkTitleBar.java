@@ -5,6 +5,7 @@ import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
+import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
 import ps2gm.game.manager.PopsGameManager;
 
@@ -79,5 +80,24 @@ final class WindowsDarkTitleBar {
             // Best-effort cosmetic only - never worth failing window creation over.
             PopsGameManager.displayErrorMessageDebug("Dark title bar not applied: " + ex);
         }
+    }
+
+    /**
+     * Convenience for an {@code Alert}/{@code TextInputDialog}/etc: unlike a
+     * {@code Stage} built through {@link FxScreens}, a {@code Dialog}'s own Stage
+     * doesn't exist until it's shown, so there's no point after construction to
+     * call {@link #apply(Stage, boolean)} directly - this hooks the same call onto
+     * {@code setOnShown} instead. Call once, any time before {@code show()}/
+     * {@code showAndWait()}.
+     */
+    static void apply(Dialog<?> dialog) {
+        boolean dark = Themes.isDark(PopsGameManager.getThemeName());
+        // A Dialog's WINDOW_SHOWN event fires from inside showAndWait()'s own nested
+        // event loop as it's spinning up - running the hide/show repaint trick
+        // synchronously right there (reentrantly, before that loop has settled) doesn't
+        // reliably repaint the caption, even though the DWM attribute call itself
+        // succeeds. Deferring one pulse lets it run on a clean iteration instead.
+        dialog.setOnShown(e -> javafx.application.Platform.runLater(() ->
+                apply((Stage) dialog.getDialogPane().getScene().getWindow(), dark)));
     }
 }

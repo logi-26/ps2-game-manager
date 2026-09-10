@@ -164,6 +164,7 @@ public class AddGameHddPs2Controller implements FxScreens.StageAware, FtpTransfe
         alert.setHeaderText(null);
         alert.setTitle(title);
         if (stage != null) { alert.initOwner(stage); }
+        WindowsDarkTitleBar.apply(alert);
         alert.showAndWait();
     }
 }

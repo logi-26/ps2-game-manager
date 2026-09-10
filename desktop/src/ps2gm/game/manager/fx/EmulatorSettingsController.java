@@ -101,7 +101,9 @@ public class EmulatorSettingsController implements FxScreens.StageAware {
         if (useEmulatorCheck.isSelected()) {
             String path = pathField.getText() == null ? "" : pathField.getText().trim();
             if (path.isEmpty()) {
-                new Alert(Alert.AlertType.WARNING, "You need to set the " + emulatorName + " path.").showAndWait();
+                Alert alert = new Alert(Alert.AlertType.WARNING, "You need to set the " + emulatorName + " path.");
+                WindowsDarkTitleBar.apply(alert);
+                alert.showAndWait();
                 return;
             }
             if (ps1) {

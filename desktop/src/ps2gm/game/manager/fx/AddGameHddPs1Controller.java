@@ -166,6 +166,7 @@ public class AddGameHddPs1Controller implements FxScreens.StageAware, FtpTransfe
         notice.setHeaderText(null);
         notice.setTitle(" PS1 Game Transfers Require an FTP Connection");
         if (stage != null) { notice.initOwner(stage); }
+        WindowsDarkTitleBar.apply(notice);
         notice.showAndWait();
 
         // Snapshot the form on the FX thread
@@ -330,6 +331,7 @@ public class AddGameHddPs1Controller implements FxScreens.StageAware, FtpTransfe
         alert.setHeaderText(null);
         alert.setTitle(title);
         if (stage != null) { alert.initOwner(stage); }
+        WindowsDarkTitleBar.apply(alert);
         alert.showAndWait();
     }
 }

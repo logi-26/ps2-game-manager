@@ -849,6 +849,7 @@ public class MainController implements MyListener {
         if (stage != null) { dialog.initOwner(stage); }
         dialog.getEditor().setTextFormatter(new TextFormatter<>(c ->
                 c.getControlNewText().length() <= 32 ? c : null));
+        WindowsDarkTitleBar.apply(dialog);
 
         java.util.Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) { return; }
@@ -1153,6 +1154,8 @@ public class MainController implements MyListener {
         switch (result.status()) {
             case NO_RESPONSE -> Platform.runLater(() ->
                     warn("The server is currently not responding or the connection is being blocked by your firewall!", " Server Not Responding"));
+            case NO_RELEASE_PUBLISHED -> Platform.runLater(() ->
+                    info("There are currently no updates available!  \n\nApplication Version : " + current, " No Update Available"));
             case UP_TO_DATE -> Platform.runLater(() ->
                     info("There are currently no updates available!  \n\nApplication Version : " + current + "\nServer Version : " + result.release().version(), " No Update Available"));
             case UPDATE_AVAILABLE_NO_PLATFORM_BUILD -> Platform.runLater(() ->
@@ -1229,6 +1232,7 @@ public class MainController implements MyListener {
         a.setHeaderText(null);
         a.setTitle(title);
         if (stage != null) { a.initOwner(stage); }
+        WindowsDarkTitleBar.apply(a);
         a.showAndWait();
     }
 
@@ -1237,6 +1241,7 @@ public class MainController implements MyListener {
         a.setHeaderText(null);
         a.setTitle(title);
         if (stage != null) { a.initOwner(stage); }
+        WindowsDarkTitleBar.apply(a);
         return a.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 
@@ -1262,6 +1267,7 @@ public class MainController implements MyListener {
         a.setHeaderText(null);
         a.setTitle(title);
         if (stage != null) { a.initOwner(stage); }
+        WindowsDarkTitleBar.apply(a);
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
         pause.setOnFinished(ev -> a.hide());
         pause.play();

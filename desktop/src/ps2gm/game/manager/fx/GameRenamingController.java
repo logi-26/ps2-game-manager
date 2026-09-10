@@ -241,9 +241,13 @@ public class GameRenamingController implements FxScreens.StageAware {
         clearDetails();
 
         if (!invalid.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "There was a problem whilst attempting to rename some of the games!").showAndWait();
+            Alert alert = new Alert(Alert.AlertType.WARNING, "There was a problem whilst attempting to rename some of the games!");
+            WindowsDarkTitleBar.apply(alert);
+            alert.showAndWait();
         } else {
-            new Alert(Alert.AlertType.INFORMATION, "All of the files have been succesfully renamed!").showAndWait();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "All of the files have been succesfully renamed!");
+            WindowsDarkTitleBar.apply(alert);
+            alert.showAndWait();
             renameButton.setDisable(true);
             renameAllButton.setDisable(true);
             newTitleField.setDisable(true);
@@ -258,6 +262,8 @@ public class GameRenamingController implements FxScreens.StageAware {
     }
 
     private static void error(String message) {
-        new Alert(Alert.AlertType.ERROR, message).showAndWait();
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
+        WindowsDarkTitleBar.apply(alert);
+        alert.showAndWait();
     }
 }

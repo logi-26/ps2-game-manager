@@ -42,7 +42,9 @@ public class HashCheckerController implements FxScreens.StageAware {
         stage.setOnCloseRequest(e -> {
             if (hashing) {
                 e.consume();
-                new Alert(Alert.AlertType.WARNING, "You cannot exit this window while a task is being performed.").showAndWait();
+                Alert alert = new Alert(Alert.AlertType.WARNING, "You cannot exit this window while a task is being performed.");
+                WindowsDarkTitleBar.apply(alert);
+                alert.showAndWait();
             }
         });
     }

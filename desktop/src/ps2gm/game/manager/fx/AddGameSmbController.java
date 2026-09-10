@@ -385,6 +385,7 @@ public class AddGameSmbController implements FxScreens.StageAware {
             alert.setHeaderText(null);
             alert.setTitle(title);
             if (stage != null) { alert.initOwner(stage); }
+            WindowsDarkTitleBar.apply(alert);
             alert.showAndWait();
         });
     }
