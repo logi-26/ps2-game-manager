@@ -19,19 +19,13 @@ import java.util.stream.Stream;
 
 public class GameConfigFileManager {
 
-    // The 24 keys this app edits in a game's own .cfg file, in NEW_CONFIG_DATA/configData's
-    // index order (GameConfigScreen). Anything else found in the file - $AltStartup, $DMA,
-    // $ConfigSource, PADEMU's own keys, the OSD-language block, or anything a newer OPL adds
-    // that this list doesn't know about yet - is preserved untouched on save; see
-    // writeGameConfigFile()'s merge-with-existing-file behaviour below.
-    //
-    // Index 22 is "$GSMFIELDFix" - OPL's real key (confirmed against its own include/config.h).
-    // This used to be written here as "$GSMSkipVideos", which isn't a key OPL recognises at all,
-    // so every "skip videos" checkbox a user saved was silently a no-op for real OPL.
-    // Indices 24-26 are new: $GSMSource/$CheatsSource/$PADEMUSource ("0"=Global, "1"=PerGame -
-    // matches OPL's own SETTINGS_GLOBAL/SETTINGS_PERGAME) - which of this game's own file vs.
-    // the global conf_game.cfg OPL actually uses for that feature's settings. Read/written the
-    // same safe way as every other managed key; see GameConfigScreen's Source radio buttons.
+    /**
+     * The 24 keys this app edits in a game's own .cfg file, in NEW_CONFIG_DATA/configData's
+     * index order (GameConfigScreen). Anything else found in the file - $AltStartup, $DMA,
+     * $ConfigSource, PADEMU's own keys, the OSD-language block, or anything a newer OPL adds
+     * that this list doesn't know about yet - is preserved untouched on save; see
+     * writeGameConfigFile()'s merge-with-existing-file behaviour below.
+     */
     private static final String[] MANAGED_KEYS = {
         "CfgVersion", "Title", "Genre", "Developer", "Release", "Players", "Rating",
         "Description", "Notes", "$VMC_0", "$VMC_1", "Cheat", "$EnableCheat", "Device",
@@ -40,26 +34,29 @@ public class GameConfigFileManager {
         "$GSMSource", "$CheatsSource", "$PADEMUSource"
     };
 
-    // The keys this app edits in the GLOBAL conf_game.cfg - OPL's own defaults for GSM/Cheat,
-    // applied to a game whenever its own $GSMSource/$CheatsSource is 0 (Global) or absent.
-    // Confirmed against OPL's own src/config.c: conf_game.cfg lives at the OPL root (same file
-    // list as conf_apps.cfg, which this app already writes there) and uses the exact same
-    // "Key=Value" line format as a per-game .cfg - no game identity in it, settings only.
-    // $CheatMode isn't here: this app has no UI for it yet (only $EnableCheat, via
-    // jCheckBoxCheatEnabled), and managing a key with nothing to write only means every save
-    // clobbers whatever real value a user set through OPL itself - see MANAGED_KEYS' own
-    // comment for the same reasoning.
+    /**
+     * The keys this app edits in the GLOBAL conf_game.cfg - OPL's own defaults for GSM/Cheat,
+     * applied to a game whenever its own $GSMSource/$CheatsSource is 0 (Global) or absent.
+     * Confirmed against OPL's own src/config.c: conf_game.cfg lives at the OPL root (same file
+     * list as conf_apps.cfg, which this app already writes there) and uses the exact same
+     * "Key=Value" line format as a per-game .cfg - no game identity in it, settings only.
+     * $CheatMode isn't here: this app has no UI for it yet (only $EnableCheat, via
+     * jCheckBoxCheatEnabled), and managing a key with nothing to write only means every save
+     * clobbers whatever real value a user set through OPL itself.
+     */
     private static final String[] GLOBAL_MANAGED_KEYS = {
         "$EnableGSM", "$GSMVMode", "$GSMXOffset", "$GSMYOffset", "$GSMFIELDFix", "$EnableCheat"
     };
 
-    // A handful of values carry a second, redundant "type/" sub-prefix baked into the value
-    // itself - e.g. Rating is stored as "Rating=rating/4", not "Rating=4" - a long-standing quirk
-    // of this app's own file format (composeGameConfigData() still writes it), not an OPL
-    // key/value split. Indexed the same as MANAGED_KEYS; null everywhere else.
-    // readGameConfigFormatted() strips this too, so callers keep getting the bare value they
-    // always have (Parental is deliberately not here - its "esrb/17" form is still split on "/"
-    // by the caller, so it needs the whole thing intact).
+    /**
+     * A handful of values carry a second, redundant "type/" sub-prefix baked into the value
+     * itself - e.g. Rating is stored as "Rating=rating/4", not "Rating=4" - a long-standing quirk
+     * of this app's own file format (composeGameConfigData() still writes it), not an OPL
+     * key/value split. Indexed the same as MANAGED_KEYS; null everywhere else.
+     * readGameConfigFormatted() strips this too, so callers keep getting the bare value they
+     * always have (Parental is deliberately not here - its "esrb/17" form is still split on "/"
+     * by the caller, so it needs the whole thing intact).
+     */
     private static final String[] VALUE_SUBPREFIXES = new String[MANAGED_KEYS.length];
     static {
         VALUE_SUBPREFIXES[5] = "players/";  // Players
@@ -72,17 +69,17 @@ public class GameConfigFileManager {
 
     public GameConfigFileManager(){}
 
-
     // This checks if their is a config file for the specific game
     public Boolean gameConfigExists(String gameID, String gameName){
         File cfgFile = gameID != null ? resolveGameConfigFile(gameID, gameName) : null;
         return cfgFile != null && cfgFile.exists() && !cfgFile.isDirectory();
     }
 
-
-    // This reads the data from a game config file and returns an array containing the formatted data
-    // (just the value half of each managed key's line, e.g. "CfgVersion=5" -> "5", and with
-    // VALUE_SUBPREFIXES' extra "type/" stripped too where it applies, e.g. "rating/4" -> "4")
+    /**
+     * This reads the data from a game config file and returns an array containing the formatted data
+     * (just the value half of each managed key's line, e.g. "CfgVersion=5" -> "5", and with
+     * VALUE_SUBPREFIXES' extra "type/" stripped too where it applies, e.g. "rating/4" -> "4")
+     */
     public String[] readGameConfigFormatted(String gameID, String gameName) throws IOException {
 
         LinkedHashMap<String, String> lines = readRawLines(resolveGameConfigFile(gameID, gameName));
@@ -99,7 +96,6 @@ public class GameConfigFileManager {
         return configData;
     }
 
-
     // This reads the data from a game config file and returns an array containing the raw
     // "Key=Value" lines (used to compare against a freshly-composed set before saving)
     public String[] readGameConfigRaw(String gameID, String gameName) throws IOException {
@@ -111,10 +107,11 @@ public class GameConfigFileManager {
         return configData;
     }
 
-
-    // This writes a config file for the specific game. Reads whatever's already there first and
-    // merges the app's own managed fields into it, rather than overwriting the whole file - any
-    // key this app doesn't know about survives untouched (see MANAGED_KEYS above).
+    /**
+     * This writes a config file for the specific game. Reads whatever's already there first and
+     * merges the app's own managed fields into it, rather than overwriting the whole file - any
+     * key this app doesn't know about survives untouched (see MANAGED_KEYS above).
+     */
     public void writeGameConfigFile(String newConfigData[], String gameID, String gameName){
 
         File cfgFile = resolveGameConfigFile(gameID, gameName);
@@ -127,7 +124,6 @@ public class GameConfigFileManager {
 
         writeRawLines(cfgFile, lines);
     }
-
 
     // This compares 2 sets of config data to determine if they are identical (the order can be different but the actual content must be identical)
     public boolean compareGameConfig(String firstConfigData[], String secondConfigData[]){
@@ -148,11 +144,12 @@ public class GameConfigFileManager {
         return newList.equals(storedList);
     }
 
-
-    // Checks the titles inside each game's config file against the current game list and rewrites
-    // them to match where they differ (the user may have named the game file slightly differently).
-    // Shared by BatchDownloadScreenPS1/PS2 after a batch download finishes - identical for both consoles,
-    // since it only touches the CFG files' own Title= line, not the console-specific ART naming.
+    /**
+     * Checks the titles inside each game's config file against the current game list and rewrites
+     * them to match where they differ (the user may have named the game file slightly differently).
+     * Shared by BatchDownloadScreenPS1/PS2 after a batch download finishes - identical for both consoles,
+     * since it only touches the CFG files' own Title= line, not the console-specific ART naming.
+     */
     public static void renameConfigTitlesToMatch(List<Game> gameList){
 
         try (Stream<Path> paths = Files.walk(Paths.get(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator))) {
@@ -171,7 +168,6 @@ public class GameConfigFileManager {
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
 
-
     // Reads conf_game.cfg (OPL's global GSM/Cheat defaults), in GLOBAL_MANAGED_KEYS' index order.
     public String[] readGlobalConfig(){
         LinkedHashMap<String, String> lines = readRawLines(resolveGlobalConfigFile());
@@ -183,10 +179,11 @@ public class GameConfigFileManager {
         return configData;
     }
 
-
-    // Writes conf_game.cfg, merging into whatever's already there the same way
-    // writeGameConfigFile() does for a per-game file - anything else OPL keeps in this file
-    // (network/BGM/theme settings etc.) is preserved untouched.
+    /**
+     * Writes conf_game.cfg, merging into whatever's already there the same way
+     * writeGameConfigFile() does for a per-game file - anything else OPL keeps in this file
+     * (network/BGM/theme settings etc.) is preserved untouched.
+     */
     public void writeGlobalConfig(String newConfigData[]){
         File file = resolveGlobalConfigFile();
         LinkedHashMap<String, String> lines = readRawLines(file);
@@ -197,11 +194,9 @@ public class GameConfigFileManager {
         writeRawLines(file, lines);
     }
 
-
     private static File resolveGlobalConfigFile(){
         return new File(PopsGameManager.getOPLFolder() + File.separator + "conf_game.cfg");
     }
-
 
     // True if a game's own .cfg file exists on disk - e.g. to confirm a batch download actually
     // wrote one, since getConfigFromServer() reports no success/failure of its own.
@@ -218,11 +213,12 @@ public class GameConfigFileManager {
         return new File(PopsGameManager.getOPLFolder() + File.separator + "CFG" + File.separator + gameID + ".cfg");
     }
 
-
-    // Reads a "Key=Value" file into an ordered map (key -> whole line), preserving file order.
-    // Shared by the per-game .cfg methods above and GlobalConfigManager's conf_game.cfg methods -
-    // both use the exact same line format (confirmed against OPL's own configWrite(), which
-    // writes every config type - conf_game.cfg included - as plain "%s=%s\r\n" lines).
+    /**
+     * Reads a "Key=Value" file into an ordered map (key -> whole line), preserving file order.
+     * Shared by the per-game .cfg methods above and GlobalConfigManager's conf_game.cfg methods -
+     * both use the exact same line format (confirmed against OPL's own configWrite(), which
+     * writes every config type - conf_game.cfg included - as plain "%s=%s\r\n" lines).
+     */
     static LinkedHashMap<String, String> readRawLines(File file){
         LinkedHashMap<String, String> lines = new LinkedHashMap<>();
         if (file.exists() && !file.isDirectory()){
@@ -239,7 +235,6 @@ public class GameConfigFileManager {
         }
         return lines;
     }
-
 
     // Writes an ordered "Key=Value" map back out, one line per entry, in map order.
     static void writeRawLines(File file, LinkedHashMap<String, String> lines){

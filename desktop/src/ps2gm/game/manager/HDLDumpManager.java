@@ -9,20 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Uploads PS2 games to the console via hdl_dump (single or batch), tracking
- * progress for the caller's {@link FtpTransferProgress} UI, and fetches the
- * console's game list (TOC).
- *
- * See {@link HdlDumpProcess} for the shared executable-resolution/process
- * startup, {@link HdlDumpToc} for the TOC fetch, and
- * {@link HdlLocalDirectoryBootstrap} for the local hdd mirror directories.
+ * Uploads PS2 games to the console via hdl_dump (single or batch)
  */
 public class HDLDumpManager {
     private String timeRemaining = "00:00";
     private int percentDownloaded = 0;
 
     public HDLDumpManager() {}
-
 
     // Closes hdl_dump's stdout/stderr readers once they're done with, swallowing (but logging) any close failure
     private static void closeQuietly(BufferedReader... readers){
@@ -31,13 +24,11 @@ public class HDLDumpManager {
         }
     }
 
-
     // Upload a PS2 game to the console using HDL_Dump (on a daemon thread; reports through FtpTransferProgress)
     public void hdlDumpUploadGame(FtpTransferProgress progress, String destination, String gameName, String gamePath) throws IOException, InterruptedException{
         timeRemaining = "0:00";
         BackgroundTasks.runDaemon("hdl-dump-upload", () -> runUpload(progress, destination, gameName, gamePath));
     }
-
 
     // Batch upload PS2 games to the console using HDL_Dump (on a daemon thread; reports through FtpTransferProgress)
     public void hdlDumpUploadGameBatch(FtpTransferProgress progress, String destination, ArrayList<Path> gamePathList) throws IOException, InterruptedException{
@@ -45,12 +36,10 @@ public class HDLDumpManager {
         BackgroundTasks.runDaemon("hdl-dump-upload-batch", () -> runBatchUpload(progress, destination, gamePathList));
     }
 
-
     // This gets the game list from the console using hdd_dump - see HdlDumpToc.
     public List<Game> hdlDumpGetTOC(String destination) throws IOException, InterruptedException{
         return HdlDumpToc.fetch(destination);
     }
-
 
     // Batch upload: multiple games to the console via hdl_dump, reporting through FtpTransferProgress.
     // Was an inner SwingWorker (BatchBackgroundWorker); now a plain method run on a daemon thread.
@@ -80,7 +69,7 @@ public class HDLDumpManager {
                 // Set the game name in the text field
                 progress.setGameName(" " + name);
 
-                // Set the game ptrocessed counter in the text field
+                // Set the game processed counter in the text field
                 progress.setGameCounter(count + "/" + gamePathList.size());
 
                 Process process = HdlDumpProcess.start(exe, List.of("inject_dvd", destination, name, path, "*u4"));
@@ -153,7 +142,6 @@ public class HDLDumpManager {
         }
     }
 
-
     // Single upload: one game to the console via hdl_dump, reporting through FtpTransferProgress.
     // Was an inner SwingWorker (BackgroundWorker); now a plain method run on a daemon thread.
     private void runUpload(FtpTransferProgress progress, String destination, String name, String path) {
@@ -208,7 +196,6 @@ public class HDLDumpManager {
             }
 
             progress.setInProgress(false);
-            // NOTE: the single (non-batch) PS2 upload deliberately leaves its window open.
 
             List<Game> gameList = null;
 

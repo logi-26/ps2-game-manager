@@ -10,10 +10,8 @@ public final class AppUpdateChecker {
 
     public enum Status {
         NO_RESPONSE,
-        // The API was reachable, but no release has been published on this channel yet.
         NO_RELEASE_PUBLISHED,
         UP_TO_DATE,
-        // A newer version exists, but this install's distribution type has no build for it yet.
         UPDATE_AVAILABLE_NO_PLATFORM_BUILD,
         UPDATE_AVAILABLE
     }

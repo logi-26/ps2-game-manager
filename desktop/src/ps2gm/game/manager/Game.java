@@ -41,17 +41,13 @@ public class Game {
         multiDiscGames = new ArrayList<>();
     }
 
-
     public String getGameName(){return name;}
     public void setGameName(String newName){name = newName;}
     public String getGameID(){return id;}
     public String getGamePath(){return path;}
     public String getGameReadableSize(){return humanReadableSize;}
     public long getGameRawSize(){return rawSize;}
-
-
     public void setGamePath(String newPath) {path = newPath;}
-    
     
     // These booleans are used to get/set the game multi-disc value 
     public void setMultiDiscGame(boolean multiDisc){isMultiDiscGame = multiDisc;}
@@ -60,8 +56,7 @@ public class Game {
     public void addToMultiDiscList(String gameID){multiDiscGames.add(gameID);}
     public ArrayList<String> getMultiDiscList(){return multiDiscGames;}
     
-    
-    // These booleans are used to determine the PS1 game compatability
+    // These booleans are used to determine the PS1 game compatibility
     public void setCompatibleUSB(String compatible){compatibleUSB = compatible;}
     public String getCompatibleUSB(){return compatibleUSB;}
     
@@ -71,8 +66,6 @@ public class Game {
     public void setCompatibleSMB(String compatible){compatibleSMB = compatible;}
     public String getCompatibleSMB(){return compatibleSMB;}
     
-    
-
     // Get/Set the UL Game value
     public Boolean getULGame(){return isULGame;}
     public void setULGame(boolean ulGame){isULGame = ulGame;}
@@ -81,7 +74,6 @@ public class Game {
     public int getNumberOfParts(){return numberOfParts;}
     public void setNumberOfParts(int number){numberOfParts = number;}
     
-
     // These booleans are used to determine which files are associated with the game
     public void setFrontCover(boolean cover){frontCover = cover;}
     public boolean getFrontCover(){return frontCover;}

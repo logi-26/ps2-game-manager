@@ -10,13 +10,7 @@ import javax.imageio.ImageIO;
 
 /**
  * Rescales a user-picked image file to the right dimensions for the
- * requested ART slot and writes it into the OPL ART directory. The file
- * itself is picked by the caller (a JavaFX FileChooser, see
- * fx.GameImageController.onFile) - this class does no picking or dialogs
- * of its own.
- *
- * Extracted from PopsGameManager, which is where nearly all of its AWT
- * image-handling surface lived.
+ * requested ART slot and writes it into the OPL ART directory
  */
 public final class ImageArtProcessor {
 
@@ -52,11 +46,6 @@ public final class ImageArtProcessor {
                     break;
                 case "_LAB":
                 case "_LGO":
-                    // Spine label / logo: no single canonical size, and logos routinely
-                    // rely on transparency - keep the source image's own dimensions and
-                    // alpha rather than forcing it through scaleImage()'s opaque RGB path.
-                    // ImageIO.read() hands back a BufferedImage; fall back to a scaled copy
-                    // only if that ever isn't the case, so the write below never gets null.
                     scaledImage = (image instanceof BufferedImage) ? (BufferedImage) image : scaleImage(image, 256, 256);
                     break;
                 default:

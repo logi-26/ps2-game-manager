@@ -1,6 +1,6 @@
 package ps2gm.game.manager;
 
-/** Formats a duration in seconds as mm:ss or hh:mm:ss. Extracted from MyFTPClient. */
+/* Formats a duration in seconds as mm:ss or hh:mm:ss. */
 public final class DurationFormatter {
 
     private DurationFormatter() {}

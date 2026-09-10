@@ -15,9 +15,6 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 /**
  * Reads a game's unique disc-serial ID out of its ISO (PS2) or VCD (PS1)
  * file, and the pure filename/string-parsing helpers those two lean on.
- *
- * Extracted from GameListManager for cohesion - this has no dependency on
- * GameListManager's list state, unlike most of that class.
  */
 public final class GameIdExtractor {
 
@@ -25,13 +22,7 @@ public final class GameIdExtractor {
 
     /**
      * This searches the ISO file for the game's unique identifier file. Two
-     * cases fall back to reading the ID out of the filename instead
-     * ("&lt;id&gt;.&lt;name&gt;.iso" / "&lt;id&gt;.&lt;name&gt;.zso" style):
-     *  - .zso is compressed, so the 7-Zip ISO reader can't parse its content at all;
-     *  - the 7-Zip native library can fail to load on modern Windows (or lose its
-     *    temp-dir lock to another instance), which makes every real ISO fail to
-     *    open. Rather than detecting zero games and flooding the debug log,
-     *    degrade to the filename in that case too.
+     * cases fall back to reading the ID out of the filename instead (iso/zso)
      */
     public static String getPS2GameIDFromArchive(String archiveFile) throws Exception {
         if (archiveFile.toLowerCase().endsWith(".zso")) {
@@ -55,8 +46,7 @@ public final class GameIdExtractor {
             }
         } catch (Exception ex) {
             // 7-Zip couldn't open the archive (broken native lib, temp-dir lock lost to another
-            // instance, or a damaged ISO). Try the filename before giving up so a
-            // "<id>.<name>.iso" still gets detected instead of flooding the debug log.
+            // instance, or a damaged ISO). Try the filename before giving up so an iso still gets detected.
             String fromName = extractGameIDFromFilename(new File(archiveFile).getName());
             if (fromName == null) {
                 PopsGameManager.displayErrorMessageDebug(
@@ -83,8 +73,7 @@ public final class GameIdExtractor {
 
     /**
      * Extracts a PS2 game ID (e.g. SLUS_215.93) directly from a filename, for
-     * formats (like .zso) whose compressed content
-     * {@link #getPS2GameIDFromArchive} can't read the archive listing from.
+     * formats (like .zso) whose compressed content can't read the archive listing from.
      */
     public static String extractGameIDFromFilename(String filename) {
         for (String regionCode : RegionCodes.ALL) {
@@ -133,12 +122,8 @@ public final class GameIdExtractor {
     }
 
     /**
-     * Strip a game ID from a filename base (extension already removed),
-     * whether it sits at the start ("&lt;id&gt;.&lt;name&gt;"), the end
-     * ("&lt;name&gt;.&lt;id&gt;", "&lt;name&gt; &lt;id&gt;",
-     * "&lt;name&gt;-&lt;id&gt;") or in a "(&lt;id&gt;)" / "[&lt;id&gt;]"
-     * group, together with its adjoining separator. Lets the scanner accept
-     * OPL's ID-first and ID-last conventions.
+     * Strip a game ID from a filename base (extension already removed), whether it
+     * sits at the start or the end. Lets the scanner accept OPL's ID-first and ID-last conventions.
      */
     public static String stripGameId(String base, String gameId) {
         if (base == null || gameId == null || gameId.isEmpty()) {
@@ -155,10 +140,8 @@ public final class GameIdExtractor {
 
     /**
      * Derives a descriptive game name from a filename and its game ID:
-     * strips the extension, then strips the ID (and its separator) via
-     * {@link #stripGameId}, falling back to the ID - or, if there isn't one,
-     * the extension-stripped filename - when nothing descriptive is left
-     * (e.g. a file named just "&lt;id&gt;.vcd").
+     * strips the extension, then strips the ID (and its separator), falling back to the ID
+     * or if there isn't one, the extension-stripped filename - when nothing descriptive is left.
      */
     public static String deriveDescriptiveName(String fileName, String gameId) {
         int extDot = fileName.lastIndexOf('.');

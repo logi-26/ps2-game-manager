@@ -8,10 +8,7 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 
 /**
- * Coordinates the update flow end to end - check, download+verify+stage,
- * apply+relaunch - mirroring {@link AppBootstrap}'s role as a small
- * orchestrator over the app's other business-logic classes. This is the one
- * thing {@code PopsGameManager.checkForAppUpdate()} and the UI call into.
+ * Coordinates the update flow end to end
  */
 public final class AppUpdateManager {
 
@@ -62,7 +59,7 @@ public final class AppUpdateManager {
         }
     }
 
-    /** Hands off to the apply helper and exits this JVM. Returns false (staging left in place, retryable) only if the helper couldn't even be started. */
+    // Hands off to the apply helper and exits this JVM. Returns false (staging left in place, retryable) only if the helper couldn't even be started.
     public static boolean applyAndExit(StagedUpdate staged) {
         InstallLayout layout = InstallLayout.resolve();
         boolean started = AppUpdateApplier.apply(staged.finalDir(), staged.stagingDir(), layout);
@@ -73,8 +70,7 @@ public final class AppUpdateManager {
     }
 
     /**
-     * Called once at startup ({@code AppBootstrap}) - clears any {@code .old-*}/staging
-     * directories an interrupted or crashed update apply left behind, and surfaces a
+     * Called once at startup - clears any old/staging directories an interrupted or crashed update apply left behind, and surfaces a
      * failure log if the helper recorded one, so a failed update is never silently invisible.
      */
     public static void cleanupOrphanedArtifacts() {

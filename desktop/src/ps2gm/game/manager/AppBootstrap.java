@@ -13,10 +13,6 @@ import javax.swing.JOptionPane;
  * Application startup: verifies the bundled libraries and cue2pops tool are
  * present and current, cleans up files left by a previous install, then
  * hands off to the JavaFX UI.
- *
- * Extracted from PopsGameManager.startApplication and its supporting
- * methods, which mixed this one-time bootstrap sequence in with the app's
- * ongoing settings/state API.
  */
 final class AppBootstrap {
 
@@ -26,7 +22,6 @@ final class AppBootstrap {
     static final String OLD_APP_NAME = "PS2GM_0.6.jar";
     static final String CURRENT_VERSION_NUMBER = "1.0";
     static final String CURRENT_APP_NAME = "PS2GM_" + CURRENT_VERSION_NUMBER + ".jar";
-    // Derived, not a separate literal, so the title can never drift from the real version again.
     static final String FORM_TITLE = "PS2GM v" + CURRENT_VERSION_NUMBER;
     static final String[] ALL_PREVIOUS_VERSIONS = {"0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.6.1"};
 
@@ -39,7 +34,6 @@ final class AppBootstrap {
         // This prevents the application from launching if the required Java libraries are not available
         if (!checkJavaLibraries()) {exitAppWithWarning();}
         else {
-
             PopsGameManager.determineOSVersion();
 
             if (!PopsGameManager.isDebugMode()) {System.out.println("");}
@@ -61,7 +55,6 @@ final class AppBootstrap {
             }
 
             // Hand off to the JavaFX Application - blocks until the UI exits.
-            // Theme (light/dark) is chosen inside MainApp.start() via Themes.apply(getThemeName()).
             ps2gm.game.manager.fx.MainApp.run(new String[0]);
         }
     }

@@ -13,9 +13,6 @@ import java.util.List;
 /**
  * Reads and writes OPL's ul.cfg - the USB-Advance mode game list, a flat file
  * of fixed 64-byte records (name, ID, part count, then reserved/media bytes).
- *
- * Extracted from USBUtil; readULCFG/writeULCFG/padName/listULFragments were
- * previously static methods there.
  */
 public final class UlCfgFileFormat {
 
@@ -27,7 +24,7 @@ public final class UlCfgFileFormat {
 
     private UlCfgFileFormat() {}
 
-    /** Reads ul.cfg from the OPL directory into a list of UL games. */
+    // Reads ul.cfg from the OPL directory into a list of UL games
     public static List<Game> read() {
         List<Game> ulGameList = new ArrayList<>();
 
@@ -95,12 +92,8 @@ public final class UlCfgFileFormat {
         return ulGameList;
     }
 
-    /** Writes ul.cfg to the OPL directory from the given UL games. */
+    // Writes ul.cfg to the OPL directory from the given UL games
     public static void write(List<Game> ulGameList) {
-        // BUG FIX (Phase 1): previously wrote each byte via Byte.parseByte(String.valueOf(num)),
-        // which throws for any control-byte value >= 128 (byte's range is -128..127).
-        // outputStream.write(int) already only uses the low 8 bits, so writing num
-        // directly is both correct and simpler.
         try (OutputStream outputStream = new FileOutputStream(PopsGameManager.getOPLFolder() + File.separator + "ul.cfg")) {
             for (Game ulGame : ulGameList) {
 
@@ -124,7 +117,7 @@ public final class UlCfgFileFormat {
         }
     }
 
-    /** Pads a game name to {@code NAME_LENGTH} bytes with NUL chars. */
+    // Pads a game name to {@code NAME_LENGTH} bytes with NUL chars
     public static String padName(String name) {
         StringBuilder padded = new StringBuilder(name);
         while (padded.length() < NAME_LENGTH) {
@@ -133,7 +126,7 @@ public final class UlCfgFileFormat {
         return padded.toString();
     }
 
-    /** Lists the UL game fragment files (named "*.NN") in the OPL directory. */
+    // Lists the UL game fragment files (named "*.NN") in the OPL directory
     public static List<File> listULFragments() {
         List<File> ulGameFragments = new ArrayList<>();
         File dvdFolder = new File(PopsGameManager.getOPLFolder());

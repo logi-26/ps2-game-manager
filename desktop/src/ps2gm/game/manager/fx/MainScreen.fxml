@@ -26,8 +26,8 @@
     <MenuBar>
         <Menu text="File">
             <MenuItem fx:id="miOpenOplDir" onAction="#onOpenOplDirectory" text="Open OPL Directory" />
-            <MenuItem fx:id="miAbout" onAction="#onAbout" text="About" />
             <MenuItem fx:id="miCheckUpdate" onAction="#onCheckUpdate" text="Check for Updates" />
+            <MenuItem onAction="#onReportBug" text="Report Bug" />
             <SeparatorMenuItem />
             <Menu fx:id="menuTheme" text="Theme">
                 <RadioMenuItem onAction="#onThemeChosen" text="Primer Light" userData="Primer Light">

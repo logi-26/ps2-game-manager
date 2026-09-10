@@ -23,25 +23,14 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 /**
- * Talks to the HTTP API ({@code api/}). See {@link BackendClient} for the
- * contract; the raw-TCP server it replaced is gone (retired once the API
- * backend had had enough real-world runway) but this kept the same local
- * file layout and caller-visible behaviour, just a different wire format.
+ * Talks to the HTTP API
  */
 public class MyApiClient implements BackendClient {
 
     private static final HttpClient HTTP = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
             .followRedirects(HttpClient.Redirect.NORMAL)
-            // The JDK client defaults to attempting an HTTP/2 (h2c) upgrade on
-            // every request. uvicorn's dev server doesn't negotiate that cleanly
-            // and silently drops the body on POSTs (GETs are unaffected, which is
-            // why only uploads/reports showed this). Pin 1.1 to match what the
-            // API actually speaks.
             .version(HttpClient.Version.HTTP_1_1)
-            // Daemon threads: an HttpClient's internal executor must not be the
-            // reason the JVM stays alive (Swing's EDT already keeps the real app
-            // running; this only matters for short-lived callers/tools).
             .executor(Executors.newCachedThreadPool(r -> {
                 Thread t = new Thread(r);
                 t.setDaemon(true);
@@ -51,22 +40,15 @@ public class MyApiClient implements BackendClient {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration DOWNLOAD_TIMEOUT = Duration.ofSeconds(60);
-    // App update packages are much larger than any other download this client does.
+
+    // App update packages are much larger than any other download this client does
     private static final Duration UPDATE_DOWNLOAD_TIMEOUT = Duration.ofMinutes(5);
 
     public MyApiClient() {}
 
-    // =====================================================================
-    // App / tool updates
-    // =====================================================================
-
     @Override
     public AppReleaseInfo getLatestAppRelease(String channel) {
         try {
-            // getJson returns null for any non-200 response too, e.g. the 404 the API
-            // gives when no release has been published for this channel yet - that's a
-            // normal "nothing to report" outcome, not a connectivity failure, so it's
-            // returned as null rather than thrown.
             Map<String, Object> json = getJson("/app/latest?channel=" + urlEncode(channel), DEFAULT_TIMEOUT);
             return json == null ? null : AppReleaseInfo.fromJson(json);
         } catch (IOException | InterruptedException ex) {
@@ -154,16 +136,9 @@ public class MyApiClient implements BackendClient {
         }
     }
 
-    // =====================================================================
-    // Downloading game content
-    // =====================================================================
-
     @Override
     public void getImageFromServer(Game selectedGame, String gameRegion, String gameID, String gameName, String coverType, String coverPath, int gameNumber, boolean batchMode) {
         String kind = coverType.equals("_SCR2") ? "SCR" : coverType.substring(1).toUpperCase();
-
-        // _ICO/_LAB/_LGO are stored as PNG (icon, spine label and logo all commonly need
-        // transparency); everything else is JPG.
         String ext = isPngArt(coverPath) ? ".png" : ".jpg";
         String localImagePath = null;
         if (PopsGameManager.getCurrentConsole() == Console.PS1) {
@@ -182,8 +157,6 @@ public class MyApiClient implements BackendClient {
         }
     }
 
-    // Art suffixes this app stores as PNG rather than JPG (icon, spine label, logo - all
-    // commonly carry transparency). Matches the extension the image screens look for.
     static boolean isPngArt(String suffix) {
         return "_ICO".equals(suffix) || "_LAB".equals(suffix) || "_LGO".equals(suffix);
     }
@@ -221,7 +194,6 @@ public class MyApiClient implements BackendClient {
             return;
         }
 
-        // Bump the config format version and stamp the user's game name in, same as the TCP client did
         if (new File(localConfigPath).exists()) {
             try {
                 List<String> lines = new ArrayList<>(Files.readAllLines(Paths.get(localConfigPath), StandardCharsets.UTF_8));
@@ -280,10 +252,6 @@ public class MyApiClient implements BackendClient {
         }
     }
 
-    // =====================================================================
-    // Catalogue lists
-    // =====================================================================
-
     @Override
     public void getListFromServer(String listType, String console) {
         String endpoint;
@@ -316,8 +284,6 @@ public class MyApiClient implements BackendClient {
                 for (Map<String, Object> entry : fetchAllPages(endpoint, console)) {
                     String label = MiniJson.str(entry, "label");
                     String description = MiniJson.str(entry, "description");
-                    // "<label> <description>" - the label has no spaces, so GameVMCScreen.readVMCList
-                    // splits on the first space (no fixed-width assumption).
                     outLines.add(label + " " + (description == null ? "" : description));
                 }
             } else {
@@ -352,7 +318,7 @@ public class MyApiClient implements BackendClient {
         }
     }
 
-    /** Pages through a list endpoint (?console=&amp;limit=&amp;offset=) collecting every item. */
+    // Pages through a list endpoint collecting every item
     private List<Map<String, Object>> fetchAllPages(String endpoint, String console) throws IOException, InterruptedException {
         List<Map<String, Object>> all = new ArrayList<>();
         int limit = 1000, offset = 0, total = Integer.MAX_VALUE;
@@ -367,10 +333,6 @@ public class MyApiClient implements BackendClient {
         }
         return all;
     }
-
-    // =====================================================================
-    // Misc
-    // =====================================================================
 
     @Override
     public String sendMessageToServer(String serverMessage) {
@@ -395,10 +357,6 @@ public class MyApiClient implements BackendClient {
         }
     }
 
-    // =====================================================================
-    // HTTP plumbing
-    // =====================================================================
-
     private static String baseUrl() { return PopsGameManager.getApiBaseUrl(); }
 
     private HttpResponse<byte[]> get(String pathAndQuery, HttpResponse.BodyHandler<byte[]> handler, Duration timeout) throws IOException, InterruptedException {
@@ -409,7 +367,7 @@ public class MyApiClient implements BackendClient {
         return HTTP.send(request, handler);
     }
 
-    /** GET that returns the body bytes on 200, or null on any other status (mirrors the old "no such file" sentinels as absence). */
+    // GET that returns the body bytes on 200, or null on any other status
     private byte[] getBytes(String pathAndQuery, Duration timeout) throws IOException, InterruptedException {
         HttpResponse<byte[]> resp = get(pathAndQuery, BodyHandlers.ofByteArray(), timeout);
         return resp.statusCode() == 200 ? resp.body() : null;
@@ -421,7 +379,7 @@ public class MyApiClient implements BackendClient {
         return MiniJson.parseObject(new String(resp.body(), StandardCharsets.UTF_8));
     }
 
-    /** For endpoints whose top-level JSON is a bare array (e.g. GET /games/{id}/vmc), not a {items:[...]} page. */
+    // For endpoints whose top-level JSON is a bare array
     @SuppressWarnings("unchecked")
     private List<Object> getJsonArray(String pathAndQuery, Duration timeout) throws IOException, InterruptedException {
         HttpResponse<byte[]> resp = get(pathAndQuery, BodyHandlers.ofByteArray(), timeout);
@@ -429,5 +387,4 @@ public class MyApiClient implements BackendClient {
         Object parsed = MiniJson.parse(new String(resp.body(), StandardCharsets.UTF_8));
         return (parsed instanceof List) ? (List<Object>) parsed : new ArrayList<>();
     }
-
 }

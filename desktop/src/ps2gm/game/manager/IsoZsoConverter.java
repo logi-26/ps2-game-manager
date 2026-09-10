@@ -19,30 +19,6 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 
 /**
  * Converts a PS2 game file between plain .ISO and the LZ4-compressed .ZSO
- * container OPL reads directly ("ZISO" format, from codestation's ziso
- * tool - see https://github.com/ps2homebrew/Open-PS2-Loader/blob/master/pc/ziso.py,
- * ported here byte-for-byte since no Java implementation of it existed
- * anywhere in this codebase or its dependencies).
- *
- * Header (24 bytes, little-endian): magic "ZISO" (u32), header size (u32,
- * always 0x18), original size (u64), block size (u32, 2048 - one ISO9660
- * sector), version (u8, 1), index alignment shift (u8). Followed by
- * (blocks + 1) little-endian u32 index entries - each holds a block's file
- * offset right-shifted by the alignment, with bit 31 set if that block is
- * stored uncompressed (LZ4 gave up, or the compressed size wasn't worth
- * it); the extra trailing entry is the file's final size, used to work out
- * the last block's length. The alignment shift only matters once a ZSO
- * exceeds 2GB (routine for PS2 DVD9 dumps) - beyond that a plain 31-bit
- * offset can't reach every byte, so larger files use coarser, shifted
- * offsets instead.
- *
- * Runs on a background virtual thread; progress and completion go through
- * {@link ConversionProgress}. This is a brand new codec operating on the
- * user's only copy of large, hard-to-re-rip game files, so a compress pass
- * is immediately followed by decompressing the result back in memory and
- * comparing a CRC32 against the source - the original file is only ever
- * deleted after that check passes. A mismatch fails the whole operation
- * and leaves the original untouched.
  */
 public final class IsoZsoConverter {
 
@@ -64,13 +40,11 @@ public final class IsoZsoConverter {
         this.toZso = toZso;
     }
 
-    /** Starts the conversion ({@code toZso}: ISO-&gt;ZSO, else ZSO-&gt;ISO) on a background virtual thread. */
+    // Starts the conversion on a background virtual thread
     public static void start(ConversionProgress ui, Game game, boolean toZso) {
         BackgroundTasks.runDaemon("iso-zso-convert", new IsoZsoConverter(ui, game, toZso)::run);
     }
 
-    // Package-private seams for tests: exercise just the codec (compress/decompress/verify)
-    // synchronously, without the Game/GameListManager file-management side effects in run().
     static void compressForTest(File iso, File zso, ConversionProgress ui) throws IOException {
         new IsoZsoConverter(ui, null, true).compress(iso, zso);
     }
@@ -128,8 +102,6 @@ public final class IsoZsoConverter {
         String base = dot > 0 ? name.substring(0, dot) : name;
         return new File(source.getParentFile(), base + (toZso ? ".zso" : ".iso"));
     }
-
-    // ------------------------------------------------------------- compress
 
     private void compress(File isoFile, File zsoFile) throws IOException {
         long totalBytes = isoFile.length();
@@ -228,8 +200,6 @@ public final class IsoZsoConverter {
         }
     }
 
-    // ----------------------------------------------------------- decompress
-
     private void decompress(File zsoFile, File isoFile) throws IOException {
         try (RandomAccessFile in = new RandomAccessFile(zsoFile, "r");
              BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(isoFile), 1 << 20)) {
@@ -249,10 +219,8 @@ public final class IsoZsoConverter {
         }
     }
 
-    // ------------------------------------------------------------- verify
-
     // Re-decompresses the just-written ZSO (no output file, just a checksum) and
-    // compares it against the ISO bytes seen while compressing - see class docs.
+    // compares it against the ISO bytes seen while compressing
     private void verifyRoundTrip(File zsoFile, long expectedTotalBytes, long expectedCrc) throws IOException {
         try (RandomAccessFile in = new RandomAccessFile(zsoFile, "r")) {
             ZsoHeader h = readHeader(in);
@@ -271,8 +239,6 @@ public final class IsoZsoConverter {
             }
         }
     }
-
-    // --------------------------------------------------------- header/index
 
     static final class ZsoHeader {
         long totalBytes;
@@ -322,13 +288,6 @@ public final class IsoZsoConverter {
         long entry = h.index[block];
         boolean plain = (entry & PLAIN_FLAG) != 0;
         long offset = (entry & ~PLAIN_FLAG) << h.align;
-
-        // The next entry marks where the *next* block's data starts, which - once an
-        // alignment shift is in play - can be a little past this block's actual
-        // compressed end (alignUp() pads before the next block, not after this one).
-        // So readSize here is an upper bound, not this block's exact compressed size;
-        // decompress(..., destLen) below reads only as much of it as LZ4 needs and
-        // ignores whatever padding trails after, rather than requiring an exact length.
         long nextOffset = (h.index[block + 1] & ~PLAIN_FLAG) << h.align;
         long readSize = plain ? h.blockSize : nextOffset - offset;
         if (readSize <= 0 || readSize > Integer.MAX_VALUE) {

@@ -1,16 +1,10 @@
 package ps2gm.game.manager;
 
-/**
- * Parses a {@code sha256sum}-format checksum sidecar file's text: one line,
- * {@code "<64 hex chars>  <filename>"} (two spaces, matching what
- * {@code Get-FileHash}/{@code sha256sum} both produce and what
- * {@code package.ps1}/{@code bundle-jar.ps1} write next to each release zip).
- */
 public final class ChecksumSidecar {
 
     private ChecksumSidecar() {}
 
-    /** The lower-case hex digest from {@code sidecarText}, or {@code null} if it doesn't parse. */
+    // The lower-case hex digest from sidecarText, or null if it doesn't parse.
     public static String parseHexDigest(String sidecarText) {
         if (sidecarText == null) {
             return null;

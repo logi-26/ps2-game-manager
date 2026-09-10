@@ -3,9 +3,6 @@ package ps2gm.game.manager;
 /**
  * Decodes a config.elm device-compatibility code (as stored in field 13 of a
  * game's config data) into its human-readable label.
- *
- * Extracted from MainController.displayGameConfigDetails, which mixed this
- * pure decision table with JavaFX label-setting.
  */
 public final class DeviceCompatFormatter {
 

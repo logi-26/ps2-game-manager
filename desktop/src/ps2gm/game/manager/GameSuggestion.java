@@ -2,7 +2,7 @@ package ps2gm.game.manager;
 
 import java.util.Map;
 
-/** One fuzzy name-match candidate from {@code GET /games/suggest} - see {@link BackendClient#suggestGameIds}. */
+// One fuzzy name-match candidate from the backend server's game ID suggestion service
 public record GameSuggestion(String gameId, String title, String console, String region, int score) {
 
     public static GameSuggestion fromJson(Map<String, Object> json) {

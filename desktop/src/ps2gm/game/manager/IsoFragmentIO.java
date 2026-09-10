@@ -4,7 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-/** Shared chunked read/write helpers used by {@link IsoSplitter} and {@link IsoMerger}. */
+// Shared chunked read/write helpers used by IsoSplitter and IsoMerger
 final class IsoFragmentIO {
 
     private IsoFragmentIO() {}
@@ -15,7 +15,7 @@ final class IsoFragmentIO {
         if (value != -1) {bufferedOutputStream.write(buffer);}
     }
 
-    /** How many 1GB fragments splitting this file will produce. */
+    // How many 1GB fragments splitting this file will produce
     static int getNumberOfFiles(RandomAccessFile randomAccessFile) {
         int numberOfOutputFiles = 0;
         try {

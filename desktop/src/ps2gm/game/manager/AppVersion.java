@@ -3,18 +3,6 @@ package ps2gm.game.manager;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A dotted version string ("1.0", "0.6.1", "2.0.0-beta"), parsed for
- * numeric comparison instead of the plain string equality the update check
- * used before. A missing/malformed segment reads as 0 rather than throwing -
- * a garbled version string from the server should never crash the update
- * check, just compare oddly.
- *
- * An optional "-suffix" (pre-release tag, e.g. "-beta"/"-test") sorts below
- * the same numeric version without one, matching normal semver precedence
- * (1.0.0-beta &lt; 1.0.0); with two suffixed versions, the suffix breaks the
- * tie lexicographically.
- */
 public final class AppVersion implements Comparable<AppVersion> {
 
     private final List<Integer> segments;
@@ -53,7 +41,6 @@ public final class AppVersion implements Comparable<AppVersion> {
         return new AppVersion(segments, suffix);
     }
 
-    /** True if {@code candidate} is a newer version than this one. */
     public boolean isOlderThan(AppVersion candidate) {
         return compareTo(candidate) < 0;
     }
@@ -72,7 +59,7 @@ public final class AppVersion implements Comparable<AppVersion> {
             return 0;
         }
         if (suffix == null) {
-            return 1; // no suffix beats any suffix at equal numeric version
+            return 1; // No suffix beats any suffix at equal numeric version
         }
         if (other.suffix == null) {
             return -1;

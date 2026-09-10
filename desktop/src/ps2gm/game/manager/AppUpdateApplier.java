@@ -14,9 +14,6 @@ import java.time.Instant;
  * the exe, its DLLs, the bundled JRE - are locked while it's running, so the
  * swap can never happen from inside this process). See the two bundled
  * templates for exactly what the helper does.
- *
- * Java's only remaining job after calling {@link #apply} is to exit -
- * {@code AppUpdateManager} does that immediately after this returns true.
  */
 public final class AppUpdateApplier {
 
@@ -24,7 +21,7 @@ public final class AppUpdateApplier {
 
     private static final boolean WINDOWS = System.getProperty("os.name", "").toLowerCase().contains("windows");
 
-    /** Renders and launches the helper script (detached), for the caller to then exit. False if it couldn't even be started. */
+    // Renders and launches the helper script for the caller to then exit. False if it couldn't even be started.
     public static boolean apply(File finalDir, File stagingDir, InstallLayout layout) {
         try {
             File installRoot = layout.installRoot();

@@ -24,7 +24,7 @@ import javafx.scene.Scene;
 public final class Themes {
 
     /** Used when settings.xml has no theme yet, or names one we don't ship. */
-    public static final String DEFAULT = "Primer Light";
+    public static final String DEFAULT = "Dracula";
 
     private static final Map<String, Theme> REGISTRY = new LinkedHashMap<>();
     static {

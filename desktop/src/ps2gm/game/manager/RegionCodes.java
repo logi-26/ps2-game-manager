@@ -4,8 +4,7 @@ import java.util.List;
 
 /**
  * The disc-serial region-code prefixes ("SLUS_", "SCES_", ...) used to spot a
- * PS1/PS2 game ID inside a filename or archive listing. Previously declared
- * independently in GameListManager, HDLDumpManager (twice) and MyFTPClient.
+ * PS1/PS2 game ID inside a filename or archive listing.
  */
 public final class RegionCodes {
 

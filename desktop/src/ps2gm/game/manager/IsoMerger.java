@@ -10,9 +10,6 @@ import java.util.List;
 /**
  * Merges a PS2 game's split USB-Advance fragments back into a single ISO, on
  * a background daemon thread.
- *
- * Extracted from USBUtil.BackgroundWorkerMergeGame (promoted to a top-level
- * class - it had no external references by name, only via USBUtil.joinFiles).
  */
 public final class IsoMerger implements Runnable {
 
@@ -24,7 +21,7 @@ public final class IsoMerger implements Runnable {
         this.gameID = gameID;
     }
 
-    /** Starts the merge on a new daemon thread. */
+    // Starts the merge on a new daemon thread
     public static void start(SplitMergeProgress ui, String gameID) {
         BackgroundTasks.runDaemon("usbutil-merge", new IsoMerger(ui, gameID));
     }

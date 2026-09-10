@@ -11,8 +11,6 @@ import java.util.List;
 
 public class GameListManager {
 
-    // <editor-fold defaultstate="collapsed" desc="Private Variables">
-
     // PS1 lists
     private static List<Game> gameListPS1;
     private static List<File> invalidGameListPS1;
@@ -26,10 +24,6 @@ public class GameListManager {
     private static String totalGameSizeDisplayPS2;
     private static long totalGameSizeRawPS1;
     private static long totalGameSizeRawPS2;
-
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Public Functions">
 
     // PS1 list functions
     public static void setGameListPS1(List<Game> newGameList) {gameListPS1 = newGameList;}                          // Sets the list containg all of the PS1 games
@@ -53,7 +47,6 @@ public class GameListManager {
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
 
-
     // This creates the game lists for PS2
     public static void createGameListsPS2(boolean checkBadGames) {
 
@@ -66,8 +59,7 @@ public class GameListManager {
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
 
-
-    // Strip a game ID from a filename base - see GameIdExtractor.stripGameId.
+    // Strip a game ID from a filename base
     public static String stripGameId(String base, String gameId) {
         return GameIdExtractor.stripGameId(base, gameId);
     }
@@ -88,8 +80,6 @@ public class GameListManager {
         gameListPS2.add(new Game(gameName, gameID, isoFile.toString(), PopsGameManager.bytesToHuman(isoFile.length()), isoFile.length()));
     }
 
-
-
     // Adds a game to the PS2 game list
     public static void addToGameListsPS1(File vcdFile){
 
@@ -106,8 +96,6 @@ public class GameListManager {
         gameListPS1.add(new Game(gameName, gameID, vcdFile.toString(), PopsGameManager.bytesToHuman(vcdFile.length()), vcdFile.length()));
     }
 
-
-
     // This gets the PS1 game list from the console using FTP
     public static List<Game> getGameListFromConsolePS1(){
         MyFTPClient ftpClient = new MyFTPClient();
@@ -116,22 +104,19 @@ public class GameListManager {
         return gameList;
     }
 
-
-    // This creates the gameListPS2.dat for storing the list of PS2 games that are currently on the console - see GameListPersistence.
+    // This creates the gameListPS2.dat for storing the list of PS2 games that are currently on the console
     public static boolean writeGameListFilePS2(List<Game> ps2GameList){
         if (ps2GameList == null) {ps2GameList = gameListPS2;}
         return GameListPersistence.writeGameListFile(Console.PS2, ps2GameList);
     }
 
-
-    // This creates the gameListPS1.dat for storing the list of PS1 games that are currently on the console - see GameListPersistence.
+    // This creates the gameListPS1.dat for storing the list of PS1 games that are currently on the console
     public static boolean writeGameListFilePS1(List<Game> ps1GameList){
         if (ps1GameList == null) {ps1GameList = gameListPS1;}
         return GameListPersistence.writeGameListFile(Console.PS1, ps1GameList);
     }
 
-
-    // Creates the game list from a file - see GameListPersistence.
+    // Creates the game list from a file
     public static void createGameListFromFile(Console console, File file) throws IOException {
         GameListPersistence.ReadResult result = GameListPersistence.readGameListFile(console, file);
         if (console == Console.PS1) {
@@ -145,36 +130,30 @@ public class GameListManager {
         }
     }
 
-
-    // This searches the ISO file for the game's unique identifier file - see
-    // GameIdExtractor.getPS2GameIDFromArchive for the fallback-to-filename details.
+    // This searches the ISO file for the game's unique identifier file
     public static String getPS2GameIDFromArchive(String archiveFile) throws Exception {
         return GameIdExtractor.getPS2GameIDFromArchive(archiveFile);
     }
 
-    // This searches the VCD file for the game's unique identifier string.
+    // This searches the VCD file for the game's unique identifier string
     public static String getPS1GameIDFromVCD(File vcdfile) throws Exception {
         return GameIdExtractor.getPS1GameIDFromVCD(vcdfile);
     }
 
-
-    // Generate the conf_apps file using data from the smb POPS folder, hdd game list and usb game list - see ConfigElmWriter.
+    // Generate the conf_apps file using data from the smb POPS folder, hdd game list and usb game list
     public static void writeConfigELM() {
         ConfigElmWriter.write();
     }
 
-
-    // This deletes all of the specified files in a directory (remote and local) - see RemoteFileCleaner.
+    // This deletes all of the specified files in a directory (remote and local)
     public static void deleteAllFiles(String directory){
         RemoteFileCleaner.deleteAllFiles(directory);
     }
 
-
-    // This deletes all of the unused files in a directory (remote and local) - see RemoteFileCleaner.
+    // This deletes all of the unused files in a directory (remote and local)
     public static void deleteUnusedFiles(String directory){
         RemoteFileCleaner.deleteUnusedFiles(directory);
     }
-
 
     // Returns the OPL Drive formatted
     public static String getFormattedOPLDrive(){
@@ -216,7 +195,7 @@ public class GameListManager {
         return RemotePath.parse(PopsGameManager.getRemoteELFPath()).folder();
     }
 
-    // This creates the invalidGameList.txt file - see GameListPersistence.
+    // This creates the invalidGameList.txt file
     public static void createBadGameListFile(){
         File[] vcdFiles = null;
         try {vcdFiles = getVCDFiles();} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
@@ -224,9 +203,6 @@ public class GameListManager {
         try {isoFiles = getISOFiles();} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
         GameListPersistence.createBadGameListFile(vcdFiles, isoFiles);
     }
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Private Functions">
 
     // This creates the PS1 game lists
     private static void createGameListPS1() throws IOException {
@@ -243,7 +219,6 @@ public class GameListManager {
                 break;
         }
     }
-
 
     // Creates the PS1 game list from SMB (Using the actual files in the folder)
     private static void createPS1ListFromSMB() {
@@ -264,11 +239,7 @@ public class GameListManager {
                 // Try and get the game ID from the VCD
                 try {gameID = getPS1GameIDFromVCD(vcdFile);} catch (Exception ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
 
-                // Derive the descriptive game name from the file name - see
-                // GameIdExtractor.deriveDescriptiveName. POPS VCDs are named
-                // "<name> <id>.vcd", "<name>-<id>.vcd" or just "<id>.vcd" - the last has no
-                // descriptive part, so fall back to the ID rather than running off the end of
-                // the string (the old fixed "chop last 12 chars" crashed on "<id>.vcd").
+                // Derive the descriptive game name from the file name
                 String gamePath = vcdFile.toString();
                 String gameName = GameIdExtractor.deriveDescriptiveName(vcdFile.getName(), gameID);
 
@@ -279,7 +250,7 @@ public class GameListManager {
 
                     if (gamePath.contains(gameID)) {
 
-                        // This sets the PS1 game compatability values from the text file within the resources
+                        // This sets the PS1 game compatibility values from the text file within the resources
                         PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 
                         // This checks if the game is a multi-disc game
@@ -318,7 +289,7 @@ public class GameListManager {
                 }
             }
 
-            // Make sure that the the DISC.TXT file is up-to-date for any of the mult-disc games
+            // Make sure that the the DISC.TXT file is up-to-date for any of the multi-disc games
             MultiDiscGameCatalog.checkMultiDiscFiles(gameListPS1);
 
             // Let the user rename any games whose ID couldn't be detected at all
@@ -333,21 +304,18 @@ public class GameListManager {
         // If any of the games are not correctly named with the game ID, call the invalid games function
         if (!invalidGameListPS1.isEmpty()) {checkInvalidGamesPS1();}
 
-        // This reorganizes the PS1 game list in alphaetical order
+        // This reorganises the PS1 game list in alphabetical order
         Collections.sort(gameListPS1, new ListOrganiser());
     }
-
 
     // This enables the user to rename any PS1 games that are not correctly named
     private static void checkInvalidGamesPS1(){
 
         // Ask the user if they want to try and rename the game files
         if (PopsGameManager.confirmDialog("Some of your PS1 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names")){
-            // Ported to JavaFX (Swing GameRenamingScreenPS1 kept until the migration lands).
             ps2gm.game.manager.fx.GameRenamingScreen.openPS1(invalidGameListPS1);
         }
     }
-
 
     // This creates the PS2 game lists
     private static void createGameListPS2(boolean checkBadGames) throws IOException {
@@ -367,7 +335,6 @@ public class GameListManager {
                 break;
         }
     }
-
 
     // Creates the PS2 game list from SMB (Using the actual files in the folder)
     private static void createPS2ListFromSMB(boolean checkBadGames) {
@@ -394,11 +361,7 @@ public class GameListManager {
 
                     if (gamePath.contains(gameID)){
 
-                        // Descriptive name = file name minus extension, minus the leading game ID
-                        // and any separator after it - see GameIdExtractor.deriveDescriptiveName.
-                        // PS2 ISOs are conventionally "<id>.<name>.iso", but a bare "<id>.iso" has
-                        // no descriptive part, so fall back to the ID (the old fixed substring(12)
-                        // crashed in that case).
+                        // Descriptive name = file name minus extension, minus the leading game ID and any separator after it
                         String gameName = GameIdExtractor.deriveDescriptiveName(isoFile.getName(), gameID);
 
                         // Used to calculate the total size of all ISO files combined
@@ -421,10 +384,9 @@ public class GameListManager {
         // If any of the games are not correctly named with the game ID, call the invalid games function
         if (!invalidGameListPS2.isEmpty()) {checkInvalidGamesPS2(totalSize);}
 
-        // This reorganizes the PS2 game list in alphaetical order
+        // This reorganises the PS2 game list in alphabetical order
         Collections.sort(gameListPS2, new ListOrganiser());
     }
-
 
     // This adds all PS2 games from the ul.cfg file to the PS2 game list
     private static void readPS2GamesFromULCFG() {
@@ -443,22 +405,19 @@ public class GameListManager {
             }
             totalGameSizeDisplayPS2 = PopsGameManager.bytesToHuman(totalGameSizeRawPS2);
 
-            // This reorganizes the PS2 game list in alphaetical order after the UL games have been added
+            // This reorganises the PS2 game list in alphabetical order after the UL games have been added
             Collections.sort(gameListPS2, new ListOrganiser());
         }
     }
-
 
     // This enables the user to rename any PS2 games that are not correctly named
     private static void checkInvalidGamesPS2(long totalSize){
 
         // Ask the user if they want to try and rename the game files
         if (PopsGameManager.confirmDialog("Some of your PS2 games are not correctly named! \n\nDo you want to try and re-name them?"," Incorrect Game Names")){
-            // Ported to JavaFX (Swing GameRenamingScreenPS2 kept until the migration lands).
             ps2gm.game.manager.fx.GameRenamingScreen.openPS2(invalidGameListPS2);
         }
         else {
-
             for (File isoFile : invalidGameListPS2) {
 
                 // Try and get the game ID from the ISO
@@ -480,8 +439,7 @@ public class GameListManager {
         }
     }
 
-
-    // This returns an array containing all of the .ISO and .ZSO (compressed ISO) files in the directory
+    // This returns an array containing all of the .ISO and .ZSO files in the directory
     private static File [] getISOFiles() throws IOException {
         File directory = new File(PopsGameManager.getOPLFolder() + File.separator + "DVD" + File.separator);
         File [] files = directory.listFiles((File dir, String name) -> {
@@ -492,7 +450,6 @@ public class GameListManager {
         return files;
     }
 
-
     // This returns an array containing all of the .VCD files in the directory
     private static File [] getVCDFiles() throws IOException {
         File directory = new File(PopsGameManager.getOPLFolder() + File.separator + "POPS" + File.separator);
@@ -500,10 +457,6 @@ public class GameListManager {
 
         return files;
     }
-
-
-    // </editor-fold>
-
 
     // This is used to sort the game list alphabetically
     public static class ListOrganiser implements Comparator<Game> {

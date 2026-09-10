@@ -11,60 +11,57 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="ps2gm.game.manager.fx.SyncFileController"
-      spacing="10.0" prefWidth="880.0" prefHeight="470.0">
-    <padding><Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/></padding>
+<HBox prefHeight="470.0" prefWidth="1188.0" spacing="10.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ps2gm.game.manager.fx.SyncFileController">
+    <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
 
 
-    <VBox spacing="10.0" prefWidth="220.0">
-        <TitledPane text="Console Settings" collapsible="false">
+    <VBox prefWidth="220.0" spacing="10.0">
+        <TitledPane collapsible="false" text="Console Settings">
             <VBox spacing="6.0">
-                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-                <Label text="Partition:"/>
-                <ComboBox fx:id="partitionCombo" maxWidth="Infinity"/>
-                <Label text="IP:"/>
-                <TextField fx:id="ipField" alignment="CENTER"/>
-                <Button fx:id="connectButton" text="Connect" onAction="#onConnect" maxWidth="Infinity"/>
+                <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
+                <Label text="Partition:" />
+                <ComboBox fx:id="partitionCombo" maxWidth="Infinity" />
+                <Label text="IP:" />
+                <TextField fx:id="ipField" alignment="CENTER" />
+                <Button fx:id="connectButton" maxWidth="Infinity" onAction="#onConnect" text="Connect" />
             </VBox>
         </TitledPane>
 
-        <TitledPane text="Files" collapsible="false">
+        <TitledPane collapsible="false" text="Files">
             <VBox spacing="4.0">
-                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-                <RadioButton fx:id="artRadio" text="ART" onAction="#onArt">
-                    <toggleGroup><ToggleGroup fx:id="fileTypeGroup"/></toggleGroup>
+                <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
+                <RadioButton fx:id="artRadio" onAction="#onArt" text="ART">
+                    <toggleGroup><ToggleGroup fx:id="fileTypeGroup" /></toggleGroup>
                 </RadioButton>
-                <RadioButton fx:id="cfgRadio" text="CFG" toggleGroup="$fileTypeGroup" onAction="#onCfg"/>
-                <RadioButton fx:id="chtRadio" text="CHT" toggleGroup="$fileTypeGroup" onAction="#onCht"/>
-                <RadioButton fx:id="vmcRadio" text="VMC" toggleGroup="$fileTypeGroup" onAction="#onVmc"/>
+                <RadioButton fx:id="cfgRadio" onAction="#onCfg" text="CFG" toggleGroup="$fileTypeGroup" />
+                <RadioButton fx:id="chtRadio" onAction="#onCht" text="CHT" toggleGroup="$fileTypeGroup" />
+                <RadioButton fx:id="vmcRadio" onAction="#onVmc" text="VMC" toggleGroup="$fileTypeGroup" />
             </VBox>
         </TitledPane>
 
-        <TitledPane text="Transfer Status" collapsible="false">
+        <TitledPane collapsible="false" text="Transfer Status">
             <VBox spacing="6.0">
-                <padding><Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/></padding>
-                <ProgressBar fx:id="progressBar" progress="0.0" maxWidth="Infinity"/>
+                <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
+                <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0.0" />
             </VBox>
         </TitledPane>
     </VBox>
 
     <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-        <Label text="Files on PC"/>
-        <ListView fx:id="localList" VBox.vgrow="ALWAYS"/>
+        <Label text="Files on PC" />
+        <ListView fx:id="localList" VBox.vgrow="ALWAYS" />
     </VBox>
 
-    <VBox spacing="8.0" alignment="CENTER">
-        <Button fx:id="fromConsoleButton" text="&lt;&lt;" onAction="#onFromConsole" prefWidth="45.0"/>
-        <Button fx:id="toConsoleButton" text="&gt;&gt;" onAction="#onToConsole" prefWidth="45.0"/>
-        <Button fx:id="deleteButton" text="Delete" onAction="#onDelete" prefWidth="80.0"/>
+    <VBox alignment="CENTER" spacing="8.0">
+        <Button fx:id="fromConsoleButton" onAction="#onFromConsole" prefWidth="45.0" text="&lt;&lt;" />
+        <Button fx:id="toConsoleButton" onAction="#onToConsole" prefWidth="45.0" text="&gt;&gt;" />
+        <Button fx:id="deleteButton" onAction="#onDelete" prefWidth="80.0" text="Delete" />
     </VBox>
 
-    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-        <Label text="Files on PS2"/>
-        <ListView fx:id="remoteList" VBox.vgrow="ALWAYS"/>
+    <VBox prefWidth="274.0" spacing="4.0" HBox.hgrow="ALWAYS">
+        <Label text="Files on PS2" />
+        <ListView fx:id="remoteList" VBox.vgrow="ALWAYS" />
     </VBox>
 </HBox>

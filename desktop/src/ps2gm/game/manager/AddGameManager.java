@@ -12,16 +12,13 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public final class AddGameManager {
     private static final String[] REGION_CODES = {"SCES_","SLES_","SCUS_","SLUS_","SLPS_","SCAJ_","SLKA_","SLPM_","SCPS_"};
     
-
     private AddGameManager(){}
     
     // Used to truncate a string
     public static String truncate(String value, int length) {if (value.length() > length) return value.substring(0, length); else return value;}       
-    
     
     // This copies the POPSTARTER.ELF file to the POPS directory and renames it to match the newly added VCD file
     public static void generateElf(String fileName, String path){
@@ -31,7 +28,6 @@ public final class AddGameManager {
         if (popstarterFile.exists() && !popstarterFile.isDirectory()){
             popstarterFile.renameTo(new File(PopsGameManager.getCurrentDirectory() + File.separator + "POPSTARTER" + File.separator + "POPSTARTER.ELF"));
         }
-        
         
         // Check if POPSTARTER.ELF exists in /Tools/POPSTARTER/POPSTARTER.ELF
         popstarterFile = new File(PopsGameManager.getCurrentDirectory() + File.separator + "POPSTARTER" + File.separator + "POPSTARTER.ELF");
@@ -49,7 +45,6 @@ public final class AddGameManager {
         }
         else {PopsGameManager.showErrorDialog("Could not locate POPSTARTER.ELF in the POPSTARTER directory."," Missing POPSTARTER.ELF!");}
     }
-    
     
     // Launch cue2pops to convert the .bin/.cue to a .vcd file
     public static boolean launchCueToPops(File cueFile) throws IOException, InterruptedException{
@@ -103,7 +98,6 @@ public final class AddGameManager {
         String newFileName = truncate(cueFile.getName(), cueFile.getName().length()-3);
         String newFileFullName = newFileName + "VCD";
         
-        //newFileName += "VCD";
         String newFilePath = truncate(cueFile.toString(), cueFile.toString().length()-newFileFullName.length());
         newFilePath += newFileFullName;
         
@@ -111,7 +105,6 @@ public final class AddGameManager {
         
         return generatedVCD;
     } 
-    
     
     // This searches the VCD file for the games unique identifier string
     public static String getPS1GameIDFromVCD(File vcdfile) throws Exception {
@@ -134,10 +127,10 @@ public final class AddGameManager {
                     
                     // If the game ID does not contain a decimal
                     if (!idNumber.contains(".")){
-                        idNumber = truncate(idNumber, 5);                                   // Remove empty char at the end of the string
-                        String afterDecimal = idNumber.substring(idNumber.length() - 2);    // Get the last 2 digits
-                        idNumber = truncate(idNumber, 3);                                   // Get the first 3 digits
-                        idNumber += "." + afterDecimal;                                     // Place a decimal between the digits
+                        idNumber = truncate(idNumber, 5);                            // Remove empty char at the end of the string
+                        String afterDecimal = idNumber.substring(idNumber.length() - 2);     // Get the last 2 digits
+                        idNumber = truncate(idNumber, 3);                            // Get the first 3 digits
+                        idNumber += "." + afterDecimal;                                      // Place a decimal between the digits
                     }
                     theGameID = regionCode + "_" + idNumber;
                 }

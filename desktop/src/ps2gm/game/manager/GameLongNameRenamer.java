@@ -14,10 +14,6 @@ import java.util.List;
  * The file/FTP side of renaming a game whose title is longer than 32 characters -
  * VCD/ELF/ISO, PS1 ART, PS1 CFG, multi-disc DISCS.TXT, game folder, and the FTP
  * path on the console in HDD mode.
- *
- * Extracted verbatim from the Swing {@code GameLongNameScreen} so the screen (Swing
- * now, JavaFX later) only owns the UI: the "name already used" check, calling one of
- * these methods, and refreshing its lists on success.
  */
 public final class GameLongNameRenamer {
 
@@ -90,7 +86,7 @@ public final class GameLongNameRenamer {
         return selectedGame.renameTo(new File(selectedGame.getParentFile() + File.separator + base + extension));
     }
 
-    // HDD mode (PS1): rename the VCD and ELF on the console over FTP. Fire and forget.
+    // HDD mode (PS1): rename the VCD and ELF on the console over FTP
     public void ftpRenamePS1() {
 
         MyFTPClient myFTP = new MyFTPClient();
@@ -149,6 +145,8 @@ public final class GameLongNameRenamer {
                 renameArtPS1("SB.", "ICO");
                 renameArtPS1("SB.", "SCR");
                 renameArtPS1("SB.", "SCR2");
+                renameArtPS1("SB.", "LAB");
+                renameArtPS1("SB.", "LGO");
                 break;
             case HDD_USB:
                 renameArtPS1("XX.", "COV");
@@ -157,6 +155,8 @@ public final class GameLongNameRenamer {
                 renameArtPS1("XX.", "ICO");
                 renameArtPS1("XX.", "SCR");
                 renameArtPS1("XX.", "SCR2");
+                renameArtPS1("XX.", "LAB");
+                renameArtPS1("XX.", "LGO");
                 break;
             case HDD:
                 break;
@@ -169,17 +169,14 @@ public final class GameLongNameRenamer {
         String artFolder = PopsGameManager.getOPLFolder() + File.separator + "ART" + File.separator;
         String gameID = game.getGameID();
 
+        // ICO/LAB/LGO (icon, spine label, logo) are stored as PNG; everything else as JPG.
+        boolean png = coverType.equals("ICO") || coverType.equals("LAB") || coverType.equals("LGO");
+        String ext = png ? ".png" : ".jpg";
+
         // Rename art file if it exists
-        if (coverType.equals("ICO")) {
-            File frontCover = new File(artFolder + prefix + oldTitle + "-" + gameID + ".ELF_" + coverType + ".png");
-            if (frontCover.exists() && frontCover.isFile()) {
-                frontCover.renameTo(new File(artFolder + prefix + newTitle + "-" + gameID + ".ELF_" + coverType + ".png"));
-            }
-        } else {
-            File frontCover = new File(artFolder + prefix + oldTitle + "-" + gameID + ".ELF_" + coverType + ".jpg");
-            if (frontCover.exists() && frontCover.isFile()) {
-                frontCover.renameTo(new File(artFolder + prefix + newTitle + "-" + gameID + ".ELF_" + coverType + ".jpg"));
-            }
+        File frontCover = new File(artFolder + prefix + oldTitle + "-" + gameID + ".ELF_" + coverType + ext);
+        if (frontCover.exists() && frontCover.isFile()) {
+            frontCover.renameTo(new File(artFolder + prefix + newTitle + "-" + gameID + ".ELF_" + coverType + ext));
         }
     }
 

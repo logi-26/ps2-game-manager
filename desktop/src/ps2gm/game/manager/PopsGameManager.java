@@ -15,7 +15,6 @@ import java.text.DecimalFormat;
 
 public class PopsGameManager {
 
-    // <editor-fold defaultstate="collapsed" desc="Private Variables">
     private static boolean DebugMode = false;
     private static String userOperatingSystem;
     private static String userOperatingSystemVersion;
@@ -46,20 +45,8 @@ public class PopsGameManager {
     private static String themeName = ps2gm.game.manager.fx.Themes.DEFAULT;
 
     private static String gameIDPositionPS2 = "start";
-    // </editor-fold>
-    
-    
-    
-    
-    
-    // <editor-fold defaultstate="collapsed" desc="Public Functions">   
+
     public static void callbackToUpdateGUIGameList(String gameID, int listIndex){updateGUIGameList(gameID, listIndex);}     // This provides a callback to the main game screen (To update GUI list)
-    
-    
-    
-    
-    
-    
     
     public static void addListener(MyListener listener) {LISTENERS.add(listener);}                                          // Adds callback LISTENERS to the list
 
@@ -120,8 +107,6 @@ public class PopsGameManager {
     public static Boolean isOPLFolderSet() {return oplFolder != null;}                                                      // Returns a boolean showing if the OPL folder has been set by user                        
     public static Boolean isCurrentConsoleSet() {return currentConsole != null;}                                            // Returns a boolean showing if the current console has been set by user
     
-    
-    
     // This is used for displaying the captured exceptions if debug mode is set
     public static void displayErrorMessageDebug(String message){
         if (DebugMode){
@@ -143,7 +128,6 @@ public class PopsGameManager {
 
     static boolean isDebugMode() {return DebugMode;}                                                                        // Only used by AppBootstrap's startup debug print
 
-    
     // Base URL of the HTTP API.
     // Override with -Dps2gm.api.baseurl=http://host:8000/v1 (or the PS2GM_API_BASEURL env var)
     public static String getApiBaseUrl(){
@@ -163,7 +147,6 @@ public class PopsGameManager {
         XMLFileManager.readSettingsXML();
     }     
     
-    
     // This returns the file prefix for SMB and USB mode
     public static String getFilePrefix(){
         String filePrefix = null;
@@ -181,7 +164,6 @@ public class PopsGameManager {
         
         return filePrefix;
     }
-    
     
     // This opens a directory in explorer
     public static void openDirectory(String directory){
@@ -264,13 +246,9 @@ public class PopsGameManager {
 
         return "???";
     }
-    // </editor-fold>
-    
-
-    // <editor-fold defaultstate="collapsed" desc="Private Functions">   
+ 
     private static void updateGUIGameList(String gameID, int listIndex){LISTENERS.stream().forEach((listener) -> {listener.updateGameList(gameID, listIndex);});}                                    // Callback to update the games list in the MainScreen
 
-    
     // This determines what Operating system - see SystemInfo for the actual detection logic.
     static void determineOSVersion() {
         SystemInfo.Detection detection = SystemInfo.detect();
@@ -323,9 +301,6 @@ public class PopsGameManager {
             return null;
         }
     }
-
-    // </editor-fold>
-
 
     // Application start - see AppBootstrap for the actual startup sequence.
     public static void startApplication(){

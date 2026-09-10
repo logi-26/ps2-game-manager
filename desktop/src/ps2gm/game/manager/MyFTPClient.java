@@ -18,28 +18,21 @@ import org.apache.commons.net.ftp.FTPReply;
 
 public class MyFTPClient {
 
-    // BUG FIX: was `static`, despite MyFTPClient being instantiated per-use (`new
-    // MyFTPClient()`) - two concurrent instances (e.g. two background uploads) shared
-    // and corrupted a single connection.
     private FTPClient ftpClient;
 
     // Booleans to determine if the OPL directories are present on the console
     private static final boolean folderExistsPOPS = false;
     private String consoleIP = null;
     
-    
     public MyFTPClient() {ftpClient = new FTPClient();}
-    
     
     // Return the FTP connection status
     public boolean isFTPConnected(){return ftpClient.isConnected();}
-    
     
     public void createDirectory(String directoryPath){
         try {ftpClient.makeDirectory(directoryPath);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
 
-    
     // Upload the conf_elm.cfg file to the console via FTP
     public void uploadConfElmToConsole(String localFileDirectory, String localFileName, String remoteDirectory){
         
@@ -67,12 +60,10 @@ public class MyFTPClient {
         } 
     }
     
-    
     // This adds a PS1 game to the console using FTP in a background thread
     public void addGameToPS2(FtpTransferProgress progress, List<File> fileList, boolean includeElf){
         BackgroundTasks.runDaemon("ftp-add-game-ps1", () -> runUpload(progress, fileList, includeElf));
     }
-    
     
     // This attempts to upload a file to PS2 console
     public void addFileToPS2(String localFileDirectory, String localFileName, String remoteDirectory, boolean removePrefix){
@@ -108,18 +99,15 @@ public class MyFTPClient {
         try {if (inputStream != null) {inputStream.close();}} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
     
-    
     // Rename a file on the console using FTP
     public void renameFile(String originalName, String newName){
         try {ftpClient.rename(originalName, newName);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}  
     }
     
-    
     // This gets a file from the console
     public void getFile(String remoteDirectory, String fileName, String localDirectory){
         getFileFromConsole(ftpClient, remoteDirectory, fileName, localDirectory);
     }
-    
     
     // This downloads a file from the PS2 console to a specified directory
     private void getFileFromConsole(FTPClient ftpClient, String remotePath, String remoteFileName, String destinationPath){
@@ -130,7 +118,6 @@ public class MyFTPClient {
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
     
-
     // This lists all of the files in a remote directory on the PS2 console
     public List<String> listRemoteDirectory(String remoteDirectory, String partition, boolean listFiles){
         
@@ -150,7 +137,6 @@ public class MyFTPClient {
         
         return remoteDirectoryList;
     }
-    
     
     // This checks if a file or folder exists in a remote directory
     public boolean remoteFileExists(String drive, String remoteDirectory, String partition, String remoteFileName, boolean isFile){
@@ -201,7 +187,6 @@ public class MyFTPClient {
         if (!remoteDirectoryList.isEmpty()) {remoteDirectoryList.stream().filter((fileName) -> (!localDirectoryList.contains(fileName))).forEach((fileName) -> {getFileFromConsole(ftpClient, remoteDirectory, fileName, localDirectory);});}
     }
     
-
     // This syncs all of the game art from the local hdd directory to the PS2 console
     public void syncFilesToConsole(String localDirectory, String remoteDirectory){
         
@@ -227,7 +212,6 @@ public class MyFTPClient {
         if (!localDirectoryList.isEmpty()) {localDirectoryList.stream().filter((fileName) -> (!remoteDirectoryList.contains(fileName))).forEach((fileName) -> {addFileToPS2(localDirectory, fileName, remoteDirectory, PopsGameManager.getCurrentConsole() == Console.PS1);});}
     }
     
-    
     // This attempts to establish an FTP connection with the PS2 console
     public boolean connectToConsole(String consoleIP){
 
@@ -250,7 +234,6 @@ public class MyFTPClient {
         return connectionEstablished;
     }
     
-    
     // This disconnects from the consoles FTP server
     public void disconnectFromConsole(){
         try {
@@ -261,12 +244,10 @@ public class MyFTPClient {
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error terminating the FTP connection with the console!\n\n" + ex.toString());}
     }
     
-    
     // This deletes a file on the console using FTP
     public void deleteRemoteFile(String fullPath){
         try {ftpClient.deleteFile(fullPath);} catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error deleting remote FTP file!\n\n" + ex.toString());}
     }
-    
     
     // Change the FTP remote directory
     public void changeDirectory(String newDirectory){
@@ -277,7 +258,6 @@ public class MyFTPClient {
         } 
         catch (IOException ex) {PopsGameManager.displayErrorMessageDebug("Error changing the FTP working directory!\n\n" + ex.toString());}  
     }
-    
     
     // Get the list of PS1 games from the console
     public List<Game> getGameListPS1(){
@@ -314,11 +294,10 @@ public class MyFTPClient {
                                     String gameName = file.getName().substring(0, file.getName().lastIndexOf("-"));
                                     gameID = possibleID;
 
-                                    // This sets the PS1 game compatability values from the text file within the resources
+                                    // This sets the PS1 game compatibility values from the text file within the resources
                                     PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 
                                     Game selectedGame = new Game(gameName,gameID,"PATH HERE!!",PopsGameManager.bytesToHuman(rawFileSize),rawFileSize);
-                                    // BUG FIX: these were swapped - see GameListPersistence.readGameListFile.
                                     selectedGame.setCompatibleHDD(compat.hdd());
                                     selectedGame.setCompatibleUSB(compat.usb());
                                     selectedGame.setCompatibleSMB(compat.smb());
@@ -334,8 +313,6 @@ public class MyFTPClient {
 
         return gameList;
     }
-    
-
     
     // Background worker: uploads the file(s) to the console and reports through FtpTransferProgress.
     // Was an inner SwingWorker (BackgroundWorker); now a plain method run on a daemon thread by
@@ -449,7 +426,6 @@ public class MyFTPClient {
             if (gameList != null && gameList.size()>0){PopsGameManager.callbackToUpdateGUIGameList(null, gameList.size()-1);}
         }
     }
-
 
     // This upload a VCD or ELF file to the console
     private void uploadFileToConsole(File localFile, String remoteFile, int totalUploadedBytes, long totalBytesToUpload, long start, FtpTransferProgress progress){

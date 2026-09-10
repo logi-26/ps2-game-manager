@@ -9,21 +9,12 @@ import java.util.List;
  * name and ".ELF" (matching the ELF OPL actually launches), PS2 just uses the game
  * ID - so this branches on PopsGameManager.getCurrentConsole(), the same pattern
  * GameConfigFileManager already uses for the equivalent CFG-file naming split.
- *
- * Used where BatchDownloadScreenPS1/PS2 and GameImageScreenPS1/PS2 (and its image
- * selector screens) need to check for or display an existing art file: they all
- * follow the same "does the .jpg exist, else the .png, else fall back" rule this
- * mirrors. A handful of other call sites (e.g. GameImageScreen's getImageFromServer,
- * which picks a single expected extension per file type with no fallback) have
- * different existence-check behaviour and only use baseName() below, not
- * isMissing()/resolve().
  */
 public final class GameArtFileManager {
 
     private GameArtFileManager() {}
 
     // The base OPL ART filename for a game's art of the given kind, without extension.
-    // e.g. PS1: "<prefix><name>-<id>.ELF_COV", PS2: "<id>_COV"
     public static String baseName(Game game, String suffix) {
         if (PopsGameManager.getCurrentConsole() == Console.PS1) {
             return PopsGameManager.getFilePrefix() + game.getGameName() + "-" + game.getGameID() + ".ELF" + suffix;

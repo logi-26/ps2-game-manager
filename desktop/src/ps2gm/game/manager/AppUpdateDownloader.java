@@ -12,7 +12,6 @@ public final class AppUpdateDownloader {
 
     private AppUpdateDownloader() {}
 
-    /** The verified zip file under {@code stagingDir}, or null on any download/verification failure. */
     public static File downloadAndVerify(BackendClient api, String version, AppPlatformAsset asset, File stagingDir, AppUpdateProgress progress) {
         if (progress != null) {
             progress.setPhase("Downloading");

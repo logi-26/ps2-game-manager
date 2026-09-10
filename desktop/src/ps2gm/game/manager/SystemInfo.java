@@ -3,9 +3,6 @@ package ps2gm.game.manager;
 /**
  * Detects the host operating system's type, version and architecture from
  * JVM system properties.
- *
- * Extracted from PopsGameManager.determineOSVersion, which mixed this pure
- * parsing with writing the results into PopsGameManager's own fields.
  */
 public final class SystemInfo {
 

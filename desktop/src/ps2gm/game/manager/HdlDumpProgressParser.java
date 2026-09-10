@@ -3,18 +3,9 @@ package ps2gm.game.manager;
 /**
  * Parses one line of hdl_dump's stdout progress output into percent
  * downloaded / time remaining / transfer speed. Was duplicated near-verbatim
- * (~150 lines) inside HDLDumpManager.runUpload and runBatchUpload.
- *
- * hdl_dump prints comma-separated progress fields whose values are the
- * leading 1-2 digits of each field (e.g. "45,3,12,1.2MB/s" -> 45% done, 3
- * minutes 12 seconds remaining); a bare line with no comma is just a percent.
- * {@code previousPercent}/{@code previousTimeRemaining} are threaded through
- * because a line that doesn't touch one of those values leaves it unchanged,
- * matching the original code's sticky instance fields.
  */
 public final class HdlDumpProgressParser {
 
-    /** {@code downloadSpeed} is null when this line didn't carry a speed reading. */
     public record Progress(int percentDownloaded, String timeRemaining, String downloadSpeed) {}
 
     private HdlDumpProgressParser() {}
@@ -52,7 +43,7 @@ public final class HdlDumpProgressParser {
         return new Progress(percentDownloaded, timeRemaining, downloadSpeed);
     }
 
-    /** The numeric value of the leading 1-2 digit run at the start of {@code field}. */
+    // The numeric value of the leading 1-2 digits in the field, or 0 if there are no leading digits
     private static int leadingDigits(String field) {
         int end = 0;
         while (end < field.length() && end < 2 && Character.isDigit(field.charAt(end))) {

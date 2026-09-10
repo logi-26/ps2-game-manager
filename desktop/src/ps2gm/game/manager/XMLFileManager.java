@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,21 +40,21 @@ public class XMLFileManager {
 
     public  XMLFileManager() {}
 
-    // Creates a text element under root, e.g. <tag>value</tag>.
+    // Creates a text element under root, e.g. <tag>value</tag>
     private static void appendText(Document doc, Element root, String tag, String value) {
         Element el = doc.createElement(tag);
         el.appendChild(doc.createTextNode(value));
         root.appendChild(el);
     }
 
-    // Reads a single text element's content, e.g. <tag>value</tag> -> "value".
-    // Throws NullPointerException (caught by the caller) if the tag is missing.
+    // Reads a single text element's content, e.g. <tag>value</tag> -> "value"
+    // Throws NullPointerException (caught by the caller) if the tag is missing
     private static String text(Element root, String tag) {
         return root.getElementsByTagName(tag).item(0).getTextContent();
     }
 
     // Applies a boolean element's value if it's exactly "true" or "false", otherwise
-    // leaves the setting unchanged (matches how this file has always tolerated garbage).
+    // leaves the setting unchanged (matches how this file has always tolerated garbage)
     private static void applyBoolean(String text, Consumer<Boolean> setter) {
         if ("false".equals(text)) {setter.accept(false);}
         else if ("true".equals(text)) {setter.accept(true);}
@@ -104,7 +103,6 @@ public class XMLFileManager {
         } catch (TransformerException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
     
-
     // This gets the values from the settings.xml file
     public static void readSettingsXML(){
 
@@ -120,7 +118,7 @@ public class XMLFileManager {
 
                 Document doc = null;
                 try {doc = dBuilder.parse(settingsXMLFile);} 
-                catch (SAXException ex) {JOptionPane.showMessageDialog(null, "The ps2gm-settings file appears to have been modified or moved!\n\nYou will need to set the Mode again.", " Error Loading Settings!", JOptionPane.ERROR_MESSAGE);} 
+                catch (SAXException ex) {ps2gm.game.manager.fx.FxAlerts.showErrorBlocking("The ps2gm-settings file appears to have been modified or moved!\n\nYou will need to set the Mode again.", " Error Loading Settings!");}
                 catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
 
                 if (doc == null){PopsGameManager.setFisrtLaunch(true);}
@@ -157,7 +155,7 @@ public class XMLFileManager {
                                     PopsGameManager.setRemoteELFPath(text(eElement, "remoteelfpath"));
                                     PopsGameManager.setRemoteOPLPath(text(eElement, "remoteoplpath"));
 
-                                    // PS1 Compatability mode
+                                    // PS1 Compatibility mode
                                     applyBoolean(text(eElement, "compatabilityps1"), PopsGameManager::setGameCompatabilityPS1);
 
                                     // PS2 Split game highlight
@@ -169,9 +167,7 @@ public class XMLFileManager {
                                         applyBoolean(darkModeNode.getTextContent(), PopsGameManager::setDarkMode);
                                     }
 
-                                    // Theme (optional - superseded the darkmode flag). If absent: a
-                                    // previously dark-mode user stays dark (Primer Dark, closest to the
-                                    // old look); everyone else gets the new default (Primer Light).
+                                    // Theme (optional
                                     Node themeNode = eElement.getElementsByTagName("theme").item(0);
                                     if (themeNode != null && !themeNode.getTextContent().isBlank()) {
                                         PopsGameManager.setThemeName(themeNode.getTextContent());
@@ -180,7 +176,7 @@ public class XMLFileManager {
                                     }
                                 }
                                 catch(NullPointerException ex){
-                                    JOptionPane.showMessageDialog(null, "The ps2gm-settings file appears to have been modified or moved!\n\nYou will need to set the Mode again.", " Error Loading Settings!", JOptionPane.ERROR_MESSAGE);
+                                    ps2gm.game.manager.fx.FxAlerts.showErrorBlocking("The ps2gm-settings file appears to have been modified or moved!\n\nYou will need to set the Mode again.", " Error Loading Settings!");
                                     PopsGameManager.setFisrtLaunch(true);
                                 }
                             }
@@ -193,20 +189,18 @@ public class XMLFileManager {
         else {PopsGameManager.setFisrtLaunch(true);}
     }
     
-    
     // Parses a <currentconsole> text value, treating missing/blank/unrecognized text as unset
-    // rather than throwing - the file may be from an older build or hand-edited.
+    // rather than throwing - the file may be from an older build or hand-edited
     private static Console parseConsole(String text) {
         try {return (text == null || text.isBlank()) ? null : Console.valueOf(text.trim());}
         catch (IllegalArgumentException ex) {return null;}
     }
 
-    // Parses a <currentmode> text value - see parseConsole above.
+    // Parses a <currentmode> text value - see parseConsole above
     private static Mode parseMode(String text) {
         try {return (text == null || text.isBlank()) ? null : Mode.valueOf(text.trim());}
         catch (IllegalArgumentException ex) {return null;}
     }
-
 
     // Encrypt the setting .xml file
     private static void encryptSettingsFile(){
@@ -218,7 +212,6 @@ public class XMLFileManager {
             if (settingsXMLFile.exists() && settingsXMLFile.isFile()) {settingsXMLFile.delete();}
         } catch (IOException ex) {PopsGameManager.displayErrorMessageDebug(ex.toString());}
     }
-    
     
     // Decrypt the settings .xml file
     private static void decryptSettingsFile(){

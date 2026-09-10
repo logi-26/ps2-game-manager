@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * A parsed {@code GET /app/latest} response - matches {@code AppReleaseOut}
- * in the API (`api/app/schemas.py`).
- */
 public record AppReleaseInfo(String version, String channel, String notes, String publishedAt, List<AppPlatformAsset> platforms) {
 
     public static AppReleaseInfo fromJson(Map<String, Object> json) {
@@ -28,7 +24,6 @@ public record AppReleaseInfo(String version, String channel, String notes, Strin
                 platforms);
     }
 
-    /** The platform entry matching {@code type}, or null if this release has no build for it. */
     public AppPlatformAsset assetFor(DistributionType type) {
         String key = AppPlatformAsset.platformKeyFor(type);
         if (key == null) {

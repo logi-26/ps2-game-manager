@@ -16,15 +16,12 @@ import java.util.stream.Stream;
  * Builds and writes conf_apps.cfg (the config-ELM list OPL reads to find each
  * game's launcher ELF), and - in HDD mode - offers to upload it to the
  * console's memory card over FTP.
- *
- * Extracted from GameListManager.writeConfigELM, which conflated building the
- * list, writing the file, and the upload-confirmation flow in one method.
  */
 public final class ConfigElmWriter {
 
     private ConfigElmWriter() {}
 
-    /** Builds the config-ELM list for the current mode (SMB/HDD_USB/HDD). */
+    // Builds the config-ELM list for the current mode (SMB/HDD_USB/HDD).
     public static List<String> buildList() {
 
         List<String> configElmList = new ArrayList<>();
@@ -81,7 +78,7 @@ public final class ConfigElmWriter {
         return configElmList;
     }
 
-    /** Builds the list, writes conf_apps.cfg, and (in HDD mode) offers to upload it via FTP. */
+    // Builds the list, writes conf_apps.cfg, and (in HDD mode) offers to upload it via FTP.
     public static void write() {
 
         List<String> configElmList = buildList();

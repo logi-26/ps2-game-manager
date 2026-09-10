@@ -8,12 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fetches the PS2 game list from the console via hdl_dump's TOC command.
- *
- * Extracted from HDLDumpManager.hdlDumpGetTOC/addGameToList - stateless,
- * doesn't touch HDLDumpManager's upload-progress instance fields (which is
- * why runUpload/runBatchUpload's own finally blocks construct a throwaway
- * HDLDumpManager just to call hdlDumpGetTOC again afterward).
+ * Fetches the PS2 game list from the console via hdl_dump's TOC command
  */
 final class HdlDumpToc {
 
@@ -26,7 +21,7 @@ final class HdlDumpToc {
 
         HdlDumpProcess.Executable exe = HdlDumpProcess.resolveExecutable();
 
-        // Create a local directory to store the file for transfering to the console (If the local directory doesnt already exist)
+        // Create a local directory to store the file for transferring to the console (If the local directory doesn't already exist)
         if (!HdlLocalDirectoryBootstrap.createLocalHDLDirectory("hdd")) {
             PopsGameManager.showWarningDialog("There was a problem creating the local hdd folder in the same directory as this Jar file.", " Unable to Create Directory!");
         }

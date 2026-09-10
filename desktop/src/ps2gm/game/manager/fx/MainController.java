@@ -1,7 +1,9 @@
 package ps2gm.game.manager.fx;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -100,7 +102,7 @@ public class MainController implements MyListener {
     @FXML private RadioMenuItem rmiPlaystation1, rmiPlaystation2, rmiIdPosPs2Start, rmiIdPosPs2End;
     @FXML private MenuItem miAddPs1Game, miAddPs2Game, miGenerateConfElm, miGenerateUlConf,
             miPs1Emulator, miPs2Emulator, miRefreshGameList, miBatchAddPs1Game,
-            miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miAbout, miCheckUpdate;
+            miBatchAddPs2Game, miBatchPs1Elf, miDeleteAllElf, miOpenOplDir, miCheckUpdate;
 
     // Game-list right-click items whose enablement depends on the selected game.
     private MenuItem ctxRun, ctxSplit, ctxMerge, ctxMd5, ctxConvert;
@@ -529,7 +531,15 @@ public class MainController implements MyListener {
         if (!PopsGameManager.isOPLFolderSet()) { info("OPL directory has not been set.", " "); }
         else { PopsGameManager.openDirectory(PopsGameManager.getOPLFolder()); }
     }
-    @FXML private void onAbout() { AboutScreen.show(PopsGameManager.getFormTitle(), PopsGameManager.getApplicationReleaseDate()); }
+    @FXML private void onReportBug() {
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(new URI("https://github.com/logi-26/ps2-game-manager/issues/new"));
+            }
+        } catch (Exception ex) {
+            PopsGameManager.displayErrorMessageDebug(ex.toString());
+        }
+    }
     @FXML private void onExit() { Platform.exit(); System.exit(0); }
 
     @FXML private void onPs1CompatToggle() {

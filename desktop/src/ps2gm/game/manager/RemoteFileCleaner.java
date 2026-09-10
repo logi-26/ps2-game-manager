@@ -14,17 +14,12 @@ import java.util.List;
 /**
  * Deletes files (local and/or remote, depending on the current mode) from an
  * OPL subdirectory such as ART/CFG/CHT/VMC.
- *
- * Extracted from GameListManager.deleteAllFiles/deleteUnusedFiles. The two
- * keep their own distinct control flow (their GUI-refresh callback timing
- * genuinely differs between them) - only the parts that were byte-identical
- * *within* each method are shared here.
  */
 public final class RemoteFileCleaner {
 
     private RemoteFileCleaner() {}
 
-    /** Deletes every file in {@code directory}, local and/or remote depending on the current mode. */
+    // Deletes every file in specific directory, local and/or remote depending on the current mode
     public static void deleteAllFiles(String directory) {
 
         if (PopsGameManager.getCurrentMode() == Mode.SMB || PopsGameManager.getCurrentMode() == Mode.HDD_USB) {
@@ -64,7 +59,7 @@ public final class RemoteFileCleaner {
         }
     }
 
-    /** Deletes files in {@code directory} that no game in the current PS1/PS2 list still references. */
+    // Delete files that no game in the current PS1/PS2 list still references
     public static void deleteUnusedFiles(String directory) {
 
         // Get the PS1 and PS2 game lists from the files
@@ -143,7 +138,6 @@ public final class RemoteFileCleaner {
         return "mass";
     }
 
-    /** Deletes every file in {@code folder} (used by deleteAllFiles for both its SMB/HDD_USB and HDD-local branches). */
     private static void deleteAllLocalFiles(File folder) {
         try {
             Files.walkFileTree(Paths.get(folder.getAbsolutePath()), new SimpleFileVisitor<Path>() {
@@ -158,7 +152,7 @@ public final class RemoteFileCleaner {
         }
     }
 
-    /** Deletes files in {@code folder} whose name doesn't contain any ID in {@code referencedIds}. */
+    // Deletes files whose name doesn't contain any ID in {@code referencedIds}
     private static void deleteUnreferencedLocalFiles(File folder, List<String> referencedIds) {
         File[] localDirectoryList = folder.listFiles();
         if (localDirectoryList == null) {

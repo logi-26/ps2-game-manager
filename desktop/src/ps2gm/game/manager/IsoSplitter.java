@@ -9,11 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Splits a PS2 ISO into OPL's 1GB "ul.&lt;hex&gt;.&lt;gameID&gt;.&lt;n&gt;"
- * USB-Advance fragments, on a background daemon thread.
- *
- * Extracted from USBUtil.BackgroundWorkerSplitGame (promoted to a top-level
- * class - it had no external references by name, only via USBUtil.splitFile).
+ * Splits a PS2 ISO into OPL's 1GB "ul" format fragments for USB-Advance  
+ * and records the game in the ul.cfg file, on a background daemon thread.
  */
 public final class IsoSplitter implements Runnable {
 
@@ -25,7 +22,7 @@ public final class IsoSplitter implements Runnable {
         this.selectedGame = selectedGame;
     }
 
-    /** Starts the split on a new daemon thread. */
+    // Starts the split on a new daemon thread
     public static void start(SplitMergeProgress ui, Game selectedGame) {
         BackgroundTasks.runDaemon("usbutil-split", new IsoSplitter(ui, selectedGame));
     }

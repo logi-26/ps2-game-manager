@@ -17,9 +17,6 @@ import java.util.List;
  * The encrypted ul-backup sidecar file: records each UL game's original name,
  * hex name and fragment count so ul.cfg can be regenerated from the fragment
  * files actually present in the OPL directory.
- *
- * Extracted from USBUtil; writeULBackupFile/regenerateULCFG/encryptBackupFile/
- * decryptBackupFile were previously static methods there.
  */
 public final class UlBackupStore {
 
@@ -29,10 +26,10 @@ public final class UlBackupStore {
 
     private UlBackupStore() {}
 
-    /** One entry from the ul-backup file. */
+    // One entry from the ul-backup file
     public record BackupGame(String hexName, String originalName, String gameID, int numberOfFragments, long gameRawSize) {}
 
-    /** Records a newly-split UL game in the backup file (creating/decrypting/re-encrypting it as needed). */
+    // Records a newly-split UL game in the backup file (creating/decrypting/re-encrypting it as needed)
     public static void record(byte[] originalName, String hexName, String gameID, int numberOfFragments, long gameRawSize) {
 
         decrypt();
@@ -70,7 +67,7 @@ public final class UlBackupStore {
         encrypt();
     }
 
-    /** Reconciles the backup file against the fragments actually present in the OPL directory, and rewrites ul.cfg. */
+    // Reconciles the backup file against the fragments actually present in the OPL directory, and rewrites ul.cfg
     public static void regenerateULCFG() {
 
         List<File> ulGameFragments = UlCfgFileFormat.listULFragments();

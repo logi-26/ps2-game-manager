@@ -12,11 +12,9 @@ import java.io.InputStream;
 import java.util.List;
 import javax.imageio.ImageIO;
 
-
 public class GenerateSpineART {
     
     public GenerateSpineART(){}
-    
     
     // Generate all PS2 spine ART
     public void generateForPS2(){
@@ -44,21 +42,13 @@ public class GenerateSpineART {
                     if (gameName.length() <= 27){
                         graphics.setFont(new Font("Tahoma", Font.BOLD, 10));
                         graphics.drawString(gameName, 80, 12);
-
-                        // Draw the game region on the image
-                        //Font font = new Font("Tahoma", Font.PLAIN, 5);    
-                        //AffineTransform affineTransform = new AffineTransform();
-                        //affineTransform.rotate(Math.toRadians(-90), 0, 0);
-                        //Font rotatedFont = font.deriveFont(affineTransform);
-                        //graphics.setFont(rotatedFont);
-                        //if (gameRegion.equals("PAL")){graphics.drawString(gameRegion,235,14);}else {graphics.drawString(gameRegion,235,17);}
                     }
                     else {
                         graphics.setFont(new Font("Tahoma", Font.PLAIN, 9));
                         graphics.drawString(gameName, 80, 12);
                     }
 
-                    // Rotate the image 90 degress
+                    // Rotate the image 90 degrees
                     AffineTransform tx = new AffineTransform();
                     tx.translate(bufferedImage.getHeight()/2, bufferedImage.getWidth()/2);
                     tx.rotate(Math.PI/2);
@@ -78,18 +68,12 @@ public class GenerateSpineART {
         } 
     }
     
-    
     // Delete all PS2 spine ART
     public void deleteForPS2(){
         File folder = new File(PopsGameManager.getOPLFolder() + File.separator + "ART");
         File[] listOfFiles = folder.listFiles();
         for (File file : listOfFiles) {if (file.isFile()) {if (file.getName().substring(file.getName().length()-8, file.getName().length()-4).equals("_LAB")){file.delete();}}} 
     }
-    
-    
-    
-    
-    
     
     // Generate all PS1 spine ART
     public void generateForPS1(){
@@ -118,21 +102,13 @@ public class GenerateSpineART {
                         if (gameName.length() <= 27){
                             graphics.setFont(new Font("Tahoma", Font.BOLD, 10));
                             graphics.drawString(gameName, 40, 12);
-
-                            // Draw the game region on the image
-                            //Font font = new Font("Tahoma", Font.PLAIN, 5);    
-                            //AffineTransform affineTransform = new AffineTransform();
-                            //affineTransform.rotate(Math.toRadians(-90), 0, 0);
-                            //Font rotatedFont = font.deriveFont(affineTransform);
-                            //graphics.setFont(rotatedFont);
-                            //if (gameRegion.equals("PAL")){graphics.drawString(gameRegion,235,14);}else {graphics.drawString(gameRegion,235,17);}
                         }
                         else {
                             graphics.setFont(new Font("Tahoma", Font.BOLD, 10));
                             graphics.drawString(gameName, 30, 12);
                         }
 
-                        // Rotate the image 90 degress
+                        // Rotate the image 90 degrees
                         AffineTransform tx = new AffineTransform();
                         tx.translate(bufferedImage.getHeight()/2, bufferedImage.getWidth()/2);
                         tx.rotate(Math.PI/2);
@@ -152,13 +128,9 @@ public class GenerateSpineART {
             PopsGameManager.showInfoDialog("All of the PS1 spine ART has been generated."," Spine ART Generated");
         } 
     }
-    
-    
  
     // Delete all PS1 spine ART
     public void deleteForPS1(){
         
-        
     }
-    
 }

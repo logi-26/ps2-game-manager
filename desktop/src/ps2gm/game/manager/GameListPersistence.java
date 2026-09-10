@@ -16,8 +16,6 @@ import java.util.List;
 /**
  * Encrypted persistence of the PS1/PS2 game lists (gameListPS1/PS2.dat) and
  * the "bad game" list (games whose ID couldn't be detected).
- *
- * Extracted from GameListManager.
  */
 public final class GameListPersistence {
 
@@ -25,21 +23,20 @@ public final class GameListPersistence {
     private static final File keyFilePS2 = new File(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "data_2");
     private static final File gameListFilePS1 = new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS1");
     private static final File gameListFilePS2 = new File(PopsGameManager.getCurrentDirectory() + File.separator + "hdd" + File.separator + "gameListPS2");
-
     private static final File badGameListTextFile = new File(PopsGameManager.getCurrentDirectory() + File.separator + "invalidGameList.txt");
     private static final File badGameListEncryptedFile = new File(PopsGameManager.getCurrentDirectory() + File.separator + "invalidGameList");
     private static final File keyFileBadGames = new File(PopsGameManager.getCurrentDirectory() + File.separator + "lib" + File.separator + "data" + File.separator + "data_5");
 
     private GameListPersistence() {}
 
-    /** The games read from a game list, plus their combined raw size (bytes). */
+    // The games read from a game list, plus their combined raw size (bytes)
     public record ReadResult(List<Game> games, long totalRawSize) {}
 
     public static File gameListFilePS1() {
         return gameListFilePS1;
     }
 
-    /** Encrypts and writes {@code gameList} to its gameListPSx.dat file, returning whether the file now exists. */
+    // Encrypts and writes gameList to its gameListPSx.dat file, returning whether the file now exists
     public static boolean writeGameListFile(Console console, List<Game> gameList) {
         File file = console == Console.PS1 ? gameListFilePS1 : gameListFilePS2;
         File key = console == Console.PS1 ? keyFilePS1 : keyFilePS2;
@@ -55,7 +52,7 @@ public final class GameListPersistence {
         return file.exists() && file.isFile();
     }
 
-    /** Decrypts and reads a gameListPSx.dat-style file into games + their combined raw size. */
+    // Decrypts and reads a gameListPSx.dat-style file into games + their combined raw size
     public static ReadResult readGameListFile(Console console, File file) throws IOException {
         File key = console == Console.PS1 ? keyFilePS1 : keyFilePS2;
         FileEncryptor encryptor = new FileEncryptor();
@@ -72,13 +69,10 @@ public final class GameListPersistence {
             totalSize += gameRawSize;
 
             if (console == Console.PS1) {
-                // This sets the PS1 game compatability values from the text file within the resources
+                // This sets the PS1 game compatibility values from the text file within the resources
                 PS1CompatibilityLookup.Compatibility compat = PS1CompatibilityLookup.lookup(gameID);
 
                 Game selectedGame = new Game(gameName, gameID, "GAME PATH HERE!!!!", PopsGameManager.bytesToHuman(gameRawSize), gameRawSize);
-                // BUG FIX: these were swapped - setCompatibleHDD was getting the USB flag and
-                // vice versa. The compat-list file's own column labels ("-USB=", "-HDD=", "-SMB=")
-                // are unambiguous about which is which.
                 selectedGame.setCompatibleHDD(compat.hdd());
                 selectedGame.setCompatibleUSB(compat.usb());
                 selectedGame.setCompatibleSMB(compat.smb());
@@ -92,9 +86,7 @@ public final class GameListPersistence {
         return new ReadResult(games, totalSize);
     }
 
-    // ---- bad-game list (games whose ID couldn't be detected) --------------------
-
-    /** Encrypts the invalidGameList.txt file. */
+    // Encrypts the invalidGameList.txt file
     public static void encryptBadGameListFile() {
         try {
             List<String> list = Files.readAllLines(badGameListTextFile.toPath(), Charset.defaultCharset());
@@ -120,7 +112,7 @@ public final class GameListPersistence {
         }
     }
 
-    /** Reads the invalidGameList.txt file (decrypting/re-encrypting it around the read). */
+    // Reads the invalidGameList.txt file (decrypting/re-encrypting it around the read)
     public static List<String> readBadGameListFile() {
         List<String> fileList = new ArrayList<>();
         if (badGameListEncryptedFile.exists() && !badGameListEncryptedFile.isDirectory()) {
@@ -140,7 +132,7 @@ public final class GameListPersistence {
         return fileList;
     }
 
-    /** Writes invalidGameList.txt from the VCD/ISO files whose game ID couldn't be detected. */
+    // Writes invalidGameList.txt from the VCD/ISO files whose game ID couldn't be detected
     public static void createBadGameListFile(File[] vcdFiles, File[] isoFiles) {
 
         List<String> badGameList = new ArrayList<>();

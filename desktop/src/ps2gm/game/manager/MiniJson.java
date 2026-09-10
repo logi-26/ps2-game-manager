@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A minimal, dependency-free JSON reader for {@link MyApiClient}. The project
+ * A minimal, dependency-free JSON reader for the FTP client. The project
  * ships no JSON library, and the API's response shapes are small and known,
  * so a hand-rolled parser avoids adding a new jar to the build for this.
- * Values decode as {@code Map<String,Object>}, {@code List<Object>},
- * {@code String}, {@code Double}, {@code Boolean} or {@code null}.
  */
 public final class MiniJson {
 
@@ -61,7 +59,6 @@ public final class MiniJson {
             skipWs();
             char c = s.charAt(i++);
             if (c == '}') break;
-            // else expect ',' and continue
         }
         return map;
     }

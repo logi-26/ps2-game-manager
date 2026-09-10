@@ -4,10 +4,6 @@ package ps2gm.game.manager;
  * OPL's UL-game hex-naming CRC32-variant algorithm, used to build the
  * "ul.&lt;HEX&gt;.&lt;gameID&gt;.&lt;n&gt;" fragment filenames USBUtil
  * reads/writes for USB-Advance mode.
- *
- * Extracted from USBUtil.gameNameToULHex, which previously rebuilt its
- * 256-entry CRC table on every call; it's now computed once in a static
- * initializer.
  */
 public final class UlHexNaming {
 

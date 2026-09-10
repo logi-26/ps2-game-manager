@@ -12,14 +12,7 @@ import java.util.zip.ZipInputStream;
 /**
  * Unzips a verified update package and assembles the final, ready-to-swap
  * install tree - entirely in-process, writing nothing under the live
- * install's {@code installRoot} until {@link AppUpdateApplier} actually
- * swaps it in.
- *
- * Release zips are built (see {@code package.ps1}/{@code bundle-jar.ps1}) as
- * the *contents* of an install directory, not wrapped in an extra top-level
- * folder - so the extracted tree already mirrors {@code installRoot}
- * one-to-one, and assembly is just "copy it over, skipping/restoring
- * anything on {@link UpdatePreserveList}".
+ * install's root directory until the app updater actually swaps it in.
  */
 public final class AppUpdateStager {
 
@@ -34,13 +27,6 @@ public final class AppUpdateStager {
         }
     }
 
-    /**
-     * Unzips {@code verifiedZip} into {@code stagingDir/extracted/}, builds
-     * {@code stagingDir/final/} from it (minus anything on {@link
-     * UpdatePreserveList} - defense in depth against a malformed release
-     * zip), then copies every preserved path forward from the live install
-     * into the same spot under {@code final/}. Returns {@code final/}.
-     */
     public static File stage(File verifiedZip, File stagingDir, InstallLayout layout) throws StagingException {
         File extracted = new File(stagingDir, "extracted");
         try {
@@ -51,11 +37,6 @@ public final class AppUpdateStager {
         return assembleFrom(extracted, new File(stagingDir, "final"), layout);
     }
 
-    /**
-     * The assembly step alone, given an already-extracted tree - split out from {@link
-     * #stage} so it's testable without needing a real zip file. Package-private: only
-     * {@code AppUpdateStagerTest} and {@link #stage} call this directly.
-     */
     static File assembleFrom(File extracted, File finalDir, InstallLayout layout) throws StagingException {
         try {
             checkShape(extracted, layout.distributionType());
@@ -108,7 +89,7 @@ public final class AppUpdateStager {
         try (var walk = Files.walk(liveCurrentDir.toPath())) {
             for (Path src : (Iterable<Path>) walk::iterator) {
                 if (Files.isDirectory(src)) {
-                    continue; // directories are created implicitly by the file copies below
+                    continue; // Directories are created implicitly by the file copies below
                 }
                 Path relativeToCurrentDir = liveCurrentDir.toPath().relativize(src);
                 if (!UpdatePreserveList.isPreserved(relativeToCurrentDir)) {
