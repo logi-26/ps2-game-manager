@@ -63,11 +63,14 @@ public class MyApiClient implements BackendClient {
     @Override
     public AppReleaseInfo getLatestAppRelease(String channel) {
         try {
+            // getJson returns null for any non-200 response too, e.g. the 404 the API
+            // gives when no release has been published for this channel yet - that's a
+            // normal "nothing to report" outcome, not a connectivity failure, so it's
+            // returned as null rather than thrown.
             Map<String, Object> json = getJson("/app/latest?channel=" + urlEncode(channel), DEFAULT_TIMEOUT);
             return json == null ? null : AppReleaseInfo.fromJson(json);
         } catch (IOException | InterruptedException ex) {
-            PopsGameManager.displayErrorMessageDebug(ex.toString());
-            return null;
+            throw new BackendUnreachableException("Could not reach the API for /app/latest", ex);
         }
     }
 
